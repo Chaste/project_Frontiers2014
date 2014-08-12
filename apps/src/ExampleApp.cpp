@@ -73,8 +73,7 @@ int main(int argc, char *argv[])
                 if (PetscTools::AmMaster())
                 {
                     std::string arg_i(argv[i]);
-                    Hello world(arg_i);
-                    std::cout << "Argument " << i << " is " << world.GetMessage() << std::endl << std::flush;
+                    std::cout << "Argument " << i << " is " << arg_i << std::endl << std::flush;
                 }
             }
         }
