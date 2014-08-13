@@ -43,75 +43,212 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "CvodeAdaptor.hpp"
 #include "EulerIvpOdeSolver.hpp"
+#include "RungeKutta2IvpOdeSolver.hpp"
+#include "RungeKutta4IvpOdeSolver.hpp"
 #include "RegularStimulus.hpp"
-#include "Shannon2004.hpp"
-#include "Shannon2004Cvode.hpp"
+
+#include "shannon_wang_puglisi_weber_bers_2004.hpp"
+#include "shannon_wang_puglisi_weber_bers_2004Opt.hpp"
+#include "shannon_wang_puglisi_weber_bers_2004Cvode.hpp"
+#include "shannon_wang_puglisi_weber_bers_2004CvodeOpt.hpp"
 
 class TestOdeSolvingTimes : public CxxTest::TestSuite
 {
 public:
-    // I want to see how much slower CVODE would be in a tissue situation (PDE timestep 0.01ms).
-    void TestShannonSolvingTimes() throw (Exception)
-    {
-        // Set up a default solver and a stimulus
-        boost::shared_ptr<AbstractIvpOdeSolver> p_solver(new EulerIvpOdeSolver());
-        boost::shared_ptr<CvodeAdaptor> p_cvode_adaptor(new CvodeAdaptor());
+	/**
+	 * For 1000 APs.
+	 */
+	void TestShannonSolvingTimes() throw (Exception)
+	{
+		// Set up a default solver and a stimulus
+		boost::shared_ptr<AbstractIvpOdeSolver> p_euler_solver(new EulerIvpOdeSolver());
+		boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
+		boost::shared_ptr<AbstractIvpOdeSolver> p_rk4_solver(new RungeKutta4IvpOdeSolver());
+		boost::shared_ptr<CvodeAdaptor> p_cvode_adaptor(new CvodeAdaptor());
         boost::shared_ptr<AbstractStimulusFunction> p_stimulus(new RegularStimulus(-25,5,1000,1));
 
-        boost::shared_ptr<AbstractCardiacCell> shannon_euler(new CellShannon2004FromCellML(p_solver,p_stimulus));
-        boost::shared_ptr<AbstractCardiacCell> shannon_cvode_adaptor(new CellShannon2004FromCellML(p_cvode_adaptor,p_stimulus));
-        boost::shared_ptr<AbstractCvodeCell> shannon_cvode(new CellShannon2004FromCellMLCvode(p_solver,p_stimulus));
+		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
+		boost::shared_ptr<AbstractCardiacCell> shannon_euler_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_euler_solver,p_stimulus));
 
-        double solution_time = 1000;
-        double pde_time_step = 0.01;
+		boost::shared_ptr<AbstractCardiacCell> shannon_rk2(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_rk2_solver,p_stimulus));
+		boost::shared_ptr<AbstractCardiacCell> shannon_rk2_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_rk2_solver,p_stimulus));
 
-        // A standard Forward Euler Solve.
-        shannon_euler->SetTimestep(0.0025);
+		boost::shared_ptr<AbstractCardiacCell> shannon_rk4(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_rk4_solver,p_stimulus));
+		boost::shared_ptr<AbstractCardiacCell> shannon_rk4_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_rk4_solver,p_stimulus));
 
-        std::cout << "Timings for 1000ms of solve:\n";
-        Timer::Reset();
-        for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-        {
-            shannon_euler->SolveAndUpdateState(start_time, start_time+pde_time_step);
-        }
-        Timer::Print("1. Forward-Euler");
+		boost::shared_ptr<AbstractCardiacCell> shannon_cvode_adaptor(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_cvode_adaptor,p_stimulus));
+		boost::shared_ptr<AbstractCardiacCell> shannon_cvode_adaptor_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_cvode_adaptor,p_stimulus));
+        
+		// Solver is ignored by native CVODE cells.
+		boost::shared_ptr<AbstractCvodeCell> shannon_cvode(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvode(p_euler_solver,p_stimulus));
+		boost::shared_ptr<AbstractCvodeCell> shannon_cvode_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvodeOpt(p_euler_solver,p_stimulus));
 
-        // A standard CVODE adaptor solve
-        p_cvode_adaptor->SetForceReset(true);
-        Timer::Reset();
-        for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-        {
-            shannon_cvode_adaptor->SolveAndUpdateState(start_time, start_time+pde_time_step);
-        }
-        Timer::Print("2. CVODE adaptor (with resetting)");
+		double start_time = 0;
+		double end_time = 10*1000;
+		std::cout << "Timings for " << end_time/1000.0 << "s of 1Hz pacing:\n";
 
-        // A standard CVODE adaptor solve
-        p_cvode_adaptor->SetForceReset(false);
-        Timer::Reset();
-        for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-        {
-            shannon_cvode_adaptor->SolveAndUpdateState(start_time, start_time+pde_time_step);
-        }
-        Timer::Print("3. CVODE adaptor (no resetting)");
+		///\todo IMPORTANT
+		// figure out how to set the timesteps for the fixed methods 'fairly'
+		// at present they are set so that all of them are just about stable.
+		// But we probably want to set them for equivalent levels of accuracy.
 
-        // A standard native CVODE solve
-        shannon_cvode->SetForceReset(true);
-        Timer::Reset();
-        for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-        {
-            shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
-        }
-        Timer::Print("4. CVODE native (with resetting)");
+		// A standard Forward Euler Solve.
+		shannon_euler->SetTimestep(0.0025);
+		Timer::Reset();
+		shannon_euler->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("1. Forward-Euler");
 
-        // Switch off the 'reset' on native CVODE so it saves its internal variables.
-        shannon_cvode->SetForceReset(false);
-        Timer::Reset();
-        for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-        {
-            shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
-        }
-        Timer::Print("5. CVODE native (no resetting)");
-     }
+		// An Opt Forward Euler Solve.
+		shannon_euler_opt->SetTimestep(0.0025);
+
+		Timer::Reset();
+		shannon_euler_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("2. Forward-Euler Opt");
+
+		// A standard RK2 Solve.
+		shannon_rk2->SetTimestep(0.01);
+		Timer::Reset();
+		shannon_rk2->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("3. Runge-Kutta 2nd order");
+
+		// An Opt RK2 Solve.
+		shannon_rk2_opt->SetTimestep(0.01);
+		Timer::Reset();
+		shannon_rk2_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("4. Runge-Kutta 2nd order Opt");
+
+		// A standard RK4 Solve.
+		shannon_rk4->SetTimestep(0.025);
+		Timer::Reset();
+		shannon_rk4->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("5. Runge-Kutta 4th order ");
+
+		// An Opt RK4 Solve.
+		shannon_rk4_opt->SetTimestep(0.025);
+		Timer::Reset();
+		shannon_rk4_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("6. Runge-Kutta 4th order Opt");
+
+
+		p_cvode_adaptor->SetMaxSteps(1e6);
+		shannon_cvode_adaptor->SetTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
+		Timer::Reset();
+		shannon_cvode_adaptor->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("7. CVODE Adaptor (no resetting)");
+
+		shannon_cvode_adaptor_opt->SetTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
+		Timer::Reset();
+		shannon_cvode_adaptor_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("8. CVODE Adaptor Opt (no resetting)");
+
+		// A standard native CVODE solve
+		shannon_cvode->SetMaxSteps(1e6);
+		shannon_cvode->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
+
+		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), true);
+		shannon_cvode->ForceUseOfNumericalJacobian(true);
+		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), false);
+
+		Timer::Reset();
+		shannon_cvode->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("9. CVODE Numerical Jacobian (native, no resetting)");
+
+		shannon_cvode->ForceUseOfNumericalJacobian(false);
+		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), true);
+		shannon_cvode->ResetToInitialConditions();
+
+		Timer::Reset();
+		shannon_cvode->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("10. CVODE Analytic Jacobian (native, no resetting)");
+
+		// A standard native CVODE solve
+		shannon_cvode_opt->SetMaxSteps(1e6);
+		shannon_cvode_opt->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
+
+		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), true);
+		shannon_cvode_opt->ForceUseOfNumericalJacobian(true);
+		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), false);
+
+		// IMPORTANT
+		// An initial call to solve on Opt cells with CVODE seems to take about 0.9 seconds.
+		// It might be setting up the lookup tables for later use, so
+		// not really fair to time this, but we should make sure users know that they shouldn't
+		// be setting up a new model each time with Opt cells.
+		//
+		// (doesn't seem to be the case for other sorts of cells - are there lookup tables for
+		// the analytic jacobian entries that get calculated too?)
+		shannon_cvode_opt->SolveAndUpdateState(-0.01, 0);
+
+		Timer::Reset();
+		shannon_cvode_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("11. CVODE Opt Numerical Jacobian (native, no resetting)");
+
+		shannon_cvode_opt->ForceUseOfNumericalJacobian(false);
+		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), true);
+		shannon_cvode_opt->ResetToInitialConditions();
+
+		Timer::Reset();
+		shannon_cvode_opt->SolveAndUpdateState(start_time, end_time);
+		Timer::Print("12. CVODE Opt Analytic Jacobian (native, no resetting)");
+	}
+
+	// I wanted to see how much slower CVODE would be in a tissue situation (pretend there is a PDE timestep 0.01ms).
+	// result - it would be faster than Forward Euler!
+	void TestShannonSolvingTimesForTissue() throw (Exception)
+    {
+		// Set up a default solver and a stimulus
+		boost::shared_ptr<AbstractIvpOdeSolver> p_euler_solver(new EulerIvpOdeSolver());
+		boost::shared_ptr<AbstractStimulusFunction> p_stimulus(new RegularStimulus(-25,5,1000,1));
+
+		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
+		boost::shared_ptr<AbstractCvodeCell> shannon_cvode(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvode(p_euler_solver,p_stimulus));
+
+		double solution_time = 1000;
+		double pde_time_step = 0.01;
+
+		// A standard Forward Euler Solve.
+		shannon_euler->SetTimestep(0.0025);
+
+		for (unsigned i=0; i<2; i++)
+		{
+			if (i==0)
+			{
+				pde_time_step = 0.01;
+			}
+			else
+			{
+				pde_time_step = 0.1;
+			}
+
+			std::cout << "\nTimings for 1000ms of 'tissue' solve with pde_time_step = " << pde_time_step << std::endl;
+			Timer::Reset();
+			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
+			{
+				shannon_euler->SolveAndUpdateState(start_time, start_time+pde_time_step);
+			}
+			Timer::Print("1. Forward-Euler");
+
+			// A standard native CVODE solve
+			shannon_cvode->SetForceReset(true);
+			shannon_cvode->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
+			Timer::Reset();
+			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
+			{
+				shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
+			}
+			Timer::Print("2. CVODE native (with resetting)");
+
+			// Switch off the 'reset' on native CVODE so it saves its internal variables.
+			shannon_cvode->SetForceReset(false);
+			shannon_cvode->ResetToInitialConditions();
+			Timer::Reset();
+			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
+			{
+				shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
+			}
+			Timer::Print("3. CVODE native (no resetting)");
+		}
+    }
 };
 
 #endif // TESTODESOLVINGTIMES_HPP_
