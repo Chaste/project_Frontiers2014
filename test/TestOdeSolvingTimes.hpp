@@ -39,6 +39,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/shared_ptr.hpp>
 #include <cxxtest/TestSuite.h>
 
+#include <iostream>
+#include <boost/foreach.hpp>
+
+#include "CellModelUtilities.hpp"
+
 #include "Timer.hpp"
 
 #include "CvodeAdaptor.hpp"
@@ -55,11 +60,26 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestOdeSolvingTimes : public CxxTest::TestSuite
 {
 public:
+	void TestListingModels() throw (Exception)
+	{
+		std::vector<FileFinder> models(CellModelUtilities::GetListOfModels());
+		std::cout << "Available models:" << std::endl;
+		BOOST_FOREACH(FileFinder& r_model, models)
+		{
+		    std::cout << "  " << r_model.GetLeafNameNoExtension() << std::endl;
+		}
+		TS_ASSERT_LESS_THAN(20u, models.size());
+	}
+
 	/**
 	 * For 1000 APs.
 	 */
 	void TestShannonSolvingTimes() throw (Exception)
 	{
+	    FileFinder model("projects/Frontiers2014/cellml/shannon_wang_puglisi_weber_bers_2004.cellml", RelativeTo::ChasteSourceRoot);
+	    std::vector<std::string> options;
+	    OutputFileHandler handler("TestOdeSolvingTimes_TestShannon_Euler");
+
 		// Set up a default solver and a stimulus
 		boost::shared_ptr<AbstractIvpOdeSolver> p_euler_solver(new EulerIvpOdeSolver());
 		boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
@@ -67,7 +87,10 @@ public:
 		boost::shared_ptr<CvodeAdaptor> p_cvode_adaptor(new CvodeAdaptor());
         boost::shared_ptr<AbstractStimulusFunction> p_stimulus(new RegularStimulus(-25,5,1000,1));
 
-		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
+        boost::shared_ptr<AbstractCardiacCellInterface> shannon_euler = CellModelUtilities::CreateCellModel(model, handler, options);
+        shannon_euler->SetStimulusFunction(p_stimulus);
+
+//		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
 		boost::shared_ptr<AbstractCardiacCell> shannon_euler_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_euler_solver,p_stimulus));
 
 		boost::shared_ptr<AbstractCardiacCell> shannon_rk2(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_rk2_solver,p_stimulus));
@@ -100,6 +123,8 @@ public:
 
 		// An Opt Forward Euler Solve.
 		shannon_euler_opt->SetTimestep(0.0025);
+		// Set up lookup tables
+		shannon_euler_opt->SolveAndUpdateState(-0.0025, 0);
 
 		Timer::Reset();
 		shannon_euler_opt->SolveAndUpdateState(start_time, end_time);
@@ -131,6 +156,7 @@ public:
 
 
 		p_cvode_adaptor->SetMaxSteps(1e6);
+		p_cvode_adaptor->SetTolerances(1e-5, 1e-7); // Match defaults for native cell
 		shannon_cvode_adaptor->SetTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
 		Timer::Reset();
 		shannon_cvode_adaptor->SolveAndUpdateState(start_time, end_time);
@@ -249,6 +275,31 @@ public:
 			Timer::Print("3. CVODE native (no resetting)");
 		}
     }
+
+private:
+	/* Utility methods used by the tests above go here.
+	 */
+
+//	/**
+//	 * Find out how long it takes to simulate the given model.
+//	 * The cell will be reset to initial conditions prior to simulation.
+//	 * We assume the cell has a regular square wave stimulus defined.
+//	 *
+//	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
+//	 *
+//	 * @param pCell  the cell model to simulate, with solver attached
+//	 * @param numPaces  the number of simulated paces to time
+//	 * @return  elapsed wall clock time, in seconds
+//	 */
+//	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+//	                      unsigned numPaces)
+//	{
+//	    pCell->ResetToInitialConditions();
+//	    double period = CellModelUtilities::GetDefaultPeriod(pCell, 1000.0);
+//	    Timer::Reset();
+//	    pCell->SolveAndUpdateState(0.0, numPaces * period);
+//	    return Timer::GetElapsedTime();
+//	}
 };
 
 #endif // TESTODESOLVINGTIMES_HPP_
