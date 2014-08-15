@@ -125,14 +125,15 @@ public:
                 filename << model_name << "_deltaT_" << timestep;
                 solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
                 double error = CellModelUtilities::GetError(solution, model_name);
-                std::cout << model_name << " Forward Euler error with timestep " << timestep << " = "
-                        << error << ", required = " << mErrorResults[model_name] << "." << std::endl << std::flush;
+                std::cout << model_name << ": 'Forward Euler error with timestep of " << timestep << "' = "
+                        << error << ", required error = " << mErrorResults[model_name] << "." << std::endl << std::flush;
                 within_tolerance = (error<=mErrorResults[model_name]);
             }
-            while (!within_tolerance);
+            while (!within_tolerance && timestep>=5e-6);
 
             // Record the timestep we needed
-            mRequiredForwardEulerTimestep[model_name] = timestep;
+            std::pair<double, bool> result(timestep, within_tolerance);
+            mRequiredForwardEulerTimestep[model_name] = result;
         }
 
         /* Write the summary file, and copy it to the repository */
@@ -140,11 +141,11 @@ public:
         FileFinder data_folder("data", this_file);
         OutputFileHandler handler("Frontiers/CalculateTimesteps", false);
         out_stream p_file = handler.OpenOutputFile("forward_euler_steps.txt");
-        for (std::map<std::string,double>::iterator it = mRequiredForwardEulerTimestep.begin();
+        for (std::map<std::string,std::pair<double,bool> >::iterator it = mRequiredForwardEulerTimestep.begin();
              it!=mRequiredForwardEulerTimestep.end();
              ++it)
         {
-            *p_file << it->first << "\t" << it->second << std::endl;
+            *p_file << it->first << "\t" << (it->second).first << "\t" << (it->second).second << std::endl;
         }
         p_file->close();
 
@@ -154,7 +155,7 @@ public:
 
 private:
     std::map<std::string, double> mErrorResults;
-    std::map<std::string, double> mRequiredForwardEulerTimestep;
+    std::map<std::string, std::pair<double,bool> > mRequiredForwardEulerTimestep; // timestep and whether it met CVODE tolerances.
 
     /**
      * A helper method that populates mErrorResults from the stored data file in
