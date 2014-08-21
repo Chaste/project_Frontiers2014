@@ -36,23 +36,34 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTGENERATINGREFERENCEDATA_HPP_
 #define TESTGENERATINGREFERENCEDATA_HPP_
 
+// The testing framework we use
 #include <cxxtest/TestSuite.h>
 
+// Standard C++ libraries
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
+// Headers specific to this project
 #include "CellModelUtilities.hpp"
 
+// General Chaste headers
 #include "AbstractCvodeCell.hpp"
 #include "CellProperties.hpp"
+#include "PetscTools.hpp"
 #include "Warnings.hpp"
+
+// This header is needed to allow us to run in parallel
+#include "PetscSetupAndFinalize.hpp"
 
 /**
  * For each cell model, runs a single action potential at high fidelity (CVODE with tight tolerance and small max timestep)
  * as a 'gold standard' result for later comparison.
+ *
+ * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
+ * to set time steps for other solvers in TestCalculateRequiredTimesteps.hpp.
  */
 class TestGeneratingReferenceData : public CxxTest::TestSuite
 {
@@ -66,9 +77,18 @@ public:
 
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
 
-        BOOST_FOREACH(FileFinder& r_model, models)
+        /* Iterate over the available models, handling each one on a separate process if running in parallel. */
+        PetscTools::IsolateProcesses();
+
+        for (unsigned i=0; i<models.size(); ++i)
         {
+            if (i % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+            {
+                continue; // Let another process handle this model
+            }
+
             /* Generate the cell model from CellML. */
+            FileFinder& r_model = models[i];
             std::string model_name = r_model.GetLeafNameNoExtension();
             OutputFileHandler handler("Frontiers/ReferenceTraces/" + model_name);
             std::vector<std::string> options = boost::assign::list_of("--Wu")("--cvode");
@@ -78,12 +98,12 @@ public:
             /* Set up solver parameters. */
             boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
             p_cvode_cell->SetTolerances(1e-7 /* relative */, 1e-9 /* absolute */);
-            // Max dt and sampling interval set to 0.1 ms
 
-            /* Create a reference solution with high tolerances, and fine output */
+            /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms) */
             OdeSolution solution;
             try
             {
+                // Note that the sampling interval of 0.1ms is also the maximum time step CVODE is allowed to use
                 solution = p_cvode_cell->Compute(0.0, period, 0.1);
             }
             catch (const Exception &e)
@@ -111,35 +131,52 @@ public:
                 WARNING("No action potential produced for model " << model_name);
             }
 
-            /* Calculate error when using looser tolerances, and write to screen and file. */
+            /* Perform another simulation with lower CVODE tolerances, to give us an error bound to set other solvers' time steps with. */
             p_cvode_cell->SetTolerances(1e-5 /* relative */, 1e-7 /* absolute */);
             p_cvode_cell->ResetToInitialConditions();
-
-            /*
-             * Perform simulation with lower CVODE tolerances
-             * to give us an error bound to set other solvers' timesteps with.
-             */
             solution = p_cvode_cell->Compute(0.0, period, 0.1);
 
-            /* Write to file so we can compare graphs */
+            /* Write this solution to file so we can compare graphs, and print the error metric. */
             solution.WriteToFile(handler.GetRelativePath(), model_name + "_rough", "ms", 1, false, 16, false);
             double error = CellModelUtilities::GetError(solution, model_name);
             std::cout << "Model " << model_name << " square error " << error << std::endl;
             error_results[model_name] = error;
         }
 
-        /* Finish writing the error summary file, and copy it to the repository */
+        /* Write a file containing the target error metric for each model.
+         * Since we may have run simulations in parallel, each process writes its own file, and the master processes then
+         * concatenates these and copies the resulting single file into the Chaste repository.
+         */
 
-        out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary.txt");
-        for (std::map<std::string,double>::iterator it = error_results.begin();
-             it!=error_results.end();
-             ++it)
+        // Each process writes its own file
+        out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
+        typedef std::pair<std::string, double> StringDoublePair;
+        BOOST_FOREACH(StringDoublePair& r_error, error_results)
         {
-            *p_error_file << it->first << "\t" << it->second << std::endl;
+            *p_error_file << r_error.first << "\t" << r_error.second << std::endl;
         }
         p_error_file->close();
-        FileFinder error_summary_file = test_base_handler.FindFile("error_summary.txt");
-        error_summary_file.CopyTo(repo_data);
+
+        // Turn off process isolation and wait for all files to be written
+        PetscTools::IsolateProcesses(false);
+        PetscTools::Barrier("TestGenerateTraces");
+
+        // Master process writes the concatenated file
+        if (PetscTools::AmMaster())
+        {
+            out_stream p_combined_file = test_base_handler.OpenOutputFile("error_summary.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+            {
+                std::stringstream process_file_name;
+                process_file_name << "error_summary_" << i << ".txt";
+                std::ifstream process_file(process_file_name.str(), std::ios::binary);
+                *p_combined_file << process_file.rdbuf();
+            }
+            p_combined_file->close();
+            // Copy to repository
+            FileFinder error_summary_file = test_base_handler.FindFile("error_summary.txt");
+            error_summary_file.CopyTo(repo_data);
+        }
     }
 };
 

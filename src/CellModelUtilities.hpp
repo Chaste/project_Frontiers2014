@@ -44,6 +44,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractCardiacCellInterface.hpp"
 
 /**
+ * Structure encapsulating the enumeration of cell model solvers.
+ * This allows us to write things like Solvers::CVODE for readability.
+ */
+struct Solvers
+{
+    /**
+     * What solvers are available for cardiac cell models.
+     */
+    enum Value
+    {
+        CVODE_ANALYTIC_J,          /**< CVODE with analytically calculated Jacobian */
+        CVODE_NUMERICAL_J,         /**< CVODE with numerical approximation to Jacobian */
+        FORWARD_EULER,             /**< Forward Euler */
+        BACKWARD_EULER,            /**< Tissue simulation specific Backward Euler */
+        RUNGE_KUTTA_2,             /**< 2nd order Runge-Kutta */
+        RUNGE_KUTTA_4,             /**< 4th order Runge-Kutta */
+        RUSH_LARSEN,               /**< Rush-Larsen method */
+        GENERALISED_RUSH_LARSEN_1, /**< Generalised Rush-Larsen method */
+        GENERALISED_RUSH_LARSEN_2  /**< Generalised Rush-Larsen method */
+    };
+};
+
+/**
  * This class defines various utility methods used within this project, for tasks such as loading CellML models
  * and generating code with particular solver/optimisation properties.
  */
@@ -54,6 +77,26 @@ public:
      * Read the CellML project folder and return all the .cellml files defined therein.
      */
     static std::vector<FileFinder> GetListOfModels();
+
+    /**
+     * Get the human readable name associated with a solver code.
+     * @param solver  the solver code
+     * @return  the solver's name
+     */
+    static std::string GetSolverName(Solvers::Value solver);
+
+    /**
+     * Dynamically convert a CellML file into C++ code, compile it and load the resulting model object.
+     *
+     * @param rModelFile  the CellML file to convert
+     * @param rOutputDir  handler for the folder in which to create generated code
+     * @param solver  which cell model solver to use
+     * @param useLookupTables  whether to use lookup tables to speed up simulations
+     */
+    static boost::shared_ptr<AbstractCardiacCellInterface> CreateCellModel(const FileFinder& rModelFile,
+                                                                           OutputFileHandler& rOutputDir,
+                                                                           Solvers::Value solver,
+                                                                           bool useLookupTables);
 
     /**
      * Dynamically convert a CellML file into C++ code, compile it and load the resulting model object.

@@ -37,10 +37,14 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 
-#include "CellMLLoader.hpp"
-#include "ColumnDataReader.hpp"
-#include "RegularStimulus.hpp"
 #include "MathsCustomFunctions.hpp"
+#include "ColumnDataReader.hpp"
+
+#include "CellMLLoader.hpp"
+#include "RegularStimulus.hpp"
+#include "AbstractCvodeCell.hpp"
+#include "RungeKutta2IvpOdeSolver.hpp"
+#include "RungeKutta4IvpOdeSolver.hpp"
 
 bool finder_sort(const FileFinder& rf1, const FileFinder& rf2)
 {
@@ -54,6 +58,131 @@ std::vector<FileFinder> CellModelUtilities::GetListOfModels()
     std::sort(models.begin(), models.end(), finder_sort);
     return models;
 }
+
+std::string CellModelUtilities::GetSolverName(Solvers::Value solver)
+{
+    std::string name;
+    switch (solver)
+    {
+        case Solvers::CVODE_ANALYTIC_J:
+            name = "CVODE (analytic Jacobian)";
+            break;
+        case Solvers::CVODE_NUMERICAL_J:
+            name = "CVODE (numerical Jacobian)";
+            break;
+        case Solvers::BACKWARD_EULER:
+            name = "Backward Euler";
+            break;
+        case Solvers::RUSH_LARSEN:
+            name = "Rush-Larsen";
+            break;
+        case Solvers::GENERALISED_RUSH_LARSEN_1:
+            name = "Generalised Rush-Larsen 1";
+            break;
+        case Solvers::GENERALISED_RUSH_LARSEN_2:
+            name = "Generalised Rush-Larsen 2";
+            break;
+        case Solvers::FORWARD_EULER:
+            name = "Forward Euler";
+            break;
+        case Solvers::RUNGE_KUTTA_2:
+            name = "Runge-Kutta (2nd order)";
+            break;
+        case Solvers::RUNGE_KUTTA_4:
+            name = "Runge-Kutta (4th order)";
+            break;
+        default:
+            EXCEPTION("Unknown solver code!");
+            break;
+    }
+    return name;
+}
+
+boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellModel(const FileFinder& rModelFile,
+                                                                                    OutputFileHandler& rOutputDir,
+                                                                                    Solvers::Value solver,
+                                                                                    bool useLookupTables)
+{
+    // Figure out code generation options
+    std::vector<std::string> options;
+    switch (solver)
+    {
+        case Solvers::CVODE_ANALYTIC_J:
+        case Solvers::CVODE_NUMERICAL_J:
+            options.push_back("--cvode");
+            break;
+        case Solvers::BACKWARD_EULER:
+            options.push_back("--backward-euler");
+            break;
+        case Solvers::RUSH_LARSEN:
+            options.push_back("--rush-larsen");
+            break;
+        case Solvers::GENERALISED_RUSH_LARSEN_1:
+            options.push_back("--grl1");
+            break;
+        case Solvers::GENERALISED_RUSH_LARSEN_2:
+            options.push_back("--grl2");
+            break;
+        case Solvers::FORWARD_EULER:
+        case Solvers::RUNGE_KUTTA_2:
+        case Solvers::RUNGE_KUTTA_4:
+            break;
+        default:
+            EXCEPTION("Unexpected solver passed to CreateCellModel.");
+            break;
+    }
+    if (useLookupTables)
+    {
+        options.push_back("--opt");
+    }
+
+    // Load the cell model
+    boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CreateCellModel(rModelFile, rOutputDir, options);
+
+    // Check that we have the features we're expecting, and specify solver if not built-in
+    switch (solver)
+    {
+        case Solvers::CVODE_ANALYTIC_J:
+        case Solvers::CVODE_NUMERICAL_J:
+        {
+            boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
+            if (solver == Solvers::CVODE_ANALYTIC_J)
+            {
+                if (!p_cvode_cell->GetUseAnalyticJacobian())
+                {
+                    EXCEPTION("No analytic Jacobian available for cell model " << rModelFile.GetLeafNameNoExtension());
+                }
+            }
+            else
+            {
+                p_cvode_cell->ForceUseOfNumericalJacobian();
+            }
+            break;
+        }
+        case Solvers::RUNGE_KUTTA_2:
+        {
+            boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
+            p_cell->SetSolver(p_rk2_solver);
+            break;
+        }
+        case Solvers::RUNGE_KUTTA_4:
+        {
+            boost::shared_ptr<AbstractIvpOdeSolver> p_rk4_solver(new RungeKutta4IvpOdeSolver());
+            p_cell->SetSolver(p_rk4_solver);
+            break;
+        }
+        default:
+            break; // Nothing to do here
+    }
+    // Check that the lookup tables exist if they should
+    if (useLookupTables && p_cell->GetLookupTableCollection() == NULL)
+    {
+        EXCEPTION("No lookup tables implemented in optimised cell model " << rModelFile.GetLeafNameNoExtension());
+    }
+
+    return p_cell;
+}
+
 
 boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellModel(
         const FileFinder& rModelFile,

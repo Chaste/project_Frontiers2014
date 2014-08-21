@@ -39,123 +39,159 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <cxxtest/TestSuite.h>
 
 #include <fstream>
+#include <algorithm>
+#include <map>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/pointer_cast.hpp>
 
-#include "FileFinder.hpp"
 #include "CellModelUtilities.hpp"
+
+#include "FileFinder.hpp"
 #include "AbstractCardiacCell.hpp"
+#include "PetscTools.hpp"
 #include "Warnings.hpp"
+#include "IsNan.hpp"
+
+#include "PetscSetupAndFinalize.hpp"
 
 class TestCalculateRequiredTimesteps : public CxxTest::TestSuite
 {
 public:
+    /**
+     * This test simulates each model with each (single-cell) method, reducing the time step used until the error metric
+     * is within 5% of that achieved with CVODE in TestGeneratingReferenceData.hpp.
+     */
     void TestCalculateTimesteps() throw (Exception)
     {
-        /**
-         * First load up the error reference data from CVODE at different tolerances
-         */
+        /* First load up the error reference data from CVODE at different tolerances. */
         LoadErrorSummaryFile();
 
+        /* Now iterate over model / solver combinations to find a suitable time step. */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
+        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::FORWARD_EULER)(Solvers::RUNGE_KUTTA_2)(Solvers::RUNGE_KUTTA_4)
+                (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
-        // Loop over each model we have
+        // The result data structure
+        std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> > required_timesteps;
+
+        // Create the output folder structure before isolating processes, to avoid race conditions
+        OutputFileHandler test_base_handler("Frontiers/CalculateTimesteps/", false);
         BOOST_FOREACH(FileFinder& r_model, models)
         {
-            /* Generate the cell model from CellML. */
+            OutputFileHandler model_handler("Frontiers/CalculateTimesteps/" + r_model.GetLeafNameNoExtension(), false);
+        }
+
+        PetscTools::IsolateProcesses();
+        unsigned iteration = 0u;
+        BOOST_FOREACH(FileFinder& r_model, models)
+        {
             std::string model_name = r_model.GetLeafNameNoExtension();
 
-            // Check if there is a reference trace for this model...
-            bool reference_traces_exist = false;
-            for (std::map<std::string,double>::iterator it = mErrorResults.begin();
-                 it!=mErrorResults.end();
-                 ++it)
-            {
-                if (it->first == model_name)
-                {
-                    reference_traces_exist = true;
-                    break;
-                }
-            }
-            // If there isn't, then skip it.
-            if (!reference_traces_exist)
+            // Check if there is a reference trace for this model, and skip it if not
+            if (mErrorResults.find(model_name) == mErrorResults.end())
             {
                 continue;
             }
 
-            OutputFileHandler handler("Frontiers/CalculateTimesteps/" + model_name);
-            std::vector<std::string> options = boost::assign::list_of("--Wu"); // Just a 'plain' model.
-            boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, options);
-            double period = CellModelUtilities::GetDefaultPeriod(p_cell, 1000.0);
-
-            /* Set up solver parameters. */
-
-            double timestep = 0.2; // immediately divided by two so then a divisor of printing step.
-            bool within_tolerance = false;
-            std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
-
-            do
+            BOOST_FOREACH(Solvers::Value solver, solvers)
             {
-                timestep/=2.0;
-                p_cell->SetTimestep(timestep);
-                p_cell->SetStateVariables(initial_conditions);
-
-                OdeSolution solution;
-                try
+                if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
                 {
-                    solution = p_cell->Compute(0.0, period, 0.1);
-                    std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
-                    std::vector<double>& r_times = solution.rGetTimes();
-                    for (unsigned i=0; i<voltages.size(); i++)
+                    continue; // Let another process do this combination
+                }
+
+                /* Generate the cell model from CellML. */
+                std::stringstream folder_name;
+                folder_name << "Frontiers/CalculateTimesteps/" << model_name << "/" << solver;
+                OutputFileHandler handler(folder_name.str());
+                boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, false);
+                double period = CellModelUtilities::GetDefaultPeriod(p_cell, 1000.0);
+
+                /* Set up solver parameters. */
+                double timestep = 0.2; // immediately divided by two so then a divisor of printing step.
+                bool within_tolerance = false;
+                std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
+
+                do
+                {
+                    timestep /= 2.0;
+                    p_cell->SetTimestep(timestep);
+                    p_cell->SetStateVariables(initial_conditions);
+
+                    OdeSolution solution;
+                    try
                     {
-                        if (std::isnan(voltages[i]))
+                        solution = p_cell->Compute(0.0, period, 0.1);
+                        std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
+                        std::vector<double>& r_times = solution.rGetTimes();
+                        for (unsigned i=0; i<voltages.size(); i++)
                         {
-                            EXCEPTION("Voltage at t(" << r_times[i] << ") = " << voltages[i] << ".");
+                            if (std::isnan(voltages[i]))
+                            {
+                                EXCEPTION("Voltage at t(" << r_times[i] << ") = " << voltages[i] << ".");
+                            }
                         }
                     }
-                }
-                catch (const Exception &e)
-                {
-                    std::cout << model_name << " failed to solve with timestep " << timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
-                    continue;
-                }
+                    catch (const Exception &e)
+                    {
+                        std::cout << model_name << " failed to solve with timestep " << timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
+                        continue;
+                    }
 
-                std::stringstream filename;
-                filename << model_name << "_deltaT_" << timestep;
-                solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
-                double error = CellModelUtilities::GetError(solution, model_name);
-                std::cout << model_name << ": 'Forward Euler error with timestep of " << timestep << "' = "
-                        << error << ", required error = " << mErrorResults[model_name] << "." << std::endl << std::flush;
-                within_tolerance = (error<=mErrorResults[model_name]);
+                    std::stringstream filename;
+                    filename << model_name << "_deltaT_" << timestep;
+                    solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
+                    double error = CellModelUtilities::GetError(solution, model_name);
+                    std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << " error with timestep of " << timestep << "' = "
+                            << error << ", required error = " << mErrorResults[model_name] << "." << std::endl;
+                    within_tolerance = (error <= mErrorResults[model_name] * 1.05);
+                }
+                while (!within_tolerance && timestep >= 5e-6);
+
+                // Record the timestep we needed
+                std::pair<std::string, Solvers::Value> key(model_name, solver);
+                std::pair<double, bool> result(timestep, within_tolerance);
+                required_timesteps[key] = result;
             }
-            while (!within_tolerance && timestep>=5e-6);
-
-            // Record the timestep we needed
-            std::pair<double, bool> result(timestep, within_tolerance);
-            mRequiredForwardEulerTimestep[model_name] = result;
         }
 
-        /* Write the summary file, and copy it to the repository */
+        /* Write the summary file per process. */
         FileFinder this_file(__FILE__);
         FileFinder data_folder("data", this_file);
-        OutputFileHandler handler("Frontiers/CalculateTimesteps", false);
-        out_stream p_file = handler.OpenOutputFile("forward_euler_steps.txt");
-        for (std::map<std::string,std::pair<double,bool> >::iterator it = mRequiredForwardEulerTimestep.begin();
-             it!=mRequiredForwardEulerTimestep.end();
-             ++it)
+        out_stream p_file = test_base_handler.OpenOutputFile("required_steps_", PetscTools::GetMyRank(), ".txt");
+        typedef std::pair<std::pair<std::string, Solvers::Value>, std::pair<double,bool> > ItemType;
+        BOOST_FOREACH(ItemType item, required_timesteps)
         {
-            *p_file << it->first << "\t" << (it->second).first << "\t" << (it->second).second << std::endl;
+            // Writes model, solver, timestep, within_tolerance (tab separated)
+            *p_file << item.first.first << "\t" << item.first.second << "\t" << item.second.first << "\t" << item.second.second << std::endl;
         }
         p_file->close();
 
-        FileFinder summary_file = handler.FindFile("forward_euler_steps.txt");
-        summary_file.CopyTo(data_folder);
+        /* Turn off process isolation and wait for all files to be written. */
+        PetscTools::IsolateProcesses(false);
+        PetscTools::Barrier("TestCalculateTimesteps");
+
+        /* Master process writes the concatenated file. */
+        if (PetscTools::AmMaster())
+        {
+            out_stream p_combined_file = test_base_handler.OpenOutputFile("required_steps.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+            {
+                std::stringstream process_file_name;
+                process_file_name << "required_steps_" << i << ".txt";
+                std::ifstream process_file(process_file_name.str(), std::ios::binary);
+                *p_combined_file << process_file.rdbuf();
+            }
+            p_combined_file->close();
+            // Copy to repository
+            FileFinder summary_file = test_base_handler.FindFile("required_steps.txt");
+            summary_file.CopyTo(data_folder);
+        }
     }
 
 private:
     std::map<std::string, double> mErrorResults;
-    std::map<std::string, std::pair<double,bool> > mRequiredForwardEulerTimestep; // timestep and whether it met CVODE tolerances.
 
     /**
      * A helper method that populates mErrorResults from the stored data file in
