@@ -132,7 +132,7 @@ public:
             }
 
             /* Perform another simulation with lower CVODE tolerances, to give us an error bound to set other solvers' time steps with. */
-            p_cvode_cell->SetTolerances(1e-5 /* relative */, 1e-7 /* absolute */);
+            p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
             p_cvode_cell->ResetToInitialConditions();
             solution = p_cvode_cell->Compute(0.0, period, 0.1);
 
@@ -151,9 +151,9 @@ public:
         // Each process writes its own file
         out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
         typedef std::pair<std::string, double> StringDoublePair;
-        BOOST_FOREACH(StringDoublePair& r_error, error_results)
+        BOOST_FOREACH(StringDoublePair error, error_results)
         {
-            *p_error_file << r_error.first << "\t" << r_error.second << std::endl;
+            *p_error_file << error.first << "\t" << error.second << std::endl;
         }
         p_error_file->close();
 
@@ -168,8 +168,10 @@ public:
             for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
             {
                 std::stringstream process_file_name;
-                process_file_name << "error_summary_" << i << ".txt";
-                std::ifstream process_file(process_file_name.str(), std::ios::binary);
+                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << "error_summary_" << i << ".txt";
+                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
+                TS_ASSERT(process_file.is_open());
+                TS_ASSERT(process_file.good());
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
