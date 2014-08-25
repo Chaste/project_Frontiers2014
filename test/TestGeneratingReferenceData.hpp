@@ -43,6 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 
@@ -93,13 +94,13 @@ public:
             OutputFileHandler handler("Frontiers/ReferenceTraces/" + model_name);
             std::vector<std::string> options = boost::assign::list_of("--Wu")("--cvode");
             boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, options);
-            double period = CellModelUtilities::GetDefaultPeriod(p_cell, 1000.0);
+            double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
             /* Set up solver parameters. */
             boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
             p_cvode_cell->SetTolerances(1e-7 /* relative */, 1e-9 /* absolute */);
 
-            /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms) */
+            /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms). */
             OdeSolution solution;
             try
             {
@@ -120,10 +121,10 @@ public:
             results_info.CopyTo(repo_data);
 
             /* Check that the solution looks like an action potential. */
-            std::vector<double> voltages = solution.GetVariableAtIndex(p_cell->GetVoltageIndex());
-            CellProperties props(voltages, solution.rGetTimes());
             try
             {
+                std::vector<double> voltages = solution.GetVariableAtIndex(p_cell->GetVoltageIndex());
+                CellProperties props(voltages, solution.rGetTimes());
                 props.GetLastActionPotentialDuration(90.0);
             }
             catch (const Exception& r_e)
@@ -148,8 +149,9 @@ public:
          * concatenates these and copies the resulting single file into the Chaste repository.
          */
 
-        // Each process writes its own file
+        // Each process writes its own file, at high precision
         out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
+        *p_error_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
         typedef std::pair<std::string, double> StringDoublePair;
         BOOST_FOREACH(StringDoublePair error, error_results)
         {

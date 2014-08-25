@@ -111,11 +111,13 @@ public:
 
     /**
      * Get the pacing cycle length to use when simulating a cell.
+     * If the cell has no RegularStimulus attached, we use a default of 1000ms.
+     * If the stimulus period is not a multiple of 1ms, we round down to the nearest millisecond,
+     * to ensure that time steps or sampling intervals used for simulation will divide the simulation duration exactly.
      *
      * @param pCell  the cell to extract stimulus information from
-     * @param defaultPeriod  default period if cell has no RegularStimulus
      */
-    static double GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell, double defaultPeriod);
+    static double GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
 
     /**
      * Compare a simulation result against reference data, and compute a single error metric.

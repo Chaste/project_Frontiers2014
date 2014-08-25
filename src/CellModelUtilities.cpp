@@ -36,13 +36,15 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "CellModelUtilities.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 #include "MathsCustomFunctions.hpp"
 #include "ColumnDataReader.hpp"
 
 #include "CellMLLoader.hpp"
-#include "RegularStimulus.hpp"
+#include "AbstractUntemplatedParameterisedSystem.hpp"
 #include "AbstractCvodeCell.hpp"
+#include "RegularStimulus.hpp"
 #include "RungeKutta2IvpOdeSolver.hpp"
 #include "RungeKutta4IvpOdeSolver.hpp"
 
@@ -221,13 +223,24 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
     return p_cell;
 }
 
-double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell, double defaultPeriod)
+double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell)
 {
-    double period = defaultPeriod;
+    double period = 1000.0;
     boost::shared_ptr<RegularStimulus> p_stim = boost::dynamic_pointer_cast<RegularStimulus>(pCell->GetStimulusFunction());
     if (p_stim)
     {
         period = p_stim->GetPeriod();
+    }
+    else
+    {
+        std::string name = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->GetSystemName();
+        std::cout << "Note: no regular stimulus found for " << name << " so using default period of 1000ms." << std::endl;
+    }
+    if (floor(period) != period)
+    {
+        std::string name = boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->GetSystemName();
+        std::cout << "Note: rounding period for " << name << " from " << period << " to " << floor(period) << "." << std::endl;
+        period = floor(period);
     }
     return period;
 }

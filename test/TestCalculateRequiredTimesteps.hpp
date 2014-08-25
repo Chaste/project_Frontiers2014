@@ -36,23 +36,29 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTCALCULATEREQUIREDTIMESTEPS_HPP_
 #define TESTCALCULATEREQUIREDTIMESTEPS_HPP_
 
+// The testing framework we use
 #include <cxxtest/TestSuite.h>
 
+// Standard C++ libraries
 #include <fstream>
+#include <iomanip>
 #include <algorithm>
 #include <map>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #include <boost/pointer_cast.hpp>
 
+// Headers specific to this project
 #include "CellModelUtilities.hpp"
 
+// General Chaste headers
 #include "FileFinder.hpp"
 #include "AbstractCardiacCell.hpp"
 #include "PetscTools.hpp"
 #include "Warnings.hpp"
 #include "IsNan.hpp"
 
+// This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
 
 class TestCalculateRequiredTimesteps : public CxxTest::TestSuite
@@ -72,10 +78,7 @@ public:
         std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::FORWARD_EULER)(Solvers::RUNGE_KUTTA_2)(Solvers::RUNGE_KUTTA_4)
                 (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
-        // The result data structure
-        std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> > required_timesteps;
-
-        // Create the output folder structure before isolating processes, to avoid race conditions
+        /* Create the output folder structure before isolating processes, to avoid race conditions. */
         OutputFileHandler test_base_handler("Frontiers/CalculateTimesteps/", false);
         BOOST_FOREACH(FileFinder& r_model, models)
         {
@@ -86,6 +89,8 @@ public:
         FileFinder this_file(__FILE__);
         FileFinder data_folder("data", this_file);
         out_stream p_file = test_base_handler.OpenOutputFile("required_steps_", PetscTools::GetMyRank(), ".txt");
+        // Ensure time steps are written at high precision
+        *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
 
         /* Iterate over model/solver combinations, distributed over processes. */
         PetscTools::IsolateProcesses();
@@ -114,23 +119,18 @@ public:
                 folder_name << "Frontiers/CalculateTimesteps/" << model_name << "/" << solver;
                 OutputFileHandler handler(folder_name.str());
                 boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, false);
-                double period = CellModelUtilities::GetDefaultPeriod(p_cell, 1000.0);
+                double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                 /* Set up solver parameters. */
                 double sampling_time = 0.1;
-                double timestep = 0.2; // immediately divided by two so then a divisor of sampling time.
+                unsigned timestep_divisor = 1u;
                 bool within_tolerance = false;
                 std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
-                
-                /* Ensure that the timestep will divide the simulation duration.
-                 * This avoids a trap in Rush-Larsen cell models.
-                 */
-                unsigned num_sample_steps = (unsigned) floor(period/sampling_time + 0.5);
-                period = sampling_time * num_sample_steps;
 
                 do
                 {
-                    timestep /= 2.0;
+                    double timestep = sampling_time / timestep_divisor;
+                    timestep_divisor *= 2; // Ready for next iteration
                     p_cell->SetTimestep(timestep);
                     p_cell->SetStateVariables(initial_conditions);
 
@@ -163,7 +163,7 @@ public:
                         std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << " error with timestep of " << timestep << "' = "
                                 << error << ", required error = " << mErrorResults[model_name] << "." << std::endl;
                         within_tolerance = (error <= mErrorResults[model_name] * 1.05);
-                    
+
                         // Write result to file, tab separated
                         *p_file << model_name << "\t" << solver << "\t" << timestep << "\t" << error << "\t" << within_tolerance << std::endl;
                     }
@@ -174,12 +174,8 @@ public:
                         WARNING(r_e.GetMessage());
                     }
                 }
-                while (!within_tolerance && timestep >= 5e-6);
-
-                // Record the timestep we needed
-                std::pair<std::string, Solvers::Value> key(model_name, solver);
-                std::pair<double, bool> result(timestep, within_tolerance);
-                required_timesteps[key] = result;
+                while (!within_tolerance && timestep_divisor <= 2048);
+                /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
             }
         }
 
