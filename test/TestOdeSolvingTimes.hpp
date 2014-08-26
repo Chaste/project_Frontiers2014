@@ -36,26 +36,39 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTODESOLVINGTIMES_HPP_
 #define TESTODESOLVINGTIMES_HPP_
 
-#include <boost/shared_ptr.hpp>
+// The testing framework we use
 #include <cxxtest/TestSuite.h>
 
+// Standard C++ libraries
 #include <iostream>
+#include <iomanip>
 #include <boost/foreach.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/assign/list_of.hpp>
 
+// Headers specific to this project
 #include "CellModelUtilities.hpp"
 
+// General Chaste headers
 #include "Timer.hpp"
+#include "Warnings.hpp"
+#include "ChasteBuildRoot.hpp"
 
+// General Chaste headers related to cardiac cells - most/all are now removable?
 #include "CvodeAdaptor.hpp"
 #include "EulerIvpOdeSolver.hpp"
 #include "RungeKutta2IvpOdeSolver.hpp"
 #include "RungeKutta4IvpOdeSolver.hpp"
 #include "RegularStimulus.hpp"
 
+// These are temporary
 #include "shannon_wang_puglisi_weber_bers_2004.hpp"
 #include "shannon_wang_puglisi_weber_bers_2004Opt.hpp"
 #include "shannon_wang_puglisi_weber_bers_2004Cvode.hpp"
 #include "shannon_wang_puglisi_weber_bers_2004CvodeOpt.hpp"
+
+// This header is needed to allow us to run in parallel
+#include "PetscSetupAndFinalize.hpp"
 
 class TestOdeSolvingTimes : public CxxTest::TestSuite
 {
@@ -72,150 +85,136 @@ public:
 	}
 
 	/**
-	 * For 1000 APs.
+	 * Time solving all models under most solvers, for 10 paces.
 	 */
-	void TestShannonSolvingTimes() throw (Exception)
+	void TestSolvingTimes() throw (Exception)
 	{
-	    FileFinder model("projects/Frontiers2014/cellml/shannon_wang_puglisi_weber_bers_2004.cellml", RelativeTo::ChasteSourceRoot);
-	    std::vector<std::string> options;
-	    OutputFileHandler handler("TestOdeSolvingTimes_TestShannon_Euler");
+	    /* First load the suggested time steps to use for non-adaptive solvers. */
+        LoadTimestepFile();
+        LoadErrorSummaryFile();
 
-		// Set up a default solver and a stimulus
-		boost::shared_ptr<AbstractIvpOdeSolver> p_euler_solver(new EulerIvpOdeSolver());
-		boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
-		boost::shared_ptr<AbstractIvpOdeSolver> p_rk4_solver(new RungeKutta4IvpOdeSolver());
-		boost::shared_ptr<CvodeAdaptor> p_cvode_adaptor(new CvodeAdaptor());
-        boost::shared_ptr<AbstractStimulusFunction> p_stimulus(new RegularStimulus(-25,5,1000,1));
+        /* The model / solver combinations to find a suitable time step for. */
+        std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
+        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::CVODE_ANALYTIC_J)(Solvers::CVODE_NUMERICAL_J)
+                                                                    (Solvers::FORWARD_EULER)(Solvers::RUNGE_KUTTA_2)
+                                                                    (Solvers::RUNGE_KUTTA_4)(Solvers::RUSH_LARSEN)
+                                                                    (Solvers::GENERALISED_RUSH_LARSEN_1)
+                                                                    (Solvers::GENERALISED_RUSH_LARSEN_2);
 
-        boost::shared_ptr<AbstractCardiacCellInterface> shannon_euler = CellModelUtilities::CreateCellModel(model, handler, options);
-        shannon_euler->SetStimulusFunction(p_stimulus);
+        /* Create the output folder structure before isolating processes, to avoid race conditions. */
+        OutputFileHandler test_base_handler("Frontiers/SingleCellTimings/", false);
+        BOOST_FOREACH(FileFinder& r_model, models)
+        {
+            OutputFileHandler model_handler("Frontiers/SingleCellTimings/" + r_model.GetLeafNameNoExtension(), false);
+        }
 
-//		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
-		boost::shared_ptr<AbstractCardiacCell> shannon_euler_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_euler_solver,p_stimulus));
+        /* Each process writes its timings to a separate file as we go along, in case of catastrophe. */
+        out_stream p_file = test_base_handler.OpenOutputFile("timings_", PetscTools::GetMyRank(), ".txt");
+        *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
-		boost::shared_ptr<AbstractCardiacCell> shannon_rk2(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_rk2_solver,p_stimulus));
-		boost::shared_ptr<AbstractCardiacCell> shannon_rk2_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_rk2_solver,p_stimulus));
+        /* Iterate over model/solver combinations, distributed over processes. */
+        PetscTools::IsolateProcesses();
+        unsigned iteration = 0u;
+        BOOST_FOREACH(FileFinder& r_model, models)
+        {
+            std::string model_name = r_model.GetLeafNameNoExtension();
 
-		boost::shared_ptr<AbstractCardiacCell> shannon_rk4(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_rk4_solver,p_stimulus));
-		boost::shared_ptr<AbstractCardiacCell> shannon_rk4_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_rk4_solver,p_stimulus));
+            // Check if there is a reference error metric for this model, and skip it if not
+            if (mErrorResults.find(model_name) == mErrorResults.end())
+            {
+                std::cout << "No reference error metric for model " << model_name << "; skipping." << std::endl;
+                WARNING("No reference error metric for model " << model_name << "; skipping.");
+                continue;
+            }
 
-		boost::shared_ptr<AbstractCardiacCell> shannon_cvode_adaptor(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_cvode_adaptor,p_stimulus));
-		boost::shared_ptr<AbstractCardiacCell> shannon_cvode_adaptor_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLOpt(p_cvode_adaptor,p_stimulus));
-        
-		// Solver is ignored by native CVODE cells.
-		boost::shared_ptr<AbstractCvodeCell> shannon_cvode(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvode(p_euler_solver,p_stimulus));
-		boost::shared_ptr<AbstractCvodeCell> shannon_cvode_opt(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvodeOpt(p_euler_solver,p_stimulus));
+            BOOST_FOREACH(Solvers::Value solver, solvers)
+            {
+                if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+                {
+                    continue; // Let another process do this combination
+                }
 
-		double start_time = 0;
-		double end_time = 10*1000;
-		std::cout << "Timings for " << end_time/1000.0 << "s of 1Hz pacing:\n";
+                std::string solver_name = CellModelUtilities::GetSolverName(solver);
+                std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'";
 
-		///\todo IMPORTANT
-		// figure out how to set the timesteps for the fixed methods 'fairly'
-		// at present they are set so that all of them are just about stable.
-		// But we probably want to set them for equivalent levels of accuracy.
+                /* Get timestep to use if available.
+                 * Note that the CreateCellModel method above sets suitable tolerances for CVODE.
+                 */
+                double suggested_timestep = 0.0; // Signifies 'not set'
+                std::pair<std::string, Solvers::Value> model_and_solver(model_name, solver);
+                std::map<std::pair<std::string, Solvers::Value>, double>::iterator dt_iter = mTimesteps.find(model_and_solver);
+                if (dt_iter != mTimesteps.end())
+                {
+                    suggested_timestep = dt_iter->second;
+                    std::cout << " using timestep " << suggested_timestep;
+                }
+                std::cout << std::endl;
 
-		// A standard Forward Euler Solve.
-		shannon_euler->SetTimestep(0.0025);
-		Timer::Reset();
-		shannon_euler->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("1. Forward-Euler");
+                try
+                {
+                    /* Generate the cell model from CellML. */
+                    std::stringstream folder_name;
+                    folder_name << "Frontiers/SingleCellTimings/" << model_name << "/" << solver;
+                    OutputFileHandler handler(folder_name.str());
+                    bool use_lookup_tables = false;
+                    boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
+                    double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
-		// An Opt Forward Euler Solve.
-		shannon_euler_opt->SetTimestep(0.0025);
-		// Set up lookup tables
-		shannon_euler_opt->SolveAndUpdateState(-0.0025, 0);
+                    /* Set timestep if available. */
+                    if (suggested_timestep > 0.0)
+                    {
+                        p_cell->SetTimestep(suggested_timestep);
+                    }
 
-		Timer::Reset();
-		shannon_euler_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("2. Forward-Euler Opt");
+                    /* Run a single pace to check accuracy. */
+                    OdeSolution solution = p_cell->Compute(0.0, period, 0.1);
+                    solution.WriteToFile(handler.GetRelativePath(), model_name, "ms", 1, false, 16, false);
+                    double error = CellModelUtilities::GetError(solution, model_name);
+                    std::cout << "Model " << model_name << " solver '" << solver_name << "' square error " << error << std::endl;
+                    if (error > mErrorResults[model_name] * 1.05)
+                    {
+                        WARNING("Model " << model_name << " with solver '" << solver_name << "'"
+                                << (use_lookup_tables ? " and lookup tables" : "")
+                                << " did not reach error target.");
+                    }
 
-		// A standard RK2 Solve.
-		shannon_rk2->SetTimestep(0.01);
-		Timer::Reset();
-		shannon_rk2->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("3. Runge-Kutta 2nd order");
+                    /* Time simulating multiple paces. */
+                    double elapsed_time = TimeSimulation(p_cell, 10u);
+                    std::cout << "Model " << model_name << " solver '" << solver_name << "' took time " << elapsed_time << "s" << std::endl;
 
-		// An Opt RK2 Solve.
-		shannon_rk2_opt->SetTimestep(0.01);
-		Timer::Reset();
-		shannon_rk2_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("4. Runge-Kutta 2nd order Opt");
+                    /* Record the result. */
+                    *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << ChasteBuildType() << "\t" << elapsed_time << std::endl;
+                }
+                catch (const Exception& r_e)
+                {
+                    WARNING("Error simulating model " << model_name << " with solver '" << solver_name << "': " << r_e.GetMessage());
+                    std::cout << "Error simulating model " << model_name << " with solver '" << solver_name << "': " << r_e.GetMessage() << std::endl;
+                }
+            }
+        }
 
-		// A standard RK4 Solve.
-		shannon_rk4->SetTimestep(0.025);
-		Timer::Reset();
-		shannon_rk4->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("5. Runge-Kutta 4th order ");
+        /* Close each process' results file. */
+        p_file->close();
 
-		// An Opt RK4 Solve.
-		shannon_rk4_opt->SetTimestep(0.025);
-		Timer::Reset();
-		shannon_rk4_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("6. Runge-Kutta 4th order Opt");
+        /* Turn off process isolation and wait for all files to be written. */
+        PetscTools::IsolateProcesses(false);
+        PetscTools::Barrier("TestSolvingTimes");
 
-
-		p_cvode_adaptor->SetMaxSteps(1e6);
-		p_cvode_adaptor->SetTolerances(1e-5, 1e-7); // Match defaults for native cell
-		shannon_cvode_adaptor->SetTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
-		Timer::Reset();
-		shannon_cvode_adaptor->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("7. CVODE Adaptor (no resetting)");
-
-		shannon_cvode_adaptor_opt->SetTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
-		Timer::Reset();
-		shannon_cvode_adaptor_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("8. CVODE Adaptor Opt (no resetting)");
-
-		// A standard native CVODE solve
-		shannon_cvode->SetMaxSteps(1e6);
-		shannon_cvode->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
-
-		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), true);
-		shannon_cvode->ForceUseOfNumericalJacobian(true);
-		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), false);
-
-		Timer::Reset();
-		shannon_cvode->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("9. CVODE Numerical Jacobian (native, no resetting)");
-
-		shannon_cvode->ForceUseOfNumericalJacobian(false);
-		TS_ASSERT_EQUALS(shannon_cvode->GetUseAnalyticJacobian(), true);
-		shannon_cvode->ResetToInitialConditions();
-
-		Timer::Reset();
-		shannon_cvode->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("10. CVODE Analytic Jacobian (native, no resetting)");
-
-		// A standard native CVODE solve
-		shannon_cvode_opt->SetMaxSteps(1e6);
-		shannon_cvode_opt->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
-
-		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), true);
-		shannon_cvode_opt->ForceUseOfNumericalJacobian(true);
-		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), false);
-
-		// IMPORTANT
-		// An initial call to solve on Opt cells with CVODE seems to take about 0.9 seconds.
-		// It might be setting up the lookup tables for later use, so
-		// not really fair to time this, but we should make sure users know that they shouldn't
-		// be setting up a new model each time with Opt cells.
-		//
-		// (doesn't seem to be the case for other sorts of cells - are there lookup tables for
-		// the analytic jacobian entries that get calculated too?)
-		shannon_cvode_opt->SolveAndUpdateState(-0.01, 0);
-
-		Timer::Reset();
-		shannon_cvode_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("11. CVODE Opt Numerical Jacobian (native, no resetting)");
-
-		shannon_cvode_opt->ForceUseOfNumericalJacobian(false);
-		TS_ASSERT_EQUALS(shannon_cvode_opt->GetUseAnalyticJacobian(), true);
-		shannon_cvode_opt->ResetToInitialConditions();
-
-		Timer::Reset();
-		shannon_cvode_opt->SolveAndUpdateState(start_time, end_time);
-		Timer::Print("12. CVODE Opt Analytic Jacobian (native, no resetting)");
+        /* Master process writes the concatenated file. */
+        if (PetscTools::AmMaster())
+        {
+            out_stream p_combined_file = test_base_handler.OpenOutputFile("timings.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+            {
+                std::stringstream process_file_name;
+                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << "timings_" << i << ".txt";
+                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
+                TS_ASSERT(process_file.is_open());
+                TS_ASSERT(process_file.good());
+                *p_combined_file << process_file.rdbuf();
+            }
+            p_combined_file->close();
+        }
 	}
 
 	// I wanted to see how much slower CVODE would be in a tissue situation (pretend there is a PDE timestep 0.01ms).
@@ -277,29 +276,184 @@ public:
     }
 
 private:
-	/* Utility methods used by the tests above go here.
+	/*
+	 * Utility methods used by the tests above go here.
 	 */
 
-//	/**
-//	 * Find out how long it takes to simulate the given model.
-//	 * The cell will be reset to initial conditions prior to simulation.
-//	 * We assume the cell has a regular square wave stimulus defined.
-//	 *
-//	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
-//	 *
-//	 * @param pCell  the cell model to simulate, with solver attached
-//	 * @param numPaces  the number of simulated paces to time
-//	 * @return  elapsed wall clock time, in seconds
-//	 */
-//	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-//	                      unsigned numPaces)
-//	{
-//	    pCell->ResetToInitialConditions();
-//	    double period = CellModelUtilities::GetDefaultPeriod(pCell, 1000.0);
-//	    Timer::Reset();
-//	    pCell->SolveAndUpdateState(0.0, numPaces * period);
-//	    return Timer::GetElapsedTime();
-//	}
+	/**
+	 * Find out how long it takes to simulate the given model.
+	 * The cell will be reset to initial conditions prior to simulation.
+	 * We assume the cell has a regular square wave stimulus defined.
+	 *
+	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
+	 *
+	 * @param pCell  the cell model to simulate, with solver attached
+	 * @param numPaces  the number of simulated paces to time
+	 * @return  elapsed wall clock time, in seconds
+	 */
+	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+	                      unsigned numPaces)
+	{
+	    boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
+	    double period = CellModelUtilities::GetDefaultPeriod(pCell);
+	    Timer::Reset();
+	    pCell->SolveAndUpdateState(0.0, numPaces * period);
+	    return Timer::GetElapsedTime();
+	}
+
+    /**
+     * A map between the model/solver and the timestep which gave a 'refined enough' result.
+     * See TestCalculateRequiredTimesteps.hpp
+     */
+    std::map<std::pair<std::string, Solvers::Value>, double> mTimesteps;
+
+    /**
+     * A map between the model/solver and whether the timestep in #mTimesteps
+     * gave a 'refined enough' result.
+     * See TestCalculateRequiredTimesteps.hpp
+     */
+    std::map<std::pair<std::string, Solvers::Value>, bool> mTimestepIsSatisfactory;
+
+    /**
+     * A helper method that populates mTimesteps from the stored data file in
+     * Frontiers2014/test/data/required_steps.txt
+     */
+    void LoadTimestepFile()
+    {
+        FileFinder this_file(__FILE__);
+        FileFinder summary_file("data/required_steps.txt", this_file);
+
+        std::ifstream indata; // indata is like cin
+        indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
+        if(!indata.good())
+        { // file couldn't be opened
+            EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
+        }
+
+        while (indata.good())
+        {
+           std::string this_line;
+           getline(indata, this_line);
+
+           if (this_line=="" || this_line=="\r")
+           {
+               if (indata.eof())
+               {    // If the blank line is the last line carry on OK.
+                   break;
+               }
+               else
+               {
+                   EXCEPTION("No data found on this line");
+               }
+           }
+           std::stringstream line(this_line);
+
+           // Load a standard data line.
+           std::string model_name;
+           double error_value, timestep;
+           bool is_satisfactory;
+           int solver_index;
+
+           line >> model_name;
+           line >> solver_index;
+           line >> timestep;
+           line >> error_value;
+           line >> is_satisfactory;
+
+           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from
+           std::pair<std::string, Solvers::Value> model_solver_pair(model_name,solver);
+           mTimesteps[model_solver_pair] = timestep;
+           mTimestepIsSatisfactory[model_solver_pair] = is_satisfactory; // We always have the most refined last in the file, so this overwriting should work.
+        }
+
+        if (!indata.eof())
+        {
+            EXCEPTION("A file reading error occurred");
+        }
+
+        // Warn for any model/solver combination not satisfactory
+        for (std::map<std::pair<std::string, Solvers::Value>, bool>::iterator it = mTimestepIsSatisfactory.begin();
+             it!=mTimestepIsSatisfactory.end();
+             ++it)
+        {
+            if (!it->second)
+            {
+                WARNING("Using non-satisfactory timestep for model " << (it->first).first << " and solver "
+                        << CellModelUtilities::GetSolverName((it->first).second));
+            }
+        }
+
+        // Print to screen just to check they are correct...
+        for (std::map<std::pair<std::string, Solvers::Value>, double>::iterator it = mTimesteps.begin();
+             it!=mTimesteps.end();
+             ++it)
+        {
+            // Print model, solver, timestep and whether it was satisfactory for a converged answer.
+            std::cout << (it->first).first << "\t'" << CellModelUtilities::GetSolverName((it->first).second) << "'\t" << it->second << "\t" << mTimestepIsSatisfactory[it->first] << std::endl;
+        }
+    }
+
+    /**
+     * A map between the model name and the square error associated with a 'loose' CVODE solve,
+     * as generated by TestGeneratingReferenceData.hpp
+     */
+    std::map<std::string, double> mErrorResults;
+
+    /**
+     * A helper method that populates mErrorResults from the stored data file in
+     * Frontiers2014/test/data/reference_traces/error_summary.txt
+     */
+    void LoadErrorSummaryFile()
+    {
+        FileFinder this_file(__FILE__);
+        FileFinder summary_file("data/reference_traces/error_summary.txt", this_file);
+
+        std::ifstream indata; // indata is like cin
+        indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
+        if(!indata.good())
+        { // file couldn't be opened
+            EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
+        }
+
+        while (indata.good())
+        {
+           std::string this_line;
+           getline(indata, this_line);
+
+           if (this_line=="" || this_line=="\r")
+           {
+               if (indata.eof())
+               {    // If the blank line is the last line carry on OK.
+                   break;
+               }
+               else
+               {
+                   EXCEPTION("No data found on this line");
+               }
+           }
+           std::stringstream line(this_line);
+
+           // Load a standard data line.
+           std::string model_name;
+           double error_value;
+           line >> model_name;
+           line >> error_value;
+           mErrorResults[model_name] = error_value;
+        }
+
+        if (!indata.eof())
+        {
+            EXCEPTION("A file reading error occurred");
+        }
+
+// Print to screen just to check they are correct...
+//        for (std::map<std::string,double>::iterator it = mErrorResults.begin();
+//             it!=mErrorResults.end();
+//             ++it)
+//        {
+//            std::cout << it->first << "\t" << it->second << std::endl;
+//        }
+    }
 };
 
 #endif // TESTODESOLVINGTIMES_HPP_

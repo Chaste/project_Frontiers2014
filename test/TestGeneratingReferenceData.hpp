@@ -64,7 +64,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * as a 'gold standard' result for later comparison.
  *
  * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
- * to set time steps for other solvers in TestCalculateRequiredTimesteps.hpp.
+ * to set time steps for other solvers in TestCalculateRequiredTimesteps.hpp. At the end of this test this information is
+ * copied into test/data/reference_traces/error_summary.txt
  */
 class TestGeneratingReferenceData : public CxxTest::TestSuite
 {

@@ -161,6 +161,16 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
             {
                 p_cvode_cell->ForceUseOfNumericalJacobian();
             }
+            p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
+            p_cvode_cell->SetMaxSteps(10000000);
+            boost::shared_ptr<RegularStimulus> p_reg_stim = boost::dynamic_pointer_cast<RegularStimulus>(p_cell->GetStimulusFunction());
+            // If the max time step for cvode is not set then it defaults to the sampling timestep,
+            // if this is large then CVODE can 'skip' the stimulus and never notice it, so should generally
+            // be set to the stimulus duration.
+            if (p_reg_stim)
+            {
+                p_cvode_cell->SetMaxTimestep(p_reg_stim->GetDuration());
+            }
             break;
         }
         case Solvers::RUNGE_KUTTA_2:
