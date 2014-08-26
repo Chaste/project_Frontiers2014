@@ -130,6 +130,7 @@ public:
             catch (const Exception& r_e)
             {
                 WARNING("No action potential produced for model " << model_name);
+                continue;
             }
 
             /* Perform another simulation with lower CVODE tolerances, to give us an error bound to set other solvers' time steps with. */

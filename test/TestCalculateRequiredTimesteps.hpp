@@ -102,7 +102,8 @@ public:
             // Check if there is a reference trace for this model, and skip it if not
             if (mErrorResults.find(model_name) == mErrorResults.end())
             {
-                std::cout << "No reference trace for model " << model_name << "; skipping." << std::endl;
+                std::cout << "No reference error metric for model " << model_name << "; skipping." << std::endl;
+                WARNING("No reference error metric for model " << model_name << "; skipping.");
                 continue;
             }
 
