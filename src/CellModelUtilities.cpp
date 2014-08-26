@@ -41,6 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "MathsCustomFunctions.hpp"
 #include "ColumnDataReader.hpp"
+#include "Warnings.hpp"
 
 #include "CellMLLoader.hpp"
 #include "AbstractUntemplatedParameterisedSystem.hpp"
@@ -227,10 +228,22 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
     // Make a default stimulus to work with
     // (if the model has a stimulus current, but no defaults tagged, it was ending up with an empty stimulus (e.g. HH1952)).
     // TODO Put in a check for this before using a Cell model where the RHS includes the stimulus current.
-    boost::shared_ptr<RegularStimulus> p_stim(new RegularStimulus(-25.5,5,1000,10));
+    // TODO Consider if generated code should expose the pycml:is-self-excitatory annotation, or an indication that dV/dt doesn't use the stimulus.
     if (!p_cell->HasCellMLDefaultStimulus())
     {
+        boost::shared_ptr<RegularStimulus> p_stim(new RegularStimulus(-25.5,5,1000,10));
         p_cell->SetStimulusFunction(p_stim);
+    }
+    // Check for unusual stimulus patterns where the first stimulus occurs after a full period
+    boost::shared_ptr<RegularStimulus> p_reg_stim = boost::dynamic_pointer_cast<RegularStimulus>(p_cell->GetStimulusFunction());
+    if (p_reg_stim)
+    {
+        if (p_reg_stim->GetStartTime() > p_reg_stim->GetPeriod())
+        {
+            WARNING("Setting start time for stimulus to 0 as was greater than period " << p_reg_stim->GetPeriod()
+                    << " in model " << rModelFile.GetLeafNameNoExtension() << ".");
+            p_reg_stim->SetStartTime(0.0);
+        }
     }
 
     return p_cell;
