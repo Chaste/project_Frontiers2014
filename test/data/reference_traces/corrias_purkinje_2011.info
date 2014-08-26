@@ -1,4 +1,4 @@
 FIXED -1
 UNLIMITED 1
 VARIABLES 22
-Created by Chaste version 3.2.22436 on Thu, 14 Aug 2014 18:09:29 +0000.  Chaste was built on Thu, 14 Aug 2014 18:04:59 +0000 by machine (uname) 'Linux skip.cs.ox.ac.uk 3.13.0-34-generic #60-Ubuntu SMP Wed Aug 13 15:45:27 UTC 2014 x86_64' using settings: GccOptNative, shared libraries.  Checked-out project versions: ApPredict=22436; BethM=22436; Frontiers2014=22436M; FunctionalCuration=22436; GaryM=22436; Jptm2014=22436; KylieB=22436; RossJ=22432.
+Created by Chaste version 3.1.21123 (with uncommitted modifications) on Tue, 26 Aug 2014 09:27:52 +0000.  Chaste was built on Thu, 27 Feb 2014 13:21:08 +0000 by machine (uname) 'Linux dizzy 2.6.32-55-generic #117-Ubuntu SMP Tue Dec 3 17:31:12 UTC 2013 x86_64' using settings: GccOptNative, no Chaste libraries.  Checked-out project versions: 2020Science=21123; AidanDaly=21124; CryptMigration2012=21123; FC-cell-based=21123; FunctionalCuration=21123; LouiseB=21123M; SimpleSensitivity=21123; Wisc2013=21123; cellml=21123; jonc=21123; jonc-misc=21123; template=21123; website=21123.
