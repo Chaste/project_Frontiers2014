@@ -37,6 +37,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <algorithm>
 #include <cmath>
+#include <boost/foreach.hpp>
 
 #include "MathsCustomFunctions.hpp"
 #include "ColumnDataReader.hpp"
@@ -177,9 +178,21 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
             break; // Nothing to do here
     }
     // Check that the lookup tables exist if they should
-    if (useLookupTables && p_cell->GetLookupTableCollection() == NULL)
+    if (useLookupTables)
     {
-        EXCEPTION("No lookup tables implemented in optimised cell model " << rModelFile.GetLeafNameNoExtension());
+        AbstractLookupTableCollection* p_tables = p_cell->GetLookupTableCollection();
+        if (p_tables == NULL || p_tables->GetKeyingVariableNames().empty())
+        {
+            EXCEPTION("No lookup tables implemented in optimised cell model " << rModelFile.GetLeafNameNoExtension());
+        }
+        BOOST_FOREACH(std::string keying_var, p_tables->GetKeyingVariableNames())
+        {
+            if (p_tables->GetNumberOfTables(keying_var) == 0u)
+            {
+                // This should never happen (the code generation shouldn't allow it) but just in case...
+                EXCEPTION("No lookup tables for '" << keying_var << "' implemented in optimised cell model " << rModelFile.GetLeafNameNoExtension());
+            }
+        }
     }
 
     return p_cell;
