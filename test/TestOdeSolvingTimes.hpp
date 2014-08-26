@@ -54,21 +54,10 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Warnings.hpp"
 #include "ChasteBuildRoot.hpp"
 
-// General Chaste headers related to cardiac cells - most/all are now removable?
-#include "CvodeAdaptor.hpp"
-#include "EulerIvpOdeSolver.hpp"
-#include "RungeKutta2IvpOdeSolver.hpp"
-#include "RungeKutta4IvpOdeSolver.hpp"
-#include "RegularStimulus.hpp"
-
-// These are temporary
-#include "shannon_wang_puglisi_weber_bers_2004.hpp"
-#include "shannon_wang_puglisi_weber_bers_2004Opt.hpp"
-#include "shannon_wang_puglisi_weber_bers_2004Cvode.hpp"
-#include "shannon_wang_puglisi_weber_bers_2004CvodeOpt.hpp"
-
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
+
+static unsigned NUM_RUNS = 3u;
 
 class TestOdeSolvingTimes : public CxxTest::TestSuite
 {
@@ -111,6 +100,8 @@ public:
         /* Each process writes its timings to a separate file as we go along, in case of catastrophe. */
         out_stream p_file = test_base_handler.OpenOutputFile("timings_", PetscTools::GetMyRank(), ".txt");
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+        out_stream p_tissue_style_file = test_base_handler.OpenOutputFile("timings_pde_", PetscTools::GetMyRank(), ".txt");
+        *p_tissue_style_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
         /* Iterate over model/solver combinations, distributed over processes. */
         PetscTools::IsolateProcesses();
@@ -184,6 +175,19 @@ public:
 
                     /* Record the result. */
                     *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << ChasteBuildType() << "\t" << elapsed_time << std::endl;
+
+                    double pde_time_step = 0.01;
+                    elapsed_time = TimeSimulationTissueStyle(p_cell, pde_time_step);
+                    std::cout << "Model " << model_name << " solver '" << solver_name << "' PDE step " << pde_time_step << " took time " << elapsed_time << "s" << std::endl;
+                    /* Record the result. */
+                    *p_tissue_style_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << ChasteBuildType() << "\t" << pde_time_step << "\t" << elapsed_time << std::endl;
+
+                    pde_time_step = 0.1;
+                    elapsed_time = TimeSimulationTissueStyle(p_cell, pde_time_step);
+                    std::cout << "Model " << model_name << " solver '" << solver_name << "' PDE step " << pde_time_step << " took time " << elapsed_time << "s" << std::endl;
+                    /* Record the result. */
+                    *p_tissue_style_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << ChasteBuildType() << "\t" << pde_time_step << "\t" << elapsed_time << std::endl;
+
                 }
                 catch (const Exception& r_e)
                 {
@@ -195,6 +199,7 @@ public:
 
         /* Close each process' results file. */
         p_file->close();
+        p_tissue_style_file->close();
 
         /* Turn off process isolation and wait for all files to be written. */
         PetscTools::IsolateProcesses(false);
@@ -214,66 +219,20 @@ public:
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
+
+            out_stream p_tissue_combined_file = test_base_handler.OpenOutputFile("timings_pde.txt", std::ios::out | std::ios::trunc | std::ios::binary);
+            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+            {
+                std::stringstream process_file_name;
+                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << "timings_pde_" << i << ".txt";
+                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
+                TS_ASSERT(process_file.is_open());
+                TS_ASSERT(process_file.good());
+                *p_tissue_combined_file << process_file.rdbuf();
+            }
+            p_tissue_combined_file->close();
         }
 	}
-
-	// I wanted to see how much slower CVODE would be in a tissue situation (pretend there is a PDE timestep 0.01ms).
-	// result - it would be faster than Forward Euler!
-	void TestShannonSolvingTimesForTissue() throw (Exception)
-    {
-		// Set up a default solver and a stimulus
-		boost::shared_ptr<AbstractIvpOdeSolver> p_euler_solver(new EulerIvpOdeSolver());
-		boost::shared_ptr<AbstractStimulusFunction> p_stimulus(new RegularStimulus(-25,5,1000,1));
-
-		boost::shared_ptr<AbstractCardiacCell> shannon_euler(new Cellshannon_wang_puglisi_weber_bers_2004FromCellML(p_euler_solver,p_stimulus));
-		boost::shared_ptr<AbstractCvodeCell> shannon_cvode(new Cellshannon_wang_puglisi_weber_bers_2004FromCellMLCvode(p_euler_solver,p_stimulus));
-
-		double solution_time = 1000;
-		double pde_time_step = 0.01;
-
-		// A standard Forward Euler Solve.
-		shannon_euler->SetTimestep(0.0025);
-
-		for (unsigned i=0; i<2; i++)
-		{
-			if (i==0)
-			{
-				pde_time_step = 0.01;
-			}
-			else
-			{
-				pde_time_step = 0.1;
-			}
-
-			std::cout << "\nTimings for 1000ms of 'tissue' solve with pde_time_step = " << pde_time_step << std::endl;
-			Timer::Reset();
-			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-			{
-				shannon_euler->SolveAndUpdateState(start_time, start_time+pde_time_step);
-			}
-			Timer::Print("1. Forward-Euler");
-
-			// A standard native CVODE solve
-			shannon_cvode->SetForceReset(true);
-			shannon_cvode->SetMaxTimestep(boost::static_pointer_cast<RegularStimulus>(p_stimulus)->GetDuration());
-			Timer::Reset();
-			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-			{
-				shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
-			}
-			Timer::Print("2. CVODE native (with resetting)");
-
-			// Switch off the 'reset' on native CVODE so it saves its internal variables.
-			shannon_cvode->SetForceReset(false);
-			shannon_cvode->ResetToInitialConditions();
-			Timer::Reset();
-			for (double start_time = 0; start_time < solution_time; start_time+=pde_time_step)
-			{
-				shannon_cvode->SolveAndUpdateState(start_time, start_time+pde_time_step);
-			}
-			Timer::Print("3. CVODE native (no resetting)");
-		}
-    }
 
 private:
 	/*
@@ -294,12 +253,56 @@ private:
 	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
 	                      unsigned numPaces)
 	{
-	    boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
-	    double period = CellModelUtilities::GetDefaultPeriod(pCell);
-	    Timer::Reset();
-	    pCell->SolveAndUpdateState(0.0, numPaces * period);
-	    return Timer::GetElapsedTime();
+	    double minimum = DBL_MAX;
+	    for (unsigned i=0; i<NUM_RUNS; i++)
+	    {
+            boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
+            double period = CellModelUtilities::GetDefaultPeriod(pCell);
+            Timer::Reset();
+            pCell->SolveAndUpdateState(0.0, numPaces * period);
+            double elapsed_time = Timer::GetElapsedTime();
+            if (elapsed_time < minimum)
+            {
+                minimum = elapsed_time;
+            }
+	    }
+	    return minimum;
 	}
+
+    /**
+     * Find out how long it takes to simulate the given model, with stopping and starting as per tissue simulations.
+     * The cell will be reset to initial conditions prior to simulation.
+     * We assume the cell has a regular square wave stimulus defined.
+     *
+     * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
+     *
+     * @param pCell  the cell model to simulate, with solver attached
+     * @param effectivePdeStep  stop and start the ODE simulation this often.
+     * @return  elapsed wall clock time, in seconds
+     */
+    double TimeSimulationTissueStyle(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+                                     double effectivePdeStep)
+    {
+        double solution_time = 1000;
+
+        double minimum = DBL_MAX;
+        for (unsigned i=0; i<NUM_RUNS; i++)
+        {
+            boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
+
+            Timer::Reset();
+            for (double start_time = 0; start_time < solution_time; start_time += effectivePdeStep)
+            {
+                pCell->SolveAndUpdateState(start_time, start_time + effectivePdeStep);
+            }
+            double elapsed_time = Timer::GetElapsedTime();
+            if (elapsed_time < minimum)
+            {
+                minimum = elapsed_time;
+            }
+        }
+        return minimum;
+    }
 
     /**
      * A map between the model/solver and the timestep which gave a 'refined enough' result.
