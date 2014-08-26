@@ -53,6 +53,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Timer.hpp"
 #include "Warnings.hpp"
 #include "ChasteBuildRoot.hpp"
+#include "AbstractCvodeCell.hpp"
 
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
@@ -155,6 +156,18 @@ public:
                     if (suggested_timestep > 0.0)
                     {
                         p_cell->SetTimestep(suggested_timestep);
+                    }
+                    else
+                    {
+                        boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
+                        if (p_cvode_cell)
+                        {
+                            std::cout << "Using maximum timestep of " << p_cvode_cell->GetTimestep() << std::endl;
+                        }
+                        else
+                        {
+                            WARNING("No suggested timestep set for model " << model_name << " solver '" << solver_name << "'");
+                        }
                     }
 
                     /* Run a single pace to check accuracy. */
