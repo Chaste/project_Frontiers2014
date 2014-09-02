@@ -1,12 +1,24 @@
-build_types = {'IntelProduction_IntelProductionCvode'};
+close all 
+clear all
+
+build_types = {'IntelProduction_IntelProductionCvode',...
+               'IntelProduction',...
+               'GccOptNative'};
+           
+build_names = {'IntelProductionCvode',...
+               'IntelProduction',...
+               'GccOptNative'};     
 
 solvers = {'CVODE AJ', 'CVODE NJ', 'F. Euler', ...         
         'B. Euler','RK2','RK4','Rush Larsen',...            
         'GRL1','GRL2'};
     
 print_latex_table = false;
-    
+look_at_fake_pde_step_timings = false;
 
+% Compile all the results into a table.
+all_results = [];
+    
 for b=1:length(build_types)
 
     d = importdata([build_types{b} '_timings.txt']);
@@ -21,8 +33,6 @@ for b=1:length(build_types)
     model_list = unique(model);
     solver_list = unique(solver);
     
-    % Compile all the results into a table.
-    all_results = [];
     for model_idx = 1:length(model_list)
         indices_this_model = find(strcmp(model,model_list{model_idx}));
         for solver_idx = 1:length(solver_list)
@@ -30,20 +40,17 @@ for b=1:length(build_types)
             index_this_combination = intersect(indices_this_model,indices_this_solver);
             if (~isempty(index_this_combination))
                 assert(length(index_this_combination)==1)
-                all_results(model_idx, solver_idx) = times(index_this_combination);
+                all_results(model_idx, solver_idx,b) = times(index_this_combination);
             else
-                all_results(model_idx, solver_idx) = -1;
+                all_results(model_idx, solver_idx,b) = -1;
             end
         end
-    end        
-    all_results
-    
-    
-    
+    end            
+        
     if print_latex_table
         % Now write out a table in latex format
 
-        max_time = max(max(all_results)); 
+        max_time = max(max(all_results(b,:,:))); 
         colours = colormap(autumn(100));
 
         % Print another summary table for O'hara colour coded.
@@ -71,12 +78,12 @@ for b=1:length(build_types)
             fprintf('%s & ',put_underscores_in_latex(model_list{model_idx}))
             % Print timings
             for solver_idx=1:1:length(solver_list)
-                if (all_results(model_idx, solver_idx) > 0)
+                if (all_results(model_idx, solver_idx,b) > 0)
                     % Real result
-                    %hts = all_results(model_idx, solver_idx)./max_time;
+                    %hts = all_results(b, model_idx, solver_idx)./max_time;
                     %rgb = colours(floor(hts)+1,:);
                     %fprintf('\\cellcolor[rgb]{%f,%f,%f} %3.0f ',rgb(1),rgb(2),rgb(3),hts)
-                    fprintf('%4.3f ',all_results(model_idx, solver_idx))
+                    fprintf('%4.3f ',all_results(model_idx, solver_idx,b))
                 else
                     % Wasn't run
                     %fprintf('\\cellcolor[rgb]{1,1,1} -- ')
@@ -97,44 +104,79 @@ for b=1:length(build_types)
     end
 end
 
+% Rank the models in terms of how fast they are
+% in our best case - intel with intel cvode, for cvode numeric J
+[~, ordering] = sort(all_results(:, 2, 1));
+for i=1:length(ordering)
+    fprintf('%i Model:%s\n',i,model_list{ordering(i)})
+end
 
-for b=1:length(build_types)
+figure
+semilogy(all_results(ordering, 2, 1), 'b.-')
+xlabel('Model index')
+ylabel('Wall time taken for 10 paces (s)')
+hold on
+semilogy(all_results(ordering, 2, 2), 'r.-')
+semilogy(all_results(ordering, 2, 3), 'k.-')
 
-    d = importdata([build_types{b} '_timings_pde.txt']);
+% Some results are missing and filled in with -1 for models where analytic
+% jacobian wasn't used, so find these and plot the rest.
+analytic_ordering = find(all_results(ordering, 1, 1)>0);
+semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 1), 'b.--')
+semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 2), 'r.--')
+semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 3), 'k.--')
 
-    % Get the raw data out
-    model = d.textdata;
-    solver = d.data(:,1);
-    optimised = d.data(:,2);
-    pde_time_steps = d.data(:,3);
-    times = d.data(:,4);
-    clear d
+assert(length(build_types)==length(build_names))
+for i=1:length(build_types)
+    legend_text{i} = [build_names{i} ' Numeric J'];
+end
+for i=1:length(build_types)
+    legend_text{length(build_types)+i} = [build_names{i} ' Analytic J'];
+end
+title('CVODE Simulation Times')
+legend(legend_text,'Location','NorthWest')
+xlim([1 64])
 
-    model_list = unique(model);
-    solver_list = unique(solver);
-    pde_list = unique(pde_time_steps);
-        
-
-    for pde_step_idx = 1:length(pde_list)
+if look_at_fake_pde_step_timings
+    % Compile all the results into a table.
+    all_results_pde = [];
     
-        % Compile all the results into a table.
-        all_results_pde = [];
-        for model_idx = 1:length(model_list)
-            indices_this_model = find(strcmp(model,model_list{model_idx}));
-            for solver_idx = 1:length(solver_list)
-                indices_this_solver = find(solver==solver_list(solver_idx));
-                indices_this_pde_step = find(pde_time_steps==pde_list(pde_step_idx));
-                index_this_combination = intersect(indices_this_model,indices_this_solver);
-                index_this_combination = intersect(index_this_combination,indices_this_pde_step);
-                if (~isempty(index_this_combination))
-                    assert(length(index_this_combination)==1)
-                    all_results_pde(model_idx, solver_idx) = times(index_this_combination);
-                else
-                    all_results_pde(model_idx, solver_idx) = -1;
+    for b=1:length(build_types)
+
+        d = importdata([build_types{b} '_timings_pde.txt']);
+
+        % Get the raw data out
+        model = d.textdata;
+        solver = d.data(:,1);
+        optimised = d.data(:,2);
+        pde_time_steps = d.data(:,3);
+        times = d.data(:,4);
+        clear d
+
+        model_list = unique(model);
+        solver_list = unique(solver);
+        pde_list = unique(pde_time_steps);
+
+
+        for pde_step_idx = 1:length(pde_list)
+
+            for model_idx = 1:length(model_list)
+                indices_this_model = find(strcmp(model,model_list{model_idx}));
+                for solver_idx = 1:length(solver_list)
+                    indices_this_solver = find(solver==solver_list(solver_idx));
+                    indices_this_pde_step = find(pde_time_steps==pde_list(pde_step_idx));
+                    index_this_combination = intersect(indices_this_model,indices_this_solver);
+                    index_this_combination = intersect(index_this_combination,indices_this_pde_step);
+                    if (~isempty(index_this_combination))
+                        assert(length(index_this_combination)==1)
+                        all_results_pde(model_idx, solver_idx, b) = times(index_this_combination);
+                    else
+                        all_results_pde(model_idx, solver_idx, b) = -1;
+                    end
                 end
             end
-        end
-        fprintf('PDE time step = %3.3f\n',pde_list(pde_step_idx))
-        all_results_pde   
-    end    
+            fprintf('PDE time step = %3.3f\n',pde_list(pde_step_idx))
+            all_results_pde   
+        end    
+    end
 end
