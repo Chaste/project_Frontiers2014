@@ -111,6 +111,8 @@ for i=1:length(ordering)
     fprintf('%i Model:%s\n',i,model_list{ordering(i)})
 end
 
+analytic_result_rows = find(all_results(ordering, 1, 1)>0);
+
 figure
 semilogy(all_results(ordering, 2, 1), 'b.-')
 xlabel('Model index')
@@ -118,24 +120,29 @@ ylabel('Wall time taken for 10 paces (s)')
 hold on
 semilogy(all_results(ordering, 2, 2), 'r.-')
 semilogy(all_results(ordering, 2, 3), 'k.-')
-
-% Some results are missing and filled in with -1 for models where analytic
-% jacobian wasn't used, so find these and plot the rest.
-analytic_ordering = find(all_results(ordering, 1, 1)>0);
-semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 1), 'b.--')
-semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 2), 'r.--')
-semilogy(analytic_ordering,all_results(ordering(analytic_ordering), 1, 3), 'k.--')
-
-assert(length(build_types)==length(build_names))
-for i=1:length(build_types)
-    legend_text{i} = [build_names{i} ' Numeric J'];
-end
-for i=1:length(build_types)
-    legend_text{length(build_types)+i} = [build_names{i} ' Analytic J'];
-end
-title('CVODE Simulation Times')
-legend(legend_text,'Location','NorthWest')
+title('Effect of different builds')
+legend(build_names,'Location','NorthWest')
 xlim([1 64])
+% NB - We've removed the last model - clancy rudy, as it is mental and 
+% obscures anything you can say about the build times.
+
+figure
+semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1), '.-')
+xlabel('Model index')
+ylabel('Wall time taken for 10 paces (s)')
+hold all
+semilogy(all_results(ordering, 2, 1), '.-')
+semilogy(all_results(ordering, 3, 1), '.-')
+semilogy(all_results(ordering, 4, 1), '.-')
+semilogy(all_results(ordering, 5, 1), '.-')
+semilogy(all_results(ordering, 6, 1), '.-')
+semilogy(all_results(ordering, 7, 1), '.-')
+semilogy(all_results(ordering, 8, 1), '.--')
+
+title('Effect of different solvers')
+legend(solvers{solver_list+1},'Location','EastOutside')
+xlim([1 65])
+% Include Clancy-Rudy again.
 
 if look_at_fake_pde_step_timings
     % Compile all the results into a table.
