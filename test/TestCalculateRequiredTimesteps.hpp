@@ -68,6 +68,9 @@ public:
      * This test simulates each model with each (single-cell) numerical method,
      * reducing the time step used until the error metric is within 5% of that achieved
      * with CVODE using slack tolerances in TestGeneratingReferenceData.hpp.
+     *
+     * This is intended to define a time step required for each method to
+     * get a numerical solution of comparable accuracy, for fair timing comparisons.
      */
     void TestCalculateTimesteps() throw (Exception)
     {

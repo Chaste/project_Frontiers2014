@@ -1,14 +1,11 @@
 close all 
 clear all
 
-build_types = {'IntelProduction_IntelProductionCvode',...
+build_types = {'IntelProductionCvode',...
                'IntelProduction',...
-               'GccOptNative'};
+               'GccOptNative',...
+               'GccOpt'};
            
-build_names = {'IntelProductionCvode',...
-               'IntelProduction',...
-               'GccOptNative'};     
-
 solvers = {'CVODE AJ', 'CVODE NJ', 'F. Euler', ...         
         'B. Euler','RK2','RK4','Rush Larsen',...            
         'GRL1','GRL2'};
@@ -120,29 +117,49 @@ ylabel('Wall time taken for 10 paces (s)')
 hold on
 semilogy(all_results(ordering, 2, 2), 'r.-')
 semilogy(all_results(ordering, 2, 3), 'k.-')
-title('Effect of different builds')
-legend(build_names,'Location','NorthWest')
+semilogy(all_results(ordering, 2, 4), 'g.-')
+title('Compiler benchmarking')
+legend(build_types,'Location','NorthWest')
 xlim([1 64])
 % NB - We've removed the last model - clancy rudy, as it is mental and 
 % obscures anything you can say about the build times.
 
 figure
 semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1), '.-')
-xlabel('Model index')
+xlabel('Model indices, ordered by time taken using CVODE NJ')
 ylabel('Wall time taken for 10 paces (s)')
 hold all
-semilogy(all_results(ordering, 2, 1), '.-')
-semilogy(all_results(ordering, 3, 1), '.-')
-semilogy(all_results(ordering, 4, 1), '.-')
-semilogy(all_results(ordering, 5, 1), '.-')
-semilogy(all_results(ordering, 6, 1), '.-')
-semilogy(all_results(ordering, 7, 1), '.-')
-semilogy(all_results(ordering, 8, 1), '.--')
-
-title('Effect of different solvers')
+for i=2:8
+    if i<8 
+        linestyle = '-'
+    else
+        linestyle = '--'
+    end
+    semilogy(all_results(ordering, i, 1), ['.' linestyle])
+end
+title('Solver benchmarking')
 legend(solvers{solver_list+1},'Location','EastOutside')
-xlim([1 65])
-% Include Clancy-Rudy again.
+xlim([1 65]) % Include Clancy-Rudy again.
+
+
+figure
+semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1), '.-')
+xlabel('Model indices ordered by time taken for each solver')
+ylabel('Wall time taken for 10 paces (s)')
+hold all
+for i=2:8
+    [~, ordering] = sort(all_results(:, i, 1));
+    if i<8 
+        linestyle = '-'
+    else
+        linestyle = '--'
+    end
+    semilogy(all_results(ordering, i, 1), ['.' linestyle])
+end
+title('Solver benchmarking')
+legend(solvers{solver_list+1},'Location','EastOutside')
+xlim([1 65]) % Include Clancy-Rudy again.
+
 
 if look_at_fake_pde_step_timings
     % Compile all the results into a table.
