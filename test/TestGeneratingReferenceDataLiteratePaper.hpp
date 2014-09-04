@@ -36,6 +36,24 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTGENERATINGREFERENCEDATA_HPP_
 #define TESTGENERATINGREFERENCEDATA_HPP_
 
+/*
+ * = Generate accurate reference traces and record a target error metric =
+ *
+ * On this wiki page we describe in detail the code that is used to run this example from the paper.
+ *
+ * For each cell model, runs a single action potential at high fidelity (CVODE with tight tolerance and small max timestep)
+ * as a 'gold standard' result for later comparison.
+ *
+ * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
+ * to set time steps for other solvers in PaperTutorials/Frontiers2014/CalculateRequiredTimesteps.
+ *
+ * At the end of this test this information is copied into test/data/error_summary.txt
+ *
+ * == Code overview ==
+ *
+ * The first thing to do is to include the necessary header files.
+ */
+
 // The testing framework we use
 #include <cxxtest/TestSuite.h>
 
@@ -59,14 +77,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
 
-/**
- * For each cell model, runs a single action potential at high fidelity (CVODE with tight tolerance and small max timestep)
- * as a 'gold standard' result for later comparison.
- *
- * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
- * to set time steps for other solvers in TestCalculateRequiredTimesteps.hpp. At the end of this test this information is
- * copied into test/data/error_summary.txt
- */
 class TestGeneratingReferenceData : public CxxTest::TestSuite
 {
 public:

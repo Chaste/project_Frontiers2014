@@ -36,6 +36,23 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTCALCULATEREQUIREDTIMESTEPS_HPP_
 #define TESTCALCULATEREQUIREDTIMESTEPS_HPP_
 
+/*
+ * = Calculate the required ODE solver timesteps to meet target accuracy =
+ *
+ * On this wiki page we describe in detail the code that is used to run this example from the paper.
+ *
+ * This test simulates each model with each (single-cell) numerical method,
+ * reducing the time step used until the error metric is within 5% of that achieved
+ * with CVODE using slack tolerances in PaperTutorials/Frontiers2014/GeneratingReferenceData
+ *
+ * This is intended to define a time step required for each method to
+ * get a numerical solution of comparable accuracy, for fair timing comparisons.
+ *
+ * == Code overview ==
+ *
+ * The first thing to do is to include the necessary header files.
+ */
+
 // The testing framework we use
 #include <cxxtest/TestSuite.h>
 
@@ -64,14 +81,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestCalculateRequiredTimesteps : public CxxTest::TestSuite
 {
 public:
-    /**
-     * This test simulates each model with each (single-cell) numerical method,
-     * reducing the time step used until the error metric is within 5% of that achieved
-     * with CVODE using slack tolerances in TestGeneratingReferenceData.hpp.
-     *
-     * This is intended to define a time step required for each method to
-     * get a numerical solution of comparable accuracy, for fair timing comparisons.
-     */
     void TestCalculateTimesteps() throw (Exception)
     {
         /* First load up the error reference data from CVODE at different tolerances. */

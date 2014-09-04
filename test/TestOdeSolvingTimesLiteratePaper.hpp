@@ -36,6 +36,21 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TESTODESOLVINGTIMES_HPP_
 #define TESTODESOLVINGTIMES_HPP_
 
+/*
+ * = Benchmark ODE solving times with different numerical methods =
+ *
+ * On this wiki page we describe in detail the code that is used to run this example from the paper.
+ *
+ * For each cell model, we load the required timestep for the required target accuracy,
+ * as calculated by PaperTutorials/Frontiers2014/CalculateRequiredTimesteps
+ *
+ * We then time solving all models under most solvers, for 10 paces.
+ *
+ * == Code overview ==
+ *
+ * The first thing to do is to include the necessary header files.
+ */
+
 // The testing framework we use
 #include <cxxtest/TestSuite.h>
 
@@ -74,9 +89,6 @@ public:
 		TS_ASSERT_LESS_THAN(20u, models.size());
 	}
 
-	/**
-	 * Time solving all models under most solvers, for 10 paces.
-	 */
 	void TestSolvingTimes() throw (Exception)
 	{
 	    /* First load the suggested time steps to use for non-adaptive solvers. */
