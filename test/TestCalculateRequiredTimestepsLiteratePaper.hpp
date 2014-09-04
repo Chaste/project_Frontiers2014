@@ -95,7 +95,7 @@ public:
         FileFinder this_file(__FILE__);
         FileFinder data_folder("data", this_file);
         out_stream p_file = test_base_handler.OpenOutputFile("required_steps_", PetscTools::GetMyRank(), ".txt");
-        // Ensure time steps are written at high precision
+        /* Ensure time steps are written at high precision */
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
 
         /* Iterate over model/solver combinations, distributed over processes. */
@@ -113,8 +113,10 @@ public:
                 continue;
             }
 
+            /* Iterate over each available solver, using a handy boost method */
             BOOST_FOREACH(Solvers::Value solver, solvers)
             {
+                /* This simple if allows us to parallelise the sweep to speed up running it */
                 if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
                 {
                     continue; // Let another process do this combination
@@ -134,14 +136,17 @@ public:
                 bool within_tolerance = false;
                 std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
 
+                /* Keep solving with smaller timesteps until we meet the desired accuracy */
                 do
                 {
                     double timestep = sampling_time / timestep_divisor;
                     timestep_divisor *= 2; // Ready for next iteration
                     p_cell->SetTimestep(timestep);
+                    /* Make sure the model is in exactly the same state at the beginning of every run */
                     p_cell->SetStateVariables(initial_conditions);
 
                     OdeSolution solution;
+                    /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes */
                     try
                     {
                         solution = p_cell->Compute(0.0, period, sampling_time);
@@ -161,6 +166,7 @@ public:
                         continue;
                     }
 
+                    /* Calculate the error associated with this simulated trace (compare to reference) */
                     std::stringstream filename;
                     filename << model_name << "_deltaT_" << timestep;
                     solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
@@ -171,7 +177,7 @@ public:
                                 << error << ", required error = " << mErrorResults[model_name] << "." << std::endl;
                         within_tolerance = (error <= mErrorResults[model_name] * 1.05);
 
-                        // Write result to file, tab separated
+                        /* Write result to file, tab separated */
                         *p_file << model_name << "\t" << solver << "\t" << timestep << "\t" << error << "\t" << within_tolerance << std::endl;
                     }
                     catch (const Exception& r_e)
@@ -207,7 +213,7 @@ public:
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
-            // Copy to repository
+            /* Copy to repository for storage and use by other tests */
             FileFinder summary_file = test_base_handler.FindFile("required_steps.txt");
             summary_file.CopyTo(data_folder);
         }

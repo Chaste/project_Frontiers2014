@@ -106,7 +106,7 @@ public:
             OdeSolution solution;
             try
             {
-                // Note that the sampling interval of 0.1ms is also the maximum time step CVODE is allowed to use
+                /* Note that the sampling interval of 0.1ms is also the maximum time step CVODE is allowed to use */
                 solution = p_cvode_cell->Compute(0.0, period, 0.1);
             }
             catch (const Exception &e)
@@ -135,7 +135,8 @@ public:
                 continue;
             }
 
-            /* Perform another simulation with lower CVODE tolerances, to give us an error bound to set other solvers' time steps with. */
+            /* Perform another simulation with lower CVODE tolerances,
+             * to give us an error bound to set other solvers' time steps with. */
             p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
             p_cvode_cell->ResetToInitialConditions();
             solution = p_cvode_cell->Compute(0.0, period, 0.1);
@@ -152,7 +153,7 @@ public:
          * concatenates these and copies the resulting single file into the Chaste repository.
          */
 
-        // Each process writes its own file, at high precision
+        /* Each process writes its own file, at high precision */
         out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
         *p_error_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
         typedef std::pair<std::string, double> StringDoublePair;
@@ -162,11 +163,11 @@ public:
         }
         p_error_file->close();
 
-        // Turn off process isolation and wait for all files to be written
+        /* Turn off process isolation and wait for all files to be written */
         PetscTools::IsolateProcesses(false);
         PetscTools::Barrier("TestGenerateTraces");
 
-        // Master process writes the concatenated file
+        /* Master process writes the concatenated file */
         if (PetscTools::AmMaster())
         {
             out_stream p_combined_file = test_base_handler.OpenOutputFile("error_summary.txt", std::ios::out | std::ios::trunc | std::ios::binary);
@@ -180,7 +181,7 @@ public:
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
-            // Copy to repository
+            /* Copy to repository for use by the next test */
             FileFinder error_summary_file = test_base_handler.FindFile("error_summary.txt");
             error_summary_file.CopyTo(repo_data_summary);
         }

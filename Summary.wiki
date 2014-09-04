@@ -1,0 +1,24 @@
+= Cellular cardiac electrophysiology modelling with Chaste and CellML =
+
+Welcome to the Chaste wiki.
+
+This section contains pages generated automatically from the source code accompanying "Cellular cardiac electrophysiology modelling with Chaste and CellML", our paper in Frontiers in Physiology.
+
+Before running these examples you will need to [wiki:InstallGuides/InstallGuide install Chaste's dependencies] and the [http://www.cs.ox.ac.uk/chaste/download.html source code for version 3.3].
+The easiest way to do this is using an Ubuntu machine (or an Ubuntu virtual machine) as discussed on InstallGuides/UbuntuPackage.
+Note that Chaste is only supported on Linux/Unix systems, so users of Windows or Mac OS X will need to follow the virtual machine route.
+For manual installation of each dependency, on any version of Linux, see DeveloperInstallGuide.
+
+The paper is organised around examples that are annotated and explained here.
+Before looking at these, you may wish to look at some of the [UserTutorials basic user tutorials].
+
+== Cellular electrophysiology benchmarks ==
+
+The steps required to reproduce the study are:
+ 1. Generate accurate reference traces and calculate an acceptable level of error for each model ([wiki:PaperTutorials/Frontiers2014/GeneratingReferenceData Generating reference data])
+ 1. Work out the timesteps for each numerical method that are required to meet this error tolerance ([wiki:PaperTutorials/Frontiers2014/CalculateRequiredTimesteps Calculate Required Timesteps])
+ 1. Benchmark solvers with these timesteps ([wiki:PaperTutorials/Frontiers2014/OdeSolvingTimes Time solvers])
+ 
+For (1 & 2) see the code in PaperTutorials/Frontiers2014/GeneratingReferenceData. For
+
+For further information on using Chaste to solve these and related problems, see our [wiki:ChasteGuides extensive guide material].
