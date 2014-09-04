@@ -65,7 +65,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
  * to set time steps for other solvers in TestCalculateRequiredTimesteps.hpp. At the end of this test this information is
- * copied into test/data/reference_traces/error_summary.txt
+ * copied into test/data/error_summary.txt
  */
 class TestGeneratingReferenceData : public CxxTest::TestSuite
 {
@@ -74,6 +74,7 @@ public:
     {
         FileFinder this_file(__FILE__);
         FileFinder repo_data("data/reference_traces", this_file);
+        FileFinder repo_data_summary("data", this_file);
         OutputFileHandler test_base_handler("Frontiers/ReferenceTraces/", false);
         std::map<std::string, double> error_results;
 
@@ -181,7 +182,7 @@ public:
             p_combined_file->close();
             // Copy to repository
             FileFinder error_summary_file = test_base_handler.FindFile("error_summary.txt");
-            error_summary_file.CopyTo(repo_data);
+            error_summary_file.CopyTo(repo_data_summary);
         }
     }
 };

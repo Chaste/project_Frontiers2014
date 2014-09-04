@@ -4,7 +4,8 @@ clear all
 build_types = {'IntelProductionCvode',...
                'IntelProduction',...
                'GccOptNative',...
-               'GccOpt'};
+               'GccOpt',...
+               'debug'};
            
 solvers = {'CVODE AJ', 'CVODE NJ', 'F. Euler', ...         
         'B. Euler','RK2','RK4','Rush Larsen',...            
@@ -111,14 +112,13 @@ end
 analytic_result_rows = find(all_results(ordering, 1, 1)>0);
 
 figure
-semilogy(all_results(ordering, 2, 1), 'b.-')
+for i=1:length(build_types)
+    semilogy(all_results(ordering, 2, i), '.-')
+    hold all
+end
 xlabel('Model index')
 ylabel('Wall time taken for 10 paces (s)')
-hold on
-semilogy(all_results(ordering, 2, 2), 'r.-')
-semilogy(all_results(ordering, 2, 3), 'k.-')
-semilogy(all_results(ordering, 2, 4), 'g.-')
-title('Compiler benchmarking')
+title('Compiler benchmarking with CVODE NJ')
 legend(build_types,'Location','NorthWest')
 xlim([1 64])
 % NB - We've removed the last model - clancy rudy, as it is mental and 

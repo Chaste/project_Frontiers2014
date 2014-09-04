@@ -417,12 +417,12 @@ private:
 
     /**
      * A helper method that populates mErrorResults from the stored data file in
-     * Frontiers2014/test/data/reference_traces/error_summary.txt
+     * Frontiers2014/test/data/error_summary.txt
      */
     void LoadErrorSummaryFile()
     {
         FileFinder this_file(__FILE__);
-        FileFinder summary_file("data/reference_traces/error_summary.txt", this_file);
+        FileFinder summary_file("data/error_summary.txt", this_file);
 
         std::ifstream indata; // indata is like cin
         indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file

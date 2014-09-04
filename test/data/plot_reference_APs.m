@@ -1,3 +1,6 @@
+close all
+clear all
+
 file_listing = dir(['reference_traces' filesep '*.dat']);
 
 for i=1:length(file_listing)
