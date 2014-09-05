@@ -64,3 +64,4 @@ pandit_clark_giles_demir_2001_endocardial_cell	6.3864688236256583e+01
 ten_tusscher_model_2004_M	7.2971402095525018e-01
 ten_tusscher_model_2006_endo	3.0472251003105039e-01
 winslow_model_1999	1.1856047618864802e+03
+benson_epicardial_2008	2.6039275511432319e+01

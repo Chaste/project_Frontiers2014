@@ -132,9 +132,9 @@ ylabel('Wall time taken for 10 paces (s)')
 hold all
 for i=2:8
     if i<8 
-        linestyle = '-'
+        linestyle = '-';
     else
-        linestyle = '--'
+        linestyle = '--';
     end
     semilogy(all_results(ordering, i, 1), ['.' linestyle])
 end
@@ -151,9 +151,9 @@ hold all
 for i=2:8
     [~, ordering] = sort(all_results(:, i, 1));
     if i<8 
-        linestyle = '-'
+        linestyle = '-';
     else
-        linestyle = '--'
+        linestyle = '--';
     end
     semilogy(all_results(ordering, i, 1), ['.' linestyle])
 end
