@@ -1,3 +1,5 @@
 TestCalculateRequiredTimestepsLiteratePaper.hpp
 TestGeneratingReferenceDataLiteratePaper.hpp
+TestMonodomainGenerateReferenceSolutionsLiteratePaper.hpp
+TestMonodomainSolvingTimesLiteratePaper.hpp
 TestOdeSolvingTimesLiteratePaper.hpp
