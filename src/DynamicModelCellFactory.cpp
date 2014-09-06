@@ -58,6 +58,13 @@ DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
     // .so and outputted files end up there too.
     FileFinder copied_cellml_file = mpHandler->CopyFileTo(rModelFile);
 
+    // Also copy the .out file across, if it exists.
+    FileFinder maple_output_file(rModelFile.GetLeafNameNoExtension() + ".out", rModelFile);
+    if (maple_output_file.IsFile())
+    {
+        mpHandler->CopyFileTo(maple_output_file);
+    }
+
     // We first collectively convert this CellML file to shared library,
     // which each process can load to assign a new model to its nodes.
     DynamicCellModelLoaderPtr p_loader = LoadDynamicModel(copied_cellml_file, rPyCmlOptions, true);
