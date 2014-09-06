@@ -313,19 +313,19 @@ std::vector<double> CellModelUtilities::GetError(const OdeSolution& rSolution, c
                      - test_properties.GetLastActionPotentialDuration(90.0));
 
     errors.push_back(reference_properties.GetLastActionPotentialDuration(50.0)
-                     - reference_properties.GetLastActionPotentialDuration(50.0));
+                     - test_properties.GetLastActionPotentialDuration(50.0));
 
     errors.push_back(reference_properties.GetLastActionPotentialDuration(30.0)
-                     - reference_properties.GetLastActionPotentialDuration(30.0));
+                     - test_properties.GetLastActionPotentialDuration(30.0));
 
     errors.push_back(reference_properties.GetLastPeakPotential()
-                     - reference_properties.GetLastPeakPotential());
+                     - test_properties.GetLastPeakPotential());
 
     errors.push_back(reference_properties.GetLastRestingPotential()
-                     - reference_properties.GetLastRestingPotential());
+                     - test_properties.GetLastRestingPotential());
 
     errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
-                     - reference_properties.GetLastMaxUpstrokeVelocity());
+                     - test_properties.GetLastMaxUpstrokeVelocity());
 
     return errors;
 }
