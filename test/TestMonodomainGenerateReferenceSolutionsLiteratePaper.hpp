@@ -132,7 +132,7 @@ public:
             HeartConfig::Instance()->SetOutputDirectory(output_folder);
             HeartConfig::Instance()->SetOutputFilenamePrefix("results");
             HeartConfig::Instance()->SetVisualizeWithVtk(true);
-            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(0.01, 0.01, 0.1);
+            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(0.001, 0.001, 0.1);
 
             /* Now we declare the problem class */
             MonodomainProblem<1> monodomain_problem( &cell_factory );
