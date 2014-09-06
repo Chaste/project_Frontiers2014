@@ -43,6 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ColumnDataReader.hpp"
 #include "Warnings.hpp"
 
+#include "CellProperties.hpp"
 #include "CellMLLoader.hpp"
 #include "AbstractUntemplatedParameterisedSystem.hpp"
 #include "AbstractCvodeCell.hpp"
@@ -281,8 +282,9 @@ double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCel
     return period;
 }
 
-double CellModelUtilities::GetError(const OdeSolution& rSolution, const std::string& rModelName)
+std::vector<double> CellModelUtilities::GetError(const OdeSolution& rSolution, const std::string& rModelName)
 {
+    std::vector<double> errors;
     FileFinder this_file(__FILE__);
     FileFinder reference_folder("../test/data/reference_traces", this_file);
 
@@ -296,11 +298,34 @@ double CellModelUtilities::GetError(const OdeSolution& rSolution, const std::str
     EXCEPT_IF_NOT(valid_times.size() == r_new_times.size());
     EXCEPT_IF_NOT(valid_voltages.size() == new_voltages.size());
 
-    double error = 0.0;
+    double square_error = 0.0;
     for (unsigned i=0; i<valid_times.size(); i++)
     {
         EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(valid_times[i], r_new_times[i], 1e-12));
-        error += SmallPow((valid_voltages[i] - new_voltages[i]), 2u);
+        square_error += SmallPow((valid_voltages[i] - new_voltages[i]), 2u);
     }
-    return error;
+    errors.push_back(square_error);
+
+    CellProperties reference_properties(valid_voltages, valid_times);
+    CellProperties test_properties(new_voltages, r_new_times);
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(90.0)
+                     - test_properties.GetLastActionPotentialDuration(90.0));
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(50.0)
+                     - reference_properties.GetLastActionPotentialDuration(50.0));
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(30.0)
+                     - reference_properties.GetLastActionPotentialDuration(30.0));
+
+    errors.push_back(reference_properties.GetLastPeakPotential()
+                     - reference_properties.GetLastPeakPotential());
+
+    errors.push_back(reference_properties.GetLastRestingPotential()
+                     - reference_properties.GetLastRestingPotential());
+
+    errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
+                     - reference_properties.GetLastMaxUpstrokeVelocity());
+
+    return errors;
 }

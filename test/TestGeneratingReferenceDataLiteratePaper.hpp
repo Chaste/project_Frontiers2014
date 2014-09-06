@@ -86,7 +86,7 @@ public:
         FileFinder repo_data("data/reference_traces", this_file);
         FileFinder repo_data_summary("data", this_file);
         OutputFileHandler test_base_handler("Frontiers/ReferenceTraces/", false);
-        std::map<std::string, double> error_results;
+        std::map<std::string, std::vector<double> > error_results;
 
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
 
@@ -137,11 +137,30 @@ public:
             {
                 std::vector<double> voltages = solution.GetVariableAtIndex(p_cell->GetVoltageIndex());
                 CellProperties props(voltages, solution.rGetTimes());
-                props.GetLastActionPotentialDuration(90.0);
+                std::vector<std::pair<std::string, double> > properties;
+
+                // Calculate some summary statistics of the AP that was produced
+                properties.push_back(std::pair<std::string, double>("APD90",props.GetLastActionPotentialDuration(90.0)));
+                properties.push_back(std::pair<std::string, double>("APD50",props.GetLastActionPotentialDuration(50.0)));
+                properties.push_back(std::pair<std::string, double>("APD30",props.GetLastActionPotentialDuration(30.0)));
+                properties.push_back(std::pair<std::string, double>("V_max",props.GetLastPeakPotential()));
+                properties.push_back(std::pair<std::string, double>("V_min",props.GetLastRestingPotential()));
+                properties.push_back(std::pair<std::string, double>("dVdt_max",props.GetLastMaxUpstrokeVelocity()));
+
+                // Save these to a dedicated file for this model, and output to reference data folder in the repository.
+                out_stream p_summary_file = handler.OpenOutputFile(model_name + ".summary");
+                for (unsigned i=0; i<properties.size(); i++)
+                {
+                    std::cout << properties[i].first  << " = " << properties[i].second << std::endl;
+                    *p_summary_file << properties[i].first << "\t" << properties[i].second << std::endl;
+                }
+                p_summary_file->close();
+                FileFinder summary_info = handler.FindFile(model_name + ".summary");
+                summary_info.CopyTo(repo_data);
             }
             catch (const Exception& r_e)
             {
-                WARNING("No action potential produced for model " << model_name);
+                WARNING("Action potential properties calculation failed for model " << model_name);
                 continue;
             }
 
@@ -153,9 +172,9 @@ public:
 
             /* Write this solution to file so we can compare graphs, and print the error metric. */
             solution.WriteToFile(handler.GetRelativePath(), model_name + "_rough", "ms", 1, false, 16, false);
-            double error = CellModelUtilities::GetError(solution, model_name);
-            std::cout << "Model " << model_name << " square error " << error << std::endl;
-            error_results[model_name] = error;
+            std::vector<double> errors = CellModelUtilities::GetError(solution, model_name);
+            std::cout << "Model " << model_name << " square error " << errors[0] << std::endl;
+            error_results[model_name] = errors;
         }
 
         /* Write a file containing the target error metric for each model.
@@ -166,10 +185,15 @@ public:
         /* Each process writes its own file, at high precision */
         out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
         *p_error_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
-        typedef std::pair<std::string, double> StringDoublePair;
-        BOOST_FOREACH(StringDoublePair error, error_results)
+        typedef std::pair<std::string, std::vector<double> > StringDoublesPair;
+        BOOST_FOREACH(StringDoublesPair error, error_results)
         {
-            *p_error_file << error.first << "\t" << error.second << std::endl;
+            *p_error_file << error.first;
+            for (unsigned i=0; i<(error.second).size(); i++)
+            {
+                *p_error_file << "\t" << (error.second)[i];
+            }
+            *p_error_file << std::endl;
         }
         p_error_file->close();
 

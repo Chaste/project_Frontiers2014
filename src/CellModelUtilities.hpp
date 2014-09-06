@@ -120,13 +120,24 @@ public:
     static double GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
 
     /**
-     * Compare a simulation result against reference data, and compute a single error metric.
-     * We use TODO!
+     * Compare a simulation result against reference data, and compute error metrics.
+     * We use:
+     *  * Sum of square error in each voltage time point,
+     *  * absolute error in:
+     *    > APD90,
+     *    > APD50,
+     *    > APD30,
+     *    > V_max,
+     *    > V_min, (perhaps always initial condition, so not that useful)
+     *    > dVdt_max.
+     *
+     * Note that a lot of these may end up being zero, due to output time steps making the calculations
+     * quite coarse.
      *
      * @param rSolution  the new simulation results
      * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
      */
-    static double GetError(const OdeSolution& rSolution, const std::string& rModelName);
+    static std::vector<double> GetError(const OdeSolution& rSolution, const std::string& rModelName);
 };
 
 #endif // CELLMODELUTILITIES_HPP_
