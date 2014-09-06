@@ -1,4 +1,4 @@
 FIXED -1
 UNLIMITED 1
 VARIABLES 29
-Created by Chaste version 3.2.22572 (with uncommitted modifications) on Fri, 05 Sep 2014 11:45:49 +0000.  Chaste was built on Fri, 05 Sep 2014 11:45:13 +0000 by machine (uname) 'Linux skip.cs.ox.ac.uk 3.13.0-35-generic #62-Ubuntu SMP Fri Aug 15 01:58:42 UTC 2014 x86_64' using settings: GccOptNative_11, shared libraries.  Checked-out project versions: ApPredict=22571:22573; BethM=22571; Frontiers2014=22571M; FunctionalCuration=22572:22573; GaryM=22571M; KylieB=22571; RossJ=22568M.
+Created by Chaste version 3.2.22585 on Sat, 06 Sep 2014 17:20:30 +0000.  Chaste was built on Sat, 06 Sep 2014 17:19:33 +0000 by machine (uname) 'Linux travis 3.2.0-65-generic #99-Ubuntu SMP Fri Jul 4 21:03:29 UTC 2014 x86_64' using settings: IntelProduction_12, shared libraries.  Checked-out project versions: ApPredict=22584; BethM=22584; Frontiers2014=22586M; FunctionalCuration=22584; GaryM=22584M; RyanElkins=22584.
