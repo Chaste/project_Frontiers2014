@@ -181,13 +181,18 @@ public:
                     solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
                     try
                     {
-                        double error = CellModelUtilities::GetError(solution, model_name);
+                        std::vector<double> errors = CellModelUtilities::GetError(solution, model_name);
                         std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << " error with timestep of " << timestep << "' = "
-                                << error << ", required error = " << mErrorResults[model_name][0] << "." << std::endl;
-                        within_tolerance = (error <= mErrorResults[model_name][0] * 1.05);
+                                << errors[0] << ", required error = " << mErrorResults[model_name][0] << "." << std::endl;
+                        within_tolerance = (errors[0] <= mErrorResults[model_name][0] * 1.05);
 
                         /* Write result to file, tab separated */
-                        *p_file << model_name << "\t" << solver << "\t" << timestep << "\t" << error << "\t" << within_tolerance << std::endl;
+                        *p_file << model_name << "\t" << solver << "\t" << timestep;
+                        for (unsigned i=0; i<errors.size(); i++)
+                        {
+                            *p_file << "\t" << errors[i];
+                        }
+                        *p_file << "\t" << within_tolerance << std::endl;
                     }
                     catch (const Exception& r_e)
                     {
