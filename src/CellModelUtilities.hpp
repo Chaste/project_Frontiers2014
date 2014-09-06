@@ -138,6 +138,14 @@ public:
      * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
      */
     static std::vector<double> GetError(const OdeSolution& rSolution, const std::string& rModelName);
+
+    /**
+     * Return suitable error metrics (the ones listed above in GetError documentation), for
+     * this model for a slack vs. tight CVODE solve.
+     *
+     * @return a map between the model name, and the vector of error metrics
+     */
+    static std::map<std::string,  std::vector<double> > LoadErrorSummaryFile();
 };
 
 #endif // CELLMODELUTILITIES_HPP_

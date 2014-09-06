@@ -329,3 +329,60 @@ std::vector<double> CellModelUtilities::GetError(const OdeSolution& rSolution, c
 
     return errors;
 }
+
+/**
+ * A helper method that populates an error results structure from the stored data file in
+ * Frontiers2014/test/data/error_summary.txt
+ */
+std::map<std::string, std::vector<double> > CellModelUtilities::LoadErrorSummaryFile()
+{
+    std::map<std::string, std::vector<double> > error_results;
+
+    FileFinder this_file(__FILE__);
+    FileFinder summary_file("data/error_summary.txt", this_file);
+
+    std::ifstream indata; // indata is like cin
+    indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
+    if(!indata.good())
+    { // file couldn't be opened
+        EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
+    }
+
+    while (indata.good())
+    {
+       std::string this_line;
+       getline(indata, this_line);
+
+       if (this_line=="" || this_line=="\r")
+       {
+           if (indata.eof())
+           {    // If the blank line is the last line carry on OK.
+               break;
+           }
+           else
+           {
+               EXCEPTION("No data found on this line");
+           }
+       }
+       std::stringstream line(this_line);
+
+       // Load a standard data line.
+       std::string model_name;
+       std::vector<double> error_values(7);
+       line >> model_name;
+       for (unsigned i=0; i<7 ; i++)
+       {
+           line >> error_values[i];
+       }
+       error_results[model_name] = error_values;
+    }
+
+    if (!indata.eof())
+    {
+        EXCEPTION("A file reading error occurred");
+    }
+
+    return error_results;
+}
+
+

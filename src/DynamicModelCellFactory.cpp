@@ -45,11 +45,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractCvodeCell.hpp"
 
 DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
-                                                 const std::vector<std::string>& rPyCmlOptions)
-    : AbstractCardiacCellFactory<1u>()
+                                                 const std::vector<std::string>& rPyCmlOptions,
+                                                 bool highTol)
+    : AbstractCardiacCellFactory<1u>(),
+      mStrictTolerance(highTol)
 {
     // Create a simple stimulus to use.
-    mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-250000, 3, 1)); // magnitude, duration, start time.
+    mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-5000000, 3, 1)); // magnitude, duration, start time.
 
     // Make a new output folder for this model.
     mpHandler = new OutputFileHandler("Frontiers/MonodomainReference/" + rModelFile.GetLeafNameNoExtension(), true);
@@ -128,6 +130,12 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
 
     // Generate lookup tables if present
     p_cell->GetLookupTableCollection();
+
+    if (mStrictTolerance && dynamic_cast<AbstractCvodeCell*>(p_cell))
+    {
+        static_cast<AbstractCvodeCell*>(p_cell)->SetTolerances(1e-7,1e-9);
+    }
+
     return p_cell;
 }
 

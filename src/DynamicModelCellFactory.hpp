@@ -54,6 +54,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class DynamicModelCellFactory : public AbstractCardiacCellFactory<1u>
 {
 private:
+    /** Whether to switch CVODE onto a very high tolerance for the reference solution */
+    bool mStrictTolerance;
+
     /** A simple stimulus to apply at one end at t=1.0 */
     boost::shared_ptr<SimpleStimulus> mpSimpleStimulus;
 
@@ -78,10 +81,13 @@ public:
      * Constructor reads settings from the configuration file.
      * @param rModelFile  A file finder for the CellML file to use in this tissue sim.
      * @param rPyCmlOptions  A list of cell model conversion options to pass to PyCML.
+     * @param highTol  Whether we are generating the reference solution.
+     *
      * @note Must be called collectively.
      */
     DynamicModelCellFactory(const FileFinder& rModelFile,
-                            const std::vector<std::string>& rPyCmlOptions);
+                            const std::vector<std::string>& rPyCmlOptions,
+                            bool highTol = false);
 
     /** Destructor*/
     ~DynamicModelCellFactory();
