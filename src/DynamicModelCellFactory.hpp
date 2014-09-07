@@ -41,7 +41,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/shared_ptr.hpp>
 
 #include "AbstractCardiacCellFactory.hpp"
-
+#include "CellModelUtilities.hpp"
 #include "SimpleStimulus.hpp"
 
 #include "DynamicCellModelLoader.hpp"
@@ -63,30 +63,21 @@ private:
     /** The shared library location */
     FileFinder mSharedLibraryLocation;
 
-    /** The output file handler for the location of the .so file. */
-    OutputFileHandler* mpHandler;
-
-    /**
-     * @return a loader for the given (dynamically loadable) cell model.
-     * @param rModelFile  file finder giving location of the model to load
-     * @param rPyCmlOptions  A list of cell model conversion options to pass to PyCML.
-     * @param isCollective  whether we are being called collectively
-     */
-    DynamicCellModelLoaderPtr LoadDynamicModel(const FileFinder& rModelFile,
-                                               const std::vector<std::string>& rPyCmlOptions,
-                                               bool isCollective);
-
 public:
     /**
-     * Constructor reads settings from the configuration file.
-     * @param rModelFile  A file finder for the CellML file to use in this tissue sim.
-     * @param rPyCmlOptions  A list of cell model conversion options to pass to PyCML.
-     * @param highTol  Whether we are generating the reference solution.
+     * A constructor which will use CellModelUtilities to dynamically convert a CellML
+     * file into C++ code, compile it and load the resulting model object.
      *
-     * @note Must be called collectively.
+     * @param rModelFile  the CellML file to convert
+     * @param rOutputDir  handler for the folder in which to create generated code
+     * @param solver  which cell model solver to use
+     * @param useLookupTables  whether to use lookup tables to speed up simulations
+     * @param highTol  Whether we are generating the reference solution.
      */
     DynamicModelCellFactory(const FileFinder& rModelFile,
-                            const std::vector<std::string>& rPyCmlOptions,
+                            OutputFileHandler& rOutputDir,
+                            Solvers::Value solver,
+                            bool useLookupTables,
                             bool highTol = false);
 
     /** Destructor*/

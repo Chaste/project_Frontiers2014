@@ -69,11 +69,10 @@ class TestMonodomainGenerateReferenceSolutionsLiteratePaper : public CxxTest::Te
 public:
     void TestMonodomainGenerateReferenceSolutions() throw (Exception)
     {
-        std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
+        // We don't want to find this confusing matters!!
+        EXIT_IF_PARALLEL;
 
-        std::vector<std::string> pycml_options;
-        pycml_options.push_back("--cvode");
-        pycml_options.push_back("--expose-annotated-variables");
+        std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
@@ -89,18 +88,22 @@ public:
         {
             // Find the FileFinder associated with the model we want.
             FileFinder model_to_use;
-            for (unsigned i=0; i<models.size(); i++)
+            for (unsigned i=0; i<all_models.size(); i++)
             {
-                if (models[i].GetLeafNameNoExtension()==model)
+                if (all_models[i].GetLeafNameNoExtension()==model)
                 {
-                    model_to_use = models[i];
+                    model_to_use = all_models[i];
                     break;
                 }
             }
 
+            // Use a different constructor
+            OutputFileHandler base_model_handler("Frontiers/MonodomainReference/" + model);
             DynamicModelCellFactory cell_factory(model_to_use,
-                                                 pycml_options,
-                                                 true);// true for making reference solution
+                                                 base_model_handler,
+                                                 Solvers::CVODE_ANALYTIC_J,
+                                                 false,// Whether to use lookup tables.
+                                                 true); // true for making reference solution
 
             /* We will auto-generate a mesh this time, and pass it in, rather than
              * provide a mesh file name. This is how to generate a cuboid mesh with
@@ -153,62 +156,59 @@ public:
 
             OutputFileHandler handler(output_folder, false);
 
-            if (PetscTools::AmMaster())
+            /* Repository data location */
+            FileFinder this_file(__FILE__);
+            FileFinder repo_data("data/reference_traces", this_file);
+
+            /*
+             * Read some of the outputted data back in, and evaluate AP properties at the last node,
+             * as per the single cell stuff.
+             */
+            Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
+            std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
+            TS_ASSERT_EQUALS( times.size(), 10001u);
+            std::vector<double> last_node = data_reader.GetVariableOverTime("V", 101);
+
+            // Output the raw AP data
+            out_stream p_file = handler.OpenOutputFile(model + "_tissue.dat");
+            for (unsigned i=0; i<times.size(); i++)
             {
-                /* Repository data location */
-                FileFinder this_file(__FILE__);
-                FileFinder repo_data("data/reference_traces", this_file);
+                *p_file << times[i] << "\t" << last_node[i] << "\n";
+            }
+            p_file->close();
 
-                /*
-                 * Read some of the outputted data back in, and evaluate AP properties at the last node,
-                 * as per the single cell stuff.
-                 */
-                Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
-                std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-                TS_ASSERT_EQUALS( times.size(), 10001u);
-                std::vector<double> last_node = data_reader.GetVariableOverTime("V", 101);
+            // Now copy it into the repository.
+            FileFinder ref_data = handler.FindFile(model + "_tissue.dat");
+            ref_data.CopyTo(repo_data);
 
-                // Output the raw AP data
-                out_stream p_file = handler.OpenOutputFile(model + "_tissue.dat");
-                for (unsigned i=0; i<times.size(); i++)
+            /* Check that the solution looks like an action potential. */
+            try
+            {
+                CellProperties props(last_node, times);
+                std::vector<std::pair<std::string, double> > properties;
+
+                // Calculate some summary statistics of the AP that was produced
+                properties.push_back(std::pair<std::string, double>("APD90",props.GetLastActionPotentialDuration(90.0)));
+                properties.push_back(std::pair<std::string, double>("APD50",props.GetLastActionPotentialDuration(50.0)));
+                properties.push_back(std::pair<std::string, double>("APD30",props.GetLastActionPotentialDuration(30.0)));
+                properties.push_back(std::pair<std::string, double>("V_max",props.GetLastPeakPotential()));
+                properties.push_back(std::pair<std::string, double>("V_min",props.GetLastRestingPotential()));
+                properties.push_back(std::pair<std::string, double>("dVdt_max",props.GetLastMaxUpstrokeVelocity()));
+
+                // Save these to a dedicated file for this model, and output to reference data folder in the repository.
+                out_stream p_summary_file = handler.OpenOutputFile(model + "_tissue.summary");
+                for (unsigned i=0; i<properties.size(); i++)
                 {
-                    *p_file << times[i] << "\t" << last_node[i] << "\n";
+                    std::cout << properties[i].first  << " = " << properties[i].second << std::endl;
+                    *p_summary_file << properties[i].first << "\t" << properties[i].second << std::endl;
                 }
-                p_file->close();
-
-                // Now copy it into the repository.
-                FileFinder ref_data = handler.FindFile(model + "_tissue.dat");
-                ref_data.CopyTo(repo_data);
-
-                /* Check that the solution looks like an action potential. */
-                try
-                {
-                    CellProperties props(last_node, times);
-                    std::vector<std::pair<std::string, double> > properties;
-
-                    // Calculate some summary statistics of the AP that was produced
-                    properties.push_back(std::pair<std::string, double>("APD90",props.GetLastActionPotentialDuration(90.0)));
-                    properties.push_back(std::pair<std::string, double>("APD50",props.GetLastActionPotentialDuration(50.0)));
-                    properties.push_back(std::pair<std::string, double>("APD30",props.GetLastActionPotentialDuration(30.0)));
-                    properties.push_back(std::pair<std::string, double>("V_max",props.GetLastPeakPotential()));
-                    properties.push_back(std::pair<std::string, double>("V_min",props.GetLastRestingPotential()));
-                    properties.push_back(std::pair<std::string, double>("dVdt_max",props.GetLastMaxUpstrokeVelocity()));
-
-                    // Save these to a dedicated file for this model, and output to reference data folder in the repository.
-                    out_stream p_summary_file = handler.OpenOutputFile(model + "_tissue.summary");
-                    for (unsigned i=0; i<properties.size(); i++)
-                    {
-                        std::cout << properties[i].first  << " = " << properties[i].second << std::endl;
-                        *p_summary_file << properties[i].first << "\t" << properties[i].second << std::endl;
-                    }
-                    p_summary_file->close();
-                    FileFinder summary_info = handler.FindFile(model + "_tissue.summary");
-                    summary_info.CopyTo(repo_data);
-                }
-                catch (const Exception& r_e)
-                {
-                    WARNING("Action potential properties calculation failed for model " << model);
-                }
+                p_summary_file->close();
+                FileFinder summary_info = handler.FindFile(model + "_tissue.summary");
+                summary_info.CopyTo(repo_data);
+            }
+            catch (const Exception& r_e)
+            {
+                WARNING("Action potential properties calculation failed for model " << model);
             }
         }
     }

@@ -192,7 +192,7 @@ public:
                         /* Run a single pace to check accuracy. */
                         OdeSolution solution = p_cell->Compute(0.0, period, 0.1);
                         solution.WriteToFile(handler.GetRelativePath(), model_name, "ms", 1, false, 16, false);
-                        std::vector<double> errors = CellModelUtilities::GetError(solution, model_name);
+                        std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
                         std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " square error " << errors[0] << std::endl;
                         if (errors[0] > error_results[model_name][0] * 1.05)
                         {

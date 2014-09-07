@@ -282,7 +282,7 @@ double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCel
     return period;
 }
 
-std::vector<double> CellModelUtilities::GetError(const OdeSolution& rSolution, const std::string& rModelName)
+std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, const std::string& rModelName)
 {
     std::vector<double> errors;
     FileFinder this_file(__FILE__);
@@ -308,6 +308,96 @@ std::vector<double> CellModelUtilities::GetError(const OdeSolution& rSolution, c
 
     CellProperties reference_properties(valid_voltages, valid_times);
     CellProperties test_properties(new_voltages, r_new_times);
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(90.0)
+                     - test_properties.GetLastActionPotentialDuration(90.0));
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(50.0)
+                     - test_properties.GetLastActionPotentialDuration(50.0));
+
+    errors.push_back(reference_properties.GetLastActionPotentialDuration(30.0)
+                     - test_properties.GetLastActionPotentialDuration(30.0));
+
+    errors.push_back(reference_properties.GetLastPeakPotential()
+                     - test_properties.GetLastPeakPotential());
+
+    errors.push_back(reference_properties.GetLastRestingPotential()
+                     - test_properties.GetLastRestingPotential());
+
+    errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
+                     - test_properties.GetLastMaxUpstrokeVelocity());
+
+    return errors;
+}
+
+std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double>& rTestTimes,
+                                                        const std::vector<double>& rTestVoltages,
+                                                        const std::string& rModelName)
+{
+    std::vector<double> errors;
+    FileFinder this_file(__FILE__);
+    FileFinder reference_folder("../test/data/reference_traces", this_file);
+
+    // Load the reference traces from file
+    FileFinder reference_trace(rModelName + "_tissue.dat", reference_folder);
+    EXCEPT_IF_NOT(reference_trace.IsFile());
+
+    std::vector<double> valid_times;
+    std::vector<double> valid_voltages;
+    {
+        std::ifstream indata; // indata is like cin
+        indata.open(reference_trace.GetAbsolutePath().c_str()); // opens the file
+        if(!indata.good())
+        { // file couldn't be opened
+            EXCEPTION("Couldn't open data file: " + reference_trace.GetAbsolutePath());
+        }
+
+        while (indata.good())
+        {
+           std::string this_line;
+           getline(indata, this_line);
+
+           if (this_line=="" || this_line=="\r")
+           {
+               if (indata.eof())
+               {    // If the blank line is the last line carry on OK.
+                   break;
+               }
+               else
+               {
+                   EXCEPTION("No data found on this line");
+               }
+           }
+           std::stringstream line(this_line);
+
+           // Load a standard data line.
+           double time;
+           double voltage;
+           line >> time;
+           line >> voltage;
+           valid_times.push_back(time);
+           valid_voltages.push_back(voltage);
+        }
+
+        if (!indata.eof())
+        {
+            EXCEPTION("A file reading error occurred");
+        }
+
+        EXCEPT_IF_NOT(valid_times.size() == rTestTimes.size());
+        EXCEPT_IF_NOT(valid_voltages.size() == rTestVoltages.size());
+    }
+
+    double square_error = 0.0;
+    for (unsigned i=0; i<valid_times.size(); i++)
+    {
+        EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(valid_times[i], rTestTimes[i], 1e-12));
+        square_error += SmallPow((valid_voltages[i] - rTestVoltages[i]), 2u);
+    }
+    errors.push_back(square_error);
+
+    CellProperties reference_properties(valid_voltages, valid_times);
+    CellProperties test_properties(rTestVoltages, rTestTimes);
 
     errors.push_back(reference_properties.GetLastActionPotentialDuration(90.0)
                      - test_properties.GetLastActionPotentialDuration(90.0));

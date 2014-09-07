@@ -45,58 +45,25 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractCvodeCell.hpp"
 
 DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
-                                                 const std::vector<std::string>& rPyCmlOptions,
+                                                 OutputFileHandler& rOutputDir,
+                                                 Solvers::Value solver,
+                                                 bool useLookupTables,
                                                  bool highTol)
     : AbstractCardiacCellFactory<1u>(),
       mStrictTolerance(highTol)
 {
-    // Create a simple stimulus to use.
+    // Create a simple stimulus to use in the CreateCardiacCellForTissueNode method.
     mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-5000000, 3, 1)); // magnitude, duration, start time.
+    
+    // Do a single run to do the conversion and create the .so model that we will want to use (discard model it gives).
+    CellModelUtilities::CreateCellModel(rModelFile,rOutputDir,solver,useLookupTables);
 
-    // Make a new output folder for this model.
-    mpHandler = new OutputFileHandler("Frontiers/MonodomainReference/" + rModelFile.GetLeafNameNoExtension(), true);
-
-    // First let's copy the CellML file to this folder to make the
-    // .so and outputted files end up there too.
-    FileFinder copied_cellml_file = mpHandler->CopyFileTo(rModelFile);
-
-    // Also copy the .out file across, if it exists.
-    FileFinder maple_output_file(rModelFile.GetLeafNameNoExtension() + ".out", rModelFile);
-    if (maple_output_file.IsFile())
-    {
-        mpHandler->CopyFileTo(maple_output_file);
-    }
-
-    // We first collectively convert this CellML file to shared library,
-    // which each process can load to assign a new model to its nodes.
-    DynamicCellModelLoaderPtr p_loader = LoadDynamicModel(copied_cellml_file, rPyCmlOptions, true);
-
-    mSharedLibraryLocation = FileFinder(p_loader->GetLoadableModulePath(), RelativeTo::Absolute);
-    std::cout << "Shared library location is " << mSharedLibraryLocation.GetAbsolutePath() << "\n";
-    assert(mSharedLibraryLocation.Exists());
-}
-
-DynamicCellModelLoaderPtr DynamicModelCellFactory::LoadDynamicModel(
-        const FileFinder& rModelFile,
-        const std::vector<std::string>& rPyCmlOptions,
-        bool isCollective)
-{
-    assert(rModelFile.Exists());
-    CellMLToSharedLibraryConverter converter(true); // true to preserve generated source for inspection
-
-    /* We only want to write out the options file once at the beginning */
-    if (isCollective)
-    {
-        converter.CreateOptionsFile(*mpHandler,
-                                    rModelFile.GetLeafNameNoExtension(),
-                                    rPyCmlOptions);
-    }
-    return converter.Convert(rModelFile, isCollective);
+    mSharedLibraryLocation = rOutputDir.FindFile("lib" + rModelFile.GetLeafNameNoExtension() + ".so");
+    assert(mSharedLibraryLocation.IsFile());
 }
 
 DynamicModelCellFactory::~DynamicModelCellFactory()
 {
-    delete mpHandler;
 }
 
 AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissueNode(Node<1u>* pNode)
@@ -115,12 +82,13 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     // options won't be used with a last 'false' argument, so we pass in an empty vec.
     std::vector<std::string> empty_options;
 
-    DynamicCellModelLoaderPtr p_loader = LoadDynamicModel(mSharedLibraryLocation, empty_options, false);
+    CellMLToSharedLibraryConverter converter;
+    DynamicCellModelLoaderPtr p_loader = converter.Convert(mSharedLibraryLocation, false);
 
     /* If this is the first node at x=0 we apply a stimulus, otherwise we don't */
     if (pNode->rGetLocation()[0] < 1e-6)
     {
-        std::cout << "Generating cell model with a stimulus\n";
+        std::cout << "Generating cell model with a stimulus" << std::endl << std::flush;
         p_cell = p_loader->CreateCell(this->mpSolver, this->mpSimpleStimulus);
     }
     else

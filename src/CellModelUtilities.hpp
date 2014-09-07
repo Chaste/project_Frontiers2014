@@ -137,7 +137,15 @@ public:
      * @param rSolution  the new simulation results
      * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
      */
-    static std::vector<double> GetError(const OdeSolution& rSolution, const std::string& rModelName);
+    static std::vector<double> GetErrors(const OdeSolution& rSolution,
+                                         const std::string& rModelName);
+
+    /**
+     *
+     */
+    static std::vector<double> GetTissueErrors(const std::vector<double>& rTestTimes,
+                                               const std::vector<double>& rTestVoltages,
+                                               const std::string& rModelName);
 
     /**
      * Return suitable error metrics (the ones listed above in GetError documentation), for
