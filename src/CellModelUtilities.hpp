@@ -72,6 +72,19 @@ struct Solvers
  */
 class CellModelUtilities
 {
+private:
+    /**
+     * Dynamically convert a CellML file into C++ code, compile it and load the resulting model object.
+     *
+     * @param rModelFile  the CellML file to convert
+     * @param rOutputDir  handler for the folder in which to create generated code
+     * @param rOptions  extra options for the code generation tool
+     *
+     * @return a cardiac cell for Chaste to use.
+     */
+    static boost::shared_ptr<AbstractCardiacCellInterface> CreateCellModel(const FileFinder& rModelFile,
+                                                                           OutputFileHandler& rOutputDir,
+                                                                           const std::vector<std::string>& rOptions);
 public:
     /**
      * Read the CellML project folder and return all the .cellml files defined therein.
@@ -92,22 +105,13 @@ public:
      * @param rOutputDir  handler for the folder in which to create generated code
      * @param solver  which cell model solver to use
      * @param useLookupTables  whether to use lookup tables to speed up simulations
+     *
+     * @return a cardiac cell for Chaste to use.
      */
     static boost::shared_ptr<AbstractCardiacCellInterface> CreateCellModel(const FileFinder& rModelFile,
                                                                            OutputFileHandler& rOutputDir,
                                                                            Solvers::Value solver,
                                                                            bool useLookupTables);
-
-    /**
-     * Dynamically convert a CellML file into C++ code, compile it and load the resulting model object.
-     *
-     * @param rModelFile  the CellML file to convert
-     * @param rOutputDir  handler for the folder in which to create generated code
-     * @param rOptions  extra options for the code generation tool
-     */
-    static boost::shared_ptr<AbstractCardiacCellInterface> CreateCellModel(const FileFinder& rModelFile,
-                                                                           OutputFileHandler& rOutputDir,
-                                                                           const std::vector<std::string>& rOptions);
 
     /**
      * Get the pacing cycle length to use when simulating a cell.
@@ -116,6 +120,7 @@ public:
      * to ensure that time steps or sampling intervals used for simulation will divide the simulation duration exactly.
      *
      * @param pCell  the cell to extract stimulus information from
+     * @return The default period
      */
     static double GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCellInterface> pCell);
 
@@ -136,12 +141,31 @@ public:
      *
      * @param rSolution  the new simulation results
      * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
+     *
+     * @return the error metrics listed above.
      */
     static std::vector<double> GetErrors(const OdeSolution& rSolution,
                                          const std::string& rModelName);
 
     /**
+     * Compare a simulation result against reference data (the AP at the last node),
+     * and compute error metrics.
      *
+     * We use:
+     *  * Sum of square error in each voltage time point,
+     *  * absolute error in:
+     *    > APD90,
+     *    > APD50,
+     *    > APD30,
+     *    > V_max,
+     *    > V_min, (perhaps always initial condition, so not that useful)
+     *    > dVdt_max.
+     *
+     * @param rTestTimes  the test simulation printing times
+     * @param rTestVoltages  the test simulation voltages at these times on last node.
+     * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
+     *
+     * @return the error metrics listed above.
      */
     static std::vector<double> GetTissueErrors(const std::vector<double>& rTestTimes,
                                                const std::vector<double>& rTestVoltages,

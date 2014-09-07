@@ -104,8 +104,7 @@ public:
             FileFinder& r_model = models[i];
             std::string model_name = r_model.GetLeafNameNoExtension();
             OutputFileHandler handler("Frontiers/ReferenceTraces/" + model_name);
-            std::vector<std::string> options = boost::assign::list_of("--Wu")("--cvode");
-            boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, options);
+            boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, Solvers::CVODE_ANALYTIC_J, false);
             double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
             /* Set up solver parameters. */
