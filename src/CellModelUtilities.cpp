@@ -429,7 +429,7 @@ std::map<std::string, std::vector<double> > CellModelUtilities::LoadErrorSummary
     std::map<std::string, std::vector<double> > error_results;
 
     FileFinder this_file(__FILE__);
-    FileFinder summary_file("data/error_summary.txt", this_file);
+    FileFinder summary_file("../test/data/error_summary.txt", this_file);
 
     std::ifstream indata; // indata is like cin
     indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
