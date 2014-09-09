@@ -72,6 +72,15 @@ public:
         // We don't want to find this confusing matters!!
         EXIT_IF_PARALLEL;
 
+        /*
+         * This test was run 4 times with the following values inserted here:
+         * -> 0.001 ms (much finer than normal)
+         * -> 0.01 ms (typically a fine timestep)
+         * -> 0.1 ms (about average)
+         * -> 1 ms (coarse)
+         */
+        double pde_timestep = 0.01; //ms
+
         std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
         // A list of models that we want to do tissue simulations with.
@@ -135,7 +144,8 @@ public:
             HeartConfig::Instance()->SetOutputDirectory(output_folder);
             HeartConfig::Instance()->SetOutputFilenamePrefix("results");
             HeartConfig::Instance()->SetVisualizeWithVtk(true);
-            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(0.001, 0.001, 0.1);
+
+            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, 0.1);
 
             /* Now we declare the problem class */
             MonodomainProblem<1> monodomain_problem( &cell_factory );
@@ -170,7 +180,9 @@ public:
             std::vector<double> last_node = data_reader.GetVariableOverTime("V", 101);
 
             // Output the raw AP data
-            out_stream p_file = handler.OpenOutputFile(model + "_tissue.dat");
+            std::stringstream file_suffix;
+            file_suffix << "_tissue_" << pde_timestep;
+            out_stream p_file = handler.OpenOutputFile(model + file_suffix.str() + ".dat");
             for (unsigned i=0; i<times.size(); i++)
             {
                 *p_file << times[i] << "\t" << last_node[i] << "\n";
@@ -178,7 +190,7 @@ public:
             p_file->close();
 
             // Now copy it into the repository.
-            FileFinder ref_data = handler.FindFile(model + "_tissue.dat");
+            FileFinder ref_data = handler.FindFile(model + file_suffix.str() + ".dat");
             ref_data.CopyTo(repo_data);
 
             /* Check that the solution looks like an action potential. */
@@ -196,14 +208,14 @@ public:
                 properties.push_back(std::pair<std::string, double>("dVdt_max",props.GetLastMaxUpstrokeVelocity()));
 
                 // Save these to a dedicated file for this model, and output to reference data folder in the repository.
-                out_stream p_summary_file = handler.OpenOutputFile(model + "_tissue.summary");
+                out_stream p_summary_file = handler.OpenOutputFile(model + file_suffix.str() + ".summary");
                 for (unsigned i=0; i<properties.size(); i++)
                 {
                     std::cout << properties[i].first  << " = " << properties[i].second << std::endl;
                     *p_summary_file << properties[i].first << "\t" << properties[i].second << std::endl;
                 }
                 p_summary_file->close();
-                FileFinder summary_info = handler.FindFile(model + "_tissue.summary");
+                FileFinder summary_info = handler.FindFile(model + file_suffix.str() + ".summary");
                 summary_info.CopyTo(repo_data);
             }
             catch (const Exception& r_e)
