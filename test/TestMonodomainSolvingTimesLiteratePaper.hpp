@@ -77,7 +77,7 @@ public:
 
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
-                                                 ("noble_model_1991")
+                                                 ("beeler_reuter_model_1977")
                                                  ("nygren_atrial_model_1998")
                                                  ("ten_tusscher_model_2004_epi")
                                                  ("grandi_pasqualini_bers_2010_ss")
@@ -160,9 +160,18 @@ public:
             /* Finally, call `Initialise` and `Solve` as before */
             monodomain_problem.Initialise();
 
-            Timer::Reset();
-            monodomain_problem.Solve();
-            double time_taken = Timer::GetElapsedTime();
+            double time_taken;
+            try
+            {
+                Timer::Reset();
+                monodomain_problem.Solve();
+                time_taken = Timer::GetElapsedTime();
+            }
+            catch (Exception& e)
+            {
+                WARNING("Model '" << model << "' simulation failed with: " << e.GetMessage());
+                continue;
+            }
 
             OutputFileHandler handler(output_folder, false);
 
@@ -172,8 +181,7 @@ public:
              */
             Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
             std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-            TS_ASSERT_EQUALS( times.size(), 10001u);
-            std::vector<double> voltages_at_last_node = data_reader.GetVariableOverTime("V", 101);
+            std::vector<double> voltages_at_last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
             try
             {

@@ -73,19 +73,42 @@ public:
         EXIT_IF_PARALLEL;
 
         /*
-         * This test was run 4 times with the following values inserted here:
+         * This test was run with the following values inserted here:
          * -> 0.001 ms (much finer than normal)
          * -> 0.01 ms (typically a fine timestep)
          * -> 0.1 ms (about average)
          * -> 1 ms (coarse)
          */
-        double pde_timestep = 0.01; //ms
+        double pde_timestep;
+        if(CommandLineArguments::Instance()->OptionExists("--timestep"))
+        {
+            pde_timestep = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("--timestep");
+        }
+        else
+        {
+            EXCEPTION("Please enter an argument '--timestep', probably from [0.001, 0.01, 0.1, 1].");
+        }
+
+        /**
+         * This test was run with the following values inserted here:
+         * -> 0.01 cm (fine)
+         * -> 0.001 cm (much finer than normal)
+         */
+        double h;
+        if(CommandLineArguments::Instance()->OptionExists("--spacestep"))
+        {
+            h = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("--spacestep");
+        }
+        else
+        {
+            EXCEPTION("Please enter an argument '--spacestep', probably from [0.001, 0.01].");
+        }
 
         std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
-                                                 ("noble_model_1991")
+                                                 ("beeler_reuter_model_1977")
                                                  ("nygren_atrial_model_1998")
                                                  ("ten_tusscher_model_2004_epi")
                                                  ("grandi_pasqualini_bers_2010_ss")
@@ -106,8 +129,12 @@ public:
                 }
             }
 
+            std::stringstream output_folder_stream;
+            output_folder_stream << "Frontiers/MonodomainReference/" << model << "_pde_" << pde_timestep << "_h_" << h;
+            std::string output_folder = output_folder_stream.str();
+
             // Use a different constructor
-            OutputFileHandler base_model_handler("Frontiers/MonodomainReference/" + model);
+            OutputFileHandler base_model_handler(output_folder);
             DynamicModelCellFactory cell_factory(model_to_use,
                                                  base_model_handler,
                                                  Solvers::CVODE_ANALYTIC_J,
@@ -125,7 +152,21 @@ public:
              *
              */
             DistributedTetrahedralMesh<1,1> mesh;
-            double h=0.001;
+
+            /*
+             * We need to change the printing time steps if going to less than 0.1 ms output, but note
+             * that the AP calculations will necessarily be affected by this. We could do them all
+             * at 1ms output, then they would be more consistent, but far less accurate!
+             */
+            if (pde_timestep < 0.1)
+            {
+                HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, 0.1);
+            }
+            else
+            {
+                HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, pde_timestep);
+            }
+
             mesh.ConstructRegularSlabMesh(h, 1 /*length*/);
             HeartConfig::Instance()->SetOutputUsingOriginalNodeOrdering(true);
 
@@ -137,17 +178,12 @@ public:
              * conductivity'' is used as the monodomain effective conductivity (not a
              * harmonic mean of intra and extracellular conductivities). So if you want to
              * alter the monodomain conductivity call
-             * `HeartConfig::Instance()->SetIntracellularConductivities`
+             * `HeartConfig::Instance()->SetIntracellularConductivities()`
              */
-            HeartConfig::Instance()->SetSimulationDuration(1000); //ms
-            std::stringstream output_folder_stream;
-            output_folder_stream << "Frontiers/MonodomainReference/" << model << "/results_" << pde_timestep;
-            std::string output_folder = output_folder_stream.str();
-            HeartConfig::Instance()->SetOutputDirectory(output_folder);
+            HeartConfig::Instance()->SetSimulationDuration(500); //ms
+            HeartConfig::Instance()->SetOutputDirectory(output_folder + "/results");
             HeartConfig::Instance()->SetOutputFilenamePrefix("results");
             HeartConfig::Instance()->SetVisualizeWithVtk(true);
-
-            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, 0.1);
 
             /* Now we declare the problem class */
             MonodomainProblem<1> monodomain_problem( &cell_factory );
@@ -164,7 +200,15 @@ public:
 
             /* Finally, call `Initialise` and `Solve` as before */
             monodomain_problem.Initialise();
-            monodomain_problem.Solve();
+            try
+            {
+                monodomain_problem.Solve();
+            }
+            catch (Exception& e)
+            {
+                WARNING("Model '" << model << "' simulation failed with: " << e.GetMessage());
+                continue;
+            }
 
             OutputFileHandler handler(output_folder, false);
 
@@ -178,12 +222,12 @@ public:
              */
             Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
             std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-            TS_ASSERT_EQUALS( times.size(), 10001u);
-            std::vector<double> last_node = data_reader.GetVariableOverTime("V", 101);
+
+            std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
             // Output the raw AP data
             std::stringstream file_suffix;
-            file_suffix << "_tissue_" << pde_timestep;
+            file_suffix << "_tissue_pde_" << pde_timestep << "_h_" << h;
             out_stream p_file = handler.OpenOutputFile(model + file_suffix.str() + ".dat");
             for (unsigned i=0; i<times.size(); i++)
             {
