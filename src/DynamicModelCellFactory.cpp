@@ -53,7 +53,9 @@ DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
       mStrictTolerance(highTol)
 {
     // Create a simple stimulus to use in the CreateCardiacCellForTissueNode method.
-    mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-5000000, 3, 1)); // magnitude, duration, start time.
+    // The stimulus is a bit of a compromise, needs to be big enough to fire off all the models, but not
+    // so big that it pushes the voltage up to 'unphysiological' for certain models.
+    mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-30000, 4, 1)); // magnitude, duration, start time.
     
     // Do a single run to do the conversion and create the .so model that we will want to use (discard model it gives).
     CellModelUtilities::CreateCellModel(rModelFile,rOutputDir,solver,useLookupTables);
@@ -85,10 +87,15 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     CellMLToSharedLibraryConverter converter;
     DynamicCellModelLoaderPtr p_loader = converter.Convert(mSharedLibraryLocation, false);
 
-    /* If this is the first node at x=0 we apply a stimulus, otherwise we don't */
-    if (pNode->rGetLocation()[0] < 1e-6)
+    /*
+     * If this is anywhere inside x =< 0.1cm we apply a stimulus, otherwise we don't.
+     *
+     * N.B. Just applying a stimulus at one node on the edge is a bit numerically fragile
+     * as this looks quite different to the next node on different mesh spacings.
+     */
+    if (pNode->rGetLocation()[0] <= 0.1)
     {
-        std::cout << "Generating cell model with a stimulus" << std::endl << std::flush;
+        //std::cout << "Generating cell model with a stimulus" << std::endl << std::flush;
         p_cell = p_loader->CreateCell(this->mpSolver, this->mpSimpleStimulus);
     }
     else
@@ -106,5 +113,4 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
 
     return p_cell;
 }
-
 
