@@ -207,7 +207,12 @@ public:
                         std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " took time " << elapsed_time << "s" << std::endl;
 
                         /* Record the result. */
-                        *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << elapsed_time << "\t" << errors[0] << std::endl;
+                        *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << elapsed_time;
+                        for (unsigned i=0; i<errors.size(); i++)
+                        {
+                            *p_file << "\t" << errors[i];
+                        }
+                        *p_file << std::endl;
 
 //                        double pde_time_step = 0.01;
 //                        elapsed_time = TimeSimulationTissueStyle(p_cell, pde_time_step);
