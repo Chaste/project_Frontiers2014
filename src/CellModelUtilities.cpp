@@ -58,7 +58,8 @@ bool finder_sort(const FileFinder& rf1, const FileFinder& rf2)
 
 std::vector<FileFinder> CellModelUtilities::GetListOfModels()
 {
-    FileFinder model_folder("projects/Frontiers2014/cellml", RelativeTo::ChasteSourceRoot);
+    FileFinder this_file(__FILE__);
+    FileFinder model_folder("../cellml", this_file);
     std::vector<FileFinder> models = model_folder.FindMatches("*.cellml");
     std::sort(models.begin(), models.end(), finder_sort);
     return models;
@@ -434,7 +435,8 @@ std::map<std::string, std::vector<double> > CellModelUtilities::LoadErrorSummary
     std::ifstream indata; // indata is like cin
     indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
     if(!indata.good())
-    { // file couldn't be opened
+    {
+        // file couldn't be opened
         EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
     }
 
