@@ -140,7 +140,9 @@ public:
              * `HeartConfig::Instance()->SetIntracellularConductivities`
              */
             HeartConfig::Instance()->SetSimulationDuration(1000); //ms
-            std::string output_folder = "Frontiers/MonodomainReference/" + model + "/results";
+            std::stringstream output_folder_stream;
+            output_folder_stream << "Frontiers/MonodomainReference/" << model << "/results_" << pde_timestep;
+            std::string output_folder = output_folder_stream.str();
             HeartConfig::Instance()->SetOutputDirectory(output_folder);
             HeartConfig::Instance()->SetOutputFilenamePrefix("results");
             HeartConfig::Instance()->SetVisualizeWithVtk(true);
