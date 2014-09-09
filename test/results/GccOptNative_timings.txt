@@ -1,514 +1,919 @@
-aslanidi_Purkinje_model_2009	7	0	7.87020206e+00
-aslanidi_atrial_model_2009	5	0	1.51632490e+01
-beeler_reuter_model_1977	2	0	2.02070422e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	0	0	6.86271191e-02
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	7	0	6.86919582e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	5	0	6.32578750e+01
-carro_2011_endo	2	0	1.06125535e+02
-carro_2011_epi	0	0	1.48272991e-01
-carro_2011_epi	7	0	3.39699509e+03
-clancy_rudy_2002	5	0	9.60872316e+00
-corrias_purkinje_2011	2	0	1.63747981e+01
-courtemanche_ramirez_nattel_1998	0	0	5.59480190e-02
-courtemanche_ramirez_nattel_1998	7	0	2.55632150e+01
-davies_isap_2012	5	0	8.34977970e+01
-decker_2009	2	0	1.33334498e+01
-demir_model_1994	0	0	8.29949379e-02
-demir_model_1994	7	0	1.59514403e+03
-dokos_model_1996	5	0	1.42437291e+00
-earm_noble_model_1990	2	0	4.13695216e+00
-espinosa_model_1998_normal	0	0	3.04670334e-02
-espinosa_model_1998_normal	7	0	2.29182851e+01
-faber_rudy_2000	5	0	9.09818196e+00
-fink_noble_giles_model_2008	2	0	5.51511500e+01
-fox_mcharg_gilmour_2002	0	0	4.94561195e-02
-fox_mcharg_gilmour_2002	7	0	3.95195913e+00
-grandi_pasqualini_bers_2010_ss	5	0	2.55877602e+01
-grandi_pasqualini_bers_2010_ss_endo	2	0	1.01508650e+02
-hilgemann_noble_model_1987	0	0	2.73058414e-02
-hilgemann_noble_model_1987	7	0	4.36580992e+00
-hodgkin_huxley_squid_axon_model_1952_modified	5	0	2.13828611e+00
-hund_rudy_2004	2	0	4.16281741e+01
-iribe_model_2006	0	0	3.37789059e-02
-iribe_model_2006	7	0	9.56193495e+00
-iyer_2004	5	0	9.29872605e+02
-iyer_model_2007	2	0	1.33127459e+02
-jafri_rice_winslow_model_1998	0	0	1.00735903e-01
-jafri_rice_winslow_model_1998	7	0	1.00562050e+03
-kurata_model_2002	5	0	3.02256489e+00
-li_mouse_2010	2	0	8.96405058e+01
-livshitz_rudy_2007	7	0	1.10806909e+01
-luo_rudy_1991	5	0	3.47174811e+00
-mahajan_shiferaw_2008	2	0	1.26998122e+01
-maleckar_model_2009	0	0	3.57861519e-02
-maleckar_model_2009	7	0	1.54295459e+01
-maltsev_2009	5	0	2.82799006e+00
-matsuoka_model_2003	2	0	5.18484402e+00
-mcallister_noble_tsien_1975_b	0	0	1.31170750e-02
-mcallister_noble_tsien_1975_b	7	0	9.87953429e+01
-noble_SAN_model_1989	5	0	4.97676134e-01
-noble_model_1962	2	0	8.10725992e+01
-noble_model_1991	0	0	3.45270634e-02
-noble_model_1991	7	0	3.44478672e+01
-noble_model_1998	5	0	3.46062589e+00
-noble_model_2001	2	0	8.66602898e-01
-noble_noble_SAN_model_1984	0	0	3.35240364e-02
-noble_noble_SAN_model_1984	7	0	1.70085001e+01
-nygren_atrial_model_1998	5	0	1.43560100e+00
-ohara_rudy_2011_endo	2	0	5.50388002e+00
-ohara_rudy_2011_epi	0	0	3.06810856e-01
-ohara_rudy_2011_epi	7	0	4.55300491e+01
-paci_hyttinen_aaltosetala_severi_atrialVersion	5	0	4.23602915e+00
-paci_hyttinen_aaltosetala_severi_ventricularVersion	2	0	8.41030002e+00
-pandit_clark_giles_demir_2001_endocardial_cell	0	0	5.79690933e-02
-pandit_clark_giles_demir_2001_endocardial_cell	7	0	6.27474403e+00
-pandit_clark_giles_demir_2001_epicardial_cell	5	0	2.38650710e+02
-pasek_simurda_orchard_christe_2008	2	0	2.47367685e+02
-priebe_beuckelmann_1998	0	0	7.61098862e-02
-priebe_beuckelmann_1998	7	0	6.68419194e+00
-sakmann_model_2000_epi	5	0	3.33943391e+00
-shannon_wang_puglisi_weber_bers_2004	2	0	1.07133470e+02
-stewart_zhang_model_2008_ss	0	0	2.84450054e-02
-stewart_zhang_model_2008_ss	7	0	1.05328510e+01
-ten_tusscher_model_2004_M	5	0	5.21289451e+01
-ten_tusscher_model_2004_endo	2	0	5.13252430e+01
-ten_tusscher_model_2004_epi	0	0	6.58900738e-02
-ten_tusscher_model_2004_epi	7	0	8.62208610e+01
-ten_tusscher_model_2006_M	5	0	5.18745949e+01
-ten_tusscher_model_2006_endo	2	0	5.03795261e+01
-ten_tusscher_model_2006_epi	0	0	6.93869591e-02
-ten_tusscher_model_2006_epi	7	0	1.08921721e+01
-viswanathan_model_1999_epi	5	0	6.77828720e+01
-wang_sobie_2008	2	0	7.58669400e+00
-winslow_model_1999	0	0	1.29290104e-01
-winslow_model_1999	7	0	1.67542274e+03
-zhang_SAN_model_2000_0D_capable	5	0	7.21519947e-01
-aslanidi_Purkinje_model_2009	1	0	1.41708851e-01
-aslanidi_Purkinje_model_2009	8	0	8.21767402e+00
-aslanidi_atrial_model_2009	6	0	8.40999913e+00
-beeler_reuter_model_1977	4	0	1.28813314e+00
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	1	0	8.85899067e-02
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	8	0	1.90576880e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	6	0	1.68781669e+01
-carro_2011_endo	4	0	1.35085938e+01
-carro_2011_epi	1	0	2.05378056e-01
-carro_2011_epi	8	0	4.50327655e+02
-clancy_rudy_2002	6	0	1.98858669e+01
-corrias_purkinje_2011	4	0	4.12264514e+00
-courtemanche_ramirez_nattel_1998	1	0	6.86829090e-02
-courtemanche_ramirez_nattel_1998	8	0	1.37962592e+01
-davies_isap_2012	6	0	3.61308929e+02
-decker_2009	4	0	1.35593860e+01
-demir_model_1994	1	0	9.35230255e-02
-demir_model_1994	8	0	5.67732739e+01
-dokos_model_1996	6	0	2.47653029e+01
-earm_noble_model_1990	4	0	5.06712198e-01
-espinosa_model_1998_normal	1	0	3.65190506e-02
-espinosa_model_1998_normal	8	0	4.96161170e+01
-faber_rudy_2000	6	0	2.46036196e+00
-fink_noble_giles_model_2008	4	0	2.80468910e+01
-fox_mcharg_gilmour_2002	1	0	5.62241077e-02
-fox_mcharg_gilmour_2002	8	0	8.49245811e+00
-grandi_pasqualini_bers_2010_ss	6	0	2.68875508e+01
-grandi_pasqualini_bers_2010_ss_endo	4	0	1.28374960e+01
-hilgemann_noble_model_1987	1	0	3.13751698e-02
-hilgemann_noble_model_1987	8	0	4.74206591e+00
-hodgkin_huxley_squid_axon_model_1952_modified	6	0	3.36706877e-01
-hund_rudy_2004	4	0	1.05090809e+01
-iribe_model_2006	1	0	3.89788151e-02
-iribe_model_2006	8	0	2.55198598e+00
-iyer_2004	6	0	4.49108352e+02
-iyer_model_2007	4	0	2.84334164e+02
-jafri_rice_winslow_model_1998	1	0	1.23061180e-01
-jafri_rice_winslow_model_1998	8	0	5.50464996e+02
-kurata_model_2002	6	0	2.17906989e+02
-li_mouse_2010	4	0	9.19723871e+01
-livshitz_rudy_2007	1	0	4.25009727e-02
-livshitz_rudy_2007	8	0	1.48463607e+00
-luo_rudy_1991	6	0	1.57011271e+01
-mahajan_shiferaw_2008	4	0	3.31457996e+00
-maleckar_model_2009	1	0	4.20589447e-02
-maleckar_model_2009	8	0	8.53171301e+00
-maltsev_2009	6	0	5.24429960e+01
-matsuoka_model_2003	4	0	6.58168793e-01
-mcallister_noble_tsien_1975_b	1	0	1.38809681e-02
-mcallister_noble_tsien_1975_b	8	0	2.09032364e+02
-noble_SAN_model_1989	6	0	7.15483930e+01
-noble_model_1962	4	0	6.60986900e-01
-noble_model_1991	1	0	4.07619476e-02
-noble_model_1991	8	0	9.01918101e+00
-noble_model_1998	6	0	1.48085930e+01
-noble_model_2001	4	0	8.76202822e-01
-noble_noble_SAN_model_1984	1	0	3.78849506e-02
-noble_noble_SAN_model_1984	8	0	1.78635201e+01
-nygren_atrial_model_1998	6	0	4.19339895e-01
-ohara_rudy_2011_endo	4	0	2.76130104e+00
-ohara_rudy_2011_epi	1	0	2.97423124e-01
-ohara_rudy_2011_epi	8	0	9.74463940e+01
-paci_hyttinen_aaltosetala_severi_atrialVersion	6	0	7.40031149e+01
-paci_hyttinen_aaltosetala_severi_ventricularVersion	4	0	8.91146088e+00
-pandit_clark_giles_demir_2001_endocardial_cell	1	0	7.41209984e-02
-pandit_clark_giles_demir_2001_endocardial_cell	8	0	1.29806371e+01
-pandit_clark_giles_demir_2001_epicardial_cell	6	0	1.34209508e+02
-pasek_simurda_orchard_christe_2008	4	0	5.04313990e+02
-priebe_beuckelmann_1998	1	0	8.79371166e-02
-priebe_beuckelmann_1998	8	0	2.98493290e+01
-sakmann_model_2000_epi	6	0	1.37648571e+01
-shannon_wang_puglisi_weber_bers_2004	4	0	1.37191548e+01
-stewart_zhang_model_2008_ss	1	0	3.23240757e-02
-stewart_zhang_model_2008_ss	8	0	2.19160149e+01
-ten_tusscher_model_2004_M	6	0	5.75442469e+01
-ten_tusscher_model_2004_endo	4	0	2.63406060e+01
-ten_tusscher_model_2004_epi	1	0	7.66329765e-02
-ten_tusscher_model_2004_epi	8	0	2.22903020e+01
-ten_tusscher_model_2006_M	6	0	5.80605981e+01
-ten_tusscher_model_2006_endo	4	0	2.57866809e+01
-ten_tusscher_model_2006_epi	1	0	8.09500217e-02
-ten_tusscher_model_2006_epi	8	0	2.25392611e+01
-viswanathan_model_1999_epi	6	0	1.46917833e+02
-wang_sobie_2008	4	0	7.83677387e+00
-winslow_model_1999	1	0	1.47657871e-01
-winslow_model_1999	8	0	8.92466743e+02
-zhang_SAN_model_2000_0D_capable	6	0	4.28400580e+02
-aslanidi_Purkinje_model_2009	2	0	2.14552903e+00
-aslanidi_atrial_model_2009	7	0	5.69682691e+01
-beeler_reuter_model_1977	5	0	1.00745630e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	2	0	7.84812903e+00
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	0	0	6.94849491e-02
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	7	0	6.81349020e+01
-carro_2011_endo	5	0	2.68337150e+01
-carro_2011_epi	2	0	5.32982800e+01
-clancy_rudy_2002	0	0	1.40499073e+02
-clancy_rudy_2002	7	0	4.73164752e+01
-corrias_purkinje_2011	5	0	8.20009804e+00
-courtemanche_ramirez_nattel_1998	2	0	2.82049329e+01
-davies_isap_2012	7	0	1.30310435e+03
-decker_2009	5	0	2.75387709e+01
-demir_model_1994	2	0	4.25319002e+01
-dokos_model_1996	0	0	4.48288918e-02
-dokos_model_1996	7	0	2.93024259e+01
-earm_noble_model_1990	5	0	2.01332903e+00
-espinosa_model_1998_normal	2	0	3.04471993e+00
-faber_rudy_2000	0	0	8.92598629e-02
-faber_rudy_2000	7	0	1.75310159e+02
-fink_noble_giles_model_2008	5	0	5.54636629e+01
-fox_mcharg_gilmour_2002	2	0	5.78610492e+00
-grandi_pasqualini_bers_2010_ss	0	0	8.60369205e-02
-grandi_pasqualini_bers_2010_ss	7	0	8.18440977e+02
-grandi_pasqualini_bers_2010_ss_endo	5	0	2.56853130e+01
-hilgemann_noble_model_1987	2	0	3.73237705e+00
-hodgkin_huxley_squid_axon_model_1952_modified	0	0	2.41968632e-02
-hodgkin_huxley_squid_axon_model_1952_modified	7	0	2.54642105e+00
-hund_rudy_2004	5	0	1.06783371e+01
-iribe_model_2006	2	0	2.37045288e+00
-iyer_2004	0	0	3.00803185e-01
-iyer_2004	7	0	2.41261112e+03
-iyer_model_2007	5	0	2.71748630e+02
-jafri_rice_winslow_model_1998	2	0	5.54649050e+01
-kurata_model_2002	0	0	5.91659546e-02
-kurata_model_2002	7	0	6.64787122e+02
-li_mouse_2010	5	0	3.97697189e+01
-livshitz_rudy_2007	2	0	5.78666401e+00
-luo_rudy_1991	0	0	2.03769207e-02
-luo_rudy_1991	7	0	4.03225207e+00
-mahajan_shiferaw_2008	5	0	6.36947513e+00
-maleckar_model_2009	2	0	7.47077990e+00
-maltsev_2009	7	0	2.59930195e+02
-matsuoka_model_2003	5	0	5.33559179e+00
-mcallister_noble_tsien_1975_b	2	0	4.13796010e+01
-noble_SAN_model_1989	0	0	3.85701656e-02
-noble_SAN_model_1989	7	0	3.26528521e+01
-noble_model_1962	5	0	1.57245874e-01
-noble_model_1991	2	0	4.30197406e+00
-noble_model_1998	0	0	4.58710194e-02
-noble_model_1998	7	0	5.44497919e+01
-noble_model_2001	5	0	1.78009892e+00
-noble_noble_SAN_model_1984	2	0	7.95330501e+00
-nygren_atrial_model_1998	0	0	4.12211418e-02
-nygren_atrial_model_1998	7	0	3.16698813e+00
-ohara_rudy_2011_endo	5	0	2.21016409e+01
-ohara_rudy_2011_epi	2	0	1.08684740e+01
-paci_hyttinen_aaltosetala_severi_atrialVersion	0	0	3.80020142e-02
-paci_hyttinen_aaltosetala_severi_atrialVersion	7	0	5.87246799e+00
-paci_hyttinen_aaltosetala_severi_ventricularVersion	5	0	8.42143202e+00
-pandit_clark_giles_demir_2001_endocardial_cell	2	0	6.03894680e+01
-pandit_clark_giles_demir_2001_epicardial_cell	0	0	6.04319572e-02
-pandit_clark_giles_demir_2001_epicardial_cell	7	0	2.45808761e+01
-pasek_simurda_orchard_christe_2008	5	0	9.92182084e+02
-priebe_beuckelmann_1998	2	0	5.19677930e+01
-sakmann_model_2000_epi	0	0	4.01630402e-02
-sakmann_model_2000_epi	7	0	2.99819016e+00
-shannon_wang_puglisi_weber_bers_2004	5	0	1.09106879e+02
-stewart_zhang_model_2008_ss	2	0	9.94055099e+01
-ten_tusscher_model_2004_M	0	0	6.40981197e-02
-ten_tusscher_model_2004_M	7	0	8.61403818e+01
-ten_tusscher_model_2004_endo	5	0	5.16431730e+01
-ten_tusscher_model_2004_epi	2	0	2.59396710e+01
-ten_tusscher_model_2006_M	0	0	6.62229061e-02
-ten_tusscher_model_2006_M	7	0	2.14548290e+01
-ten_tusscher_model_2006_endo	5	0	5.13797648e+01
-ten_tusscher_model_2006_epi	2	0	2.55060961e+01
-viswanathan_model_1999_epi	0	0	1.10275030e-01
-viswanathan_model_1999_epi	7	0	6.14792506e+02
-wang_sobie_2008	5	0	1.56248009e+01
-winslow_model_1999	2	0	2.30120483e+02
-zhang_SAN_model_2000_0D_capable	0	0	4.16090488e-02
-zhang_SAN_model_2000_0D_capable	7	0	4.22540008e+02
-aslanidi_Purkinje_model_2009	4	0	2.18334603e+00
-aslanidi_atrial_model_2009	1	0	1.06084108e-01
-aslanidi_atrial_model_2009	8	0	1.22592605e+02
-beeler_reuter_model_1977	6	0	2.37656910e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	4	0	1.56997452e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	1	0	8.59990120e-02
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	8	0	1.90635791e+01
-carro_2011_endo	6	0	1.13324204e+02
-carro_2011_epi	4	0	1.35026898e+01
-clancy_rudy_2002	1	0	2.48745096e+02
-clancy_rudy_2002	8	0	1.06902339e+02
-corrias_purkinje_2011	6	0	1.75159841e+01
-courtemanche_ramirez_nattel_1998	4	0	3.63007879e+00
-davies_isap_2012	1	0	1.36998177e-01
-davies_isap_2012	8	0	7.04985807e+02
-decker_2009	6	0	6.98322797e+00
-demir_model_1994	4	0	6.81811810e-01
-dokos_model_1996	1	0	5.39128780e-02
-dokos_model_1996	8	0	3.35745020e+01
-earm_noble_model_1990	6	0	4.29885912e+00
-espinosa_model_1998_normal	4	0	3.97287846e-01
-faber_rudy_2000	1	0	1.18309021e-01
-faber_rudy_2000	8	0	1.22714190e+01
-fink_noble_giles_model_2008	6	0	5.96662900e+01
-fox_mcharg_gilmour_2002	4	0	1.16360910e+01
-grandi_pasqualini_bers_2010_ss	1	0	1.28868818e-01
-grandi_pasqualini_bers_2010_ss	8	0	2.19150867e+02
-grandi_pasqualini_bers_2010_ss_endo	6	0	1.09466087e+02
-hilgemann_noble_model_1987	4	0	4.77376938e-01
-hodgkin_huxley_squid_axon_model_1952_modified	1	0	2.42841244e-02
-hodgkin_huxley_squid_axon_model_1952_modified	8	0	5.65335798e+00
-hund_rudy_2004	6	0	9.01989350e+01
-iribe_model_2006	4	0	5.91930151e-01
-iyer_2004	1	0	3.54967833e-01
-iyer_2004	8	0	5.49130469e+03
-iyer_model_2007	6	0	1.35336886e+02
-jafri_rice_winslow_model_1998	4	0	3.91016920e+01
-kurata_model_2002	1	0	6.71858788e-02
-kurata_model_2002	8	0	4.35115390e+01
-li_mouse_2010	6	0	9.97161469e+01
-livshitz_rudy_2007	4	0	2.86095214e+00
-luo_rudy_1991	1	0	2.15039253e-02
-luo_rudy_1991	8	0	8.78434706e+00
-mahajan_shiferaw_2008	6	0	1.38359060e+01
-maleckar_model_2009	4	0	9.52455044e-01
-maltsev_2009	1	0	6.33440018e-02
-maltsev_2009	8	0	3.52031369e+01
-matsuoka_model_2003	6	0	5.40034389e+00
-mcallister_noble_tsien_1975_b	4	0	2.63312197e+00
-noble_SAN_model_1989	1	0	4.30500507e-02
-noble_SAN_model_1989	8	0	6.79427328e+01
-noble_model_1962	6	0	9.55337791e+01
-noble_model_1991	4	0	1.09207392e+00
-noble_model_1998	1	0	5.56981564e-02
-noble_model_1998	8	0	6.92787504e+00
-noble_model_2001	6	0	9.21318054e-01
-noble_noble_SAN_model_1984	4	0	2.53076792e-01
-nygren_atrial_model_1998	1	0	4.74140644e-02
-nygren_atrial_model_1998	8	0	7.13954210e+00
-ohara_rudy_2011_endo	6	0	1.27751701e+01
-ohara_rudy_2011_epi	4	0	2.82941890e+00
-paci_hyttinen_aaltosetala_severi_atrialVersion	1	0	4.28719521e-02
-paci_hyttinen_aaltosetala_severi_atrialVersion	8	0	1.22240009e+01
-paci_hyttinen_aaltosetala_severi_ventricularVersion	6	0	1.84601898e+01
-pandit_clark_giles_demir_2001_endocardial_cell	4	0	1.25985327e+02
-pandit_clark_giles_demir_2001_epicardial_cell	1	0	7.65349865e-02
-pandit_clark_giles_demir_2001_epicardial_cell	8	0	5.08464270e+01
-pasek_simurda_orchard_christe_2008	6	0	2.49698912e+02
-priebe_beuckelmann_1998	4	0	2.68500130e+01
-sakmann_model_2000_epi	1	0	4.56299782e-02
-sakmann_model_2000_epi	8	0	3.17060900e+00
-shannon_wang_puglisi_weber_bers_2004	6	0	2.28110030e+02
-stewart_zhang_model_2008_ss	4	0	3.17347503e+00
-ten_tusscher_model_2004_M	1	0	7.64150620e-02
-ten_tusscher_model_2004_M	8	0	2.22812810e+01
-ten_tusscher_model_2004_endo	6	0	5.70742431e+01
-ten_tusscher_model_2004_epi	4	0	2.64910581e+01
-ten_tusscher_model_2006_M	1	0	7.86690712e-02
-ten_tusscher_model_2006_M	8	0	2.25170169e+01
-ten_tusscher_model_2006_endo	6	0	5.79476440e+01
-ten_tusscher_model_2006_epi	4	0	2.68761110e+01
-viswanathan_model_1999_epi	1	0	1.36027813e-01
-viswanathan_model_1999_epi	8	0	1.70586059e+02
-wang_sobie_2008	6	0	8.22445393e+00
-winslow_model_1999	4	0	4.58163807e+02
-zhang_SAN_model_2000_0D_capable	1	0	4.90350723e-02
-zhang_SAN_model_2000_0D_capable	8	0	9.44536274e+02
-aslanidi_Purkinje_model_2009	5	0	8.63947892e+00
-aslanidi_atrial_model_2009	2	0	1.48808918e+01
-beeler_reuter_model_1977	0	0	2.44388580e-02
-beeler_reuter_model_1977	7	0	1.22122250e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	5	0	3.17926180e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	2	0	1.55693769e+01
-carro_2011_endo	0	0	1.46037817e-01
-carro_2011_endo	7	0	3.38931129e+03
-carro_2011_epi	5	0	2.68533161e+01
-clancy_rudy_2002	2	0	1.92672760e+01
-corrias_purkinje_2011	0	0	7.30979443e-02
-corrias_purkinje_2011	7	0	6.15643411e+01
-courtemanche_ramirez_nattel_1998	5	0	1.43815422e+01
-davies_isap_2012	2	0	1.67297398e+02
-decker_2009	0	0	2.96162128e-01
-decker_2009	7	0	6.77911248e+01
-demir_model_1994	5	0	1.37572217e+00
-dokos_model_1996	2	0	2.25123911e+01
-earm_noble_model_1990	0	0	2.87690163e-02
-earm_noble_model_1990	7	0	2.04090595e+00
-espinosa_model_1998_normal	5	0	6.17328000e+00
-faber_rudy_2000	2	0	4.52946115e+00
-fink_noble_giles_model_2008	0	0	6.68489933e-02
-fink_noble_giles_model_2008	7	0	5.14225941e+01
-fox_mcharg_gilmour_2002	5	0	1.14939630e+01
-grandi_pasqualini_bers_2010_ss	2	0	2.53265810e+01
-grandi_pasqualini_bers_2010_ss_endo	0	0	9.09810066e-02
-grandi_pasqualini_bers_2010_ss_endo	7	0	1.64260106e+03
-hilgemann_noble_model_1987	5	0	3.75998688e+00
-hodgkin_huxley_squid_axon_model_1952_modified	2	0	5.78616858e-01
-hund_rudy_2004	7	0	8.19207609e+01
-iribe_model_2006	5	0	2.37046003e+00
-iyer_2004	2	0	4.49831146e+02
-iyer_model_2007	0	0	2.92907000e-01
-iyer_model_2007	7	0	2.58330537e+03
-jafri_rice_winslow_model_1998	5	0	1.03605052e+02
-kurata_model_2002	2	0	1.18083911e+01
-li_mouse_2010	0	0	7.84709454e-02
-li_mouse_2010	7	0	7.52946399e+02
-livshitz_rudy_2007	5	0	5.96016121e+00
-luo_rudy_1991	2	0	6.97499299e+00
-mahajan_shiferaw_2008	0	0	4.79929447e-02
-mahajan_shiferaw_2008	7	0	3.95007885e+02
-maleckar_model_2009	5	0	3.79453206e+00
-maltsev_2009	2	0	5.60013199e+00
-matsuoka_model_2003	0	0	6.37781620e-02
-matsuoka_model_2003	7	0	5.23400521e+00
-mcallister_noble_tsien_1975_b	5	0	2.58675694e+00
-noble_SAN_model_1989	2	0	6.21317151e+01
-noble_model_1962	0	0	7.72404671e-03
-noble_model_1962	7	0	5.78792500e+00
-noble_model_1991	5	0	4.27720785e+00
-noble_model_1998	2	0	6.86105704e+00
-noble_model_2001	0	0	4.53679562e-02
-noble_model_2001	7	0	1.33518078e+01
-noble_noble_SAN_model_1984	5	0	5.00999928e-01
-nygren_atrial_model_1998	2	0	3.53600025e-01
-ohara_rudy_2011_endo	0	0	2.35511065e-01
-ohara_rudy_2011_endo	7	0	4.47364430e+01
-ohara_rudy_2011_epi	5	0	2.23149159e+01
-paci_hyttinen_aaltosetala_severi_atrialVersion	2	0	1.69689569e+01
-paci_hyttinen_aaltosetala_severi_ventricularVersion	0	0	4.53450680e-02
-paci_hyttinen_aaltosetala_severi_ventricularVersion	7	0	2.38217511e+01
-pandit_clark_giles_demir_2001_endocardial_cell	5	0	1.22978839e+02
-pandit_clark_giles_demir_2001_epicardial_cell	2	0	1.20856215e+02
-pasek_simurda_orchard_christe_2008	0	0	3.23423147e-01
-pasek_simurda_orchard_christe_2008	7	0	4.32433051e+03
-priebe_beuckelmann_1998	5	0	2.62753680e+01
-sakmann_model_2000_epi	2	0	6.67298913e+00
-shannon_wang_puglisi_weber_bers_2004	0	0	1.08621836e-01
-shannon_wang_puglisi_weber_bers_2004	7	0	3.54710469e+03
-stewart_zhang_model_2008_ss	5	0	6.32840800e+00
-ten_tusscher_model_2004_M	2	0	2.57910318e+01
-ten_tusscher_model_2004_endo	0	0	6.41429424e-02
-ten_tusscher_model_2004_endo	7	0	1.69233253e+02
-ten_tusscher_model_2004_epi	5	0	5.20886140e+01
-ten_tusscher_model_2006_M	2	0	2.53149881e+01
-ten_tusscher_model_2006_endo	0	0	6.62000179e-02
-ten_tusscher_model_2006_endo	7	0	2.15880959e+01
-ten_tusscher_model_2006_epi	5	0	5.17458909e+01
-viswanathan_model_1999_epi	2	0	1.33296048e+02
-wang_sobie_2008	0	0	3.24173927e-01
-wang_sobie_2008	7	0	2.78953340e+01
-winslow_model_1999	5	0	9.08212496e+02
-zhang_SAN_model_2000_0D_capable	2	0	3.68866091e+02
-aslanidi_Purkinje_model_2009	6	0	4.87967491e+00
-aslanidi_atrial_model_2009	4	0	3.79835486e+00
-beeler_reuter_model_1977	1	0	2.60839462e-02
-beeler_reuter_model_1977	8	0	2.64728720e+01
-bondarenko_szigeti_bett_kim_rasmusson_2004_apical	6	0	8.42554593e+00
-bondarenko_szigeti_bett_kim_rasmusson_2004_septal	4	0	3.20992649e+01
-carro_2011_endo	1	0	2.05564022e-01
-carro_2011_endo	8	0	9.06448704e+02
-carro_2011_epi	6	0	1.18343238e+02
-clancy_rudy_2002	4	0	8.81993055e-01
-corrias_purkinje_2011	1	0	8.53629112e-02
-corrias_purkinje_2011	8	0	1.31855831e+02
-courtemanche_ramirez_nattel_1998	6	0	6.23467031e+01
-davies_isap_2012	4	0	2.09944289e+01
-decker_2009	1	0	3.82941961e-01
-decker_2009	8	0	1.55045012e+02
-demir_model_1994	6	0	4.91064119e+01
-dokos_model_1996	4	0	7.16578960e-01
-earm_noble_model_1990	1	0	3.45718861e-02
-earm_noble_model_1990	8	0	4.35121989e+00
-espinosa_model_1998_normal	6	0	1.62352705e+00
-faber_rudy_2000	4	0	9.15263796e+00
-fink_noble_giles_model_2008	1	0	8.11929703e-02
-fink_noble_giles_model_2008	8	0	1.39858170e+01
-fox_mcharg_gilmour_2002	6	0	6.42300701e+00
-grandi_pasqualini_bers_2010_ss	4	0	1.28118539e+01
-grandi_pasqualini_bers_2010_ss_endo	1	0	1.21423006e-01
-grandi_pasqualini_bers_2010_ss_endo	8	0	4.37900881e+02
-hilgemann_noble_model_1987	6	0	4.15832591e+00
-hodgkin_huxley_squid_axon_model_1952_modified	4	0	1.53428078e-01
-hund_rudy_2004	1	0	9.33539867e-02
-hund_rudy_2004	8	0	1.11413581e+01
-iribe_model_2006	6	0	5.17485595e+00
-iyer_2004	4	0	9.32029134e+02
-iyer_model_2007	1	0	3.76881123e-01
-iyer_model_2007	8	0	2.92295103e+03
-jafri_rice_winslow_model_1998	6	0	5.74630680e+01
-kurata_model_2002	4	0	1.50572491e+00
-li_mouse_2010	1	0	9.54999924e-02
-li_mouse_2010	8	0	2.56869409e+01
-livshitz_rudy_2007	6	0	1.22640371e+01
-luo_rudy_1991	4	0	3.54619598e+00
-mahajan_shiferaw_2008	1	0	6.02588654e-02
-mahajan_shiferaw_2008	8	0	1.39842339e+01
-maleckar_model_2009	6	0	1.90635428e+01
-maltsev_2009	4	0	2.85711002e+00
-matsuoka_model_2003	1	0	7.98399448e-02
-matsuoka_model_2003	8	0	1.42216015e+00
-mcallister_noble_tsien_1975_b	6	0	2.09085914e+02
-noble_SAN_model_1989	4	0	9.90804911e-01
-noble_model_1962	1	0	7.79509544e-03
-noble_model_1962	8	0	1.29679410e+01
-noble_model_1991	6	0	9.36360288e+00
-noble_model_1998	4	0	8.67107868e-01
-noble_model_2001	1	0	5.57219982e-02
-noble_model_2001	8	0	3.46437597e+00
-noble_noble_SAN_model_1984	6	0	3.50532050e+01
-nygren_atrial_model_1998	4	0	7.20188856e-01
-ohara_rudy_2011_endo	1	0	2.93936014e-01
-ohara_rudy_2011_endo	8	0	9.72474172e+01
-ohara_rudy_2011_epi	6	0	1.30178461e+01
-paci_hyttinen_aaltosetala_severi_atrialVersion	4	0	2.14631104e+00
-paci_hyttinen_aaltosetala_severi_ventricularVersion	1	0	5.23688793e-02
-paci_hyttinen_aaltosetala_severi_ventricularVersion	8	0	6.04521704e+00
-pandit_clark_giles_demir_2001_endocardial_cell	6	0	6.85874550e+01
-pandit_clark_giles_demir_2001_epicardial_cell	4	0	2.40915725e+02
-pasek_simurda_orchard_christe_2008	1	0	4.03563023e-01
-pasek_simurda_orchard_christe_2008	8	0	2.46162980e+03
-priebe_beuckelmann_1998	6	0	5.75189869e+01
-sakmann_model_2000_epi	4	0	8.46476078e-01
-shannon_wang_puglisi_weber_bers_2004	1	0	1.47547007e-01
-shannon_wang_puglisi_weber_bers_2004	8	0	4.74767976e+02
-stewart_zhang_model_2008_ss	6	0	2.29564311e+02
-ten_tusscher_model_2004_M	4	0	2.63624868e+01
-ten_tusscher_model_2004_endo	1	0	7.47570992e-02
-ten_tusscher_model_2004_endo	8	0	4.45750620e+01
-ten_tusscher_model_2004_epi	6	0	5.76096249e+01
-ten_tusscher_model_2006_M	4	0	2.58642371e+01
-ten_tusscher_model_2006_endo	1	0	7.91270733e-02
-ten_tusscher_model_2006_endo	8	0	4.64769158e+01
-ten_tusscher_model_2006_epi	6	0	5.84049878e+01
-viswanathan_model_1999_epi	4	0	3.40941730e+01
-wang_sobie_2008	1	0	3.81356955e-01
-wang_sobie_2008	8	0	5.90990999e+01
-winslow_model_1999	6	0	2.35797744e+02
-zhang_SAN_model_2000_0D_capable	4	0	1.51985097e+00
+aslanidi_atrial_model_2009	2	0	1.50669320e+01	3.22614480e-01
+aslanidi_atrial_model_2009	2	1	9.40123010e+00	3.22614415e-01
+beeler_reuter_model_1977	5	0	2.02143941e+01	1.35210322e-02
+beeler_reuter_model_1977	5	1	8.77073622e+00	1.35215338e-02
+benson_epicardial_2008	7	0	2.03298161e+01	1.92833147e+01
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	0	0	6.94780350e-02	1.08160903e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	0	1	7.16831684e-02	1.09268463e+00
+carro_2011_endo	2	0	5.31463649e+01	6.65448858e-01
+carro_2011_endo	2	1	3.74164901e+01	6.65448211e-01
+carro_2011_epi	5	0	2.69496770e+01	2.18751114e-03
+carro_2011_epi	5	1	1.91415079e+01	2.18751763e-03
+clancy_rudy_2002	7	0	2.36570990e+01	3.75455704e-01
+courtemanche_ramirez_nattel_1998	0	0	5.57141304e-02	7.22978587e-01
+courtemanche_ramirez_nattel_1998	0	1	4.64122295e-02	5.88280236e-01
+davies_isap_2012	2	0	4.13697629e+01	2.07774631e+00
+davies_isap_2012	2	1	2.82137291e+01	2.07773998e+00
+decker_2009	5	0	2.69983232e+01	1.55287013e+00
+decker_2009	5	1	1.93186250e+01	1.55286957e+00
+demir_model_1994	7	0	1.60353604e+03	9.63984097e-01
+dokos_model_1996	0	0	4.46598530e-02	3.78599169e-03
+dokos_model_1996	0	1	4.20339108e-02	3.47712310e-03
+earm_noble_model_1990	2	0	4.09404302e+00	1.21636347e+00
+earm_noble_model_1990	2	1	2.84082508e+00	1.21636336e+00
+espinosa_model_1998_normal	5	0	2.48904932e+01	3.04184401e-01
+espinosa_model_1998_normal	5	1	1.66206062e+01	3.04184418e-01
+faber_rudy_2000	7	0	1.76803828e+02	5.25968884e+03
+fox_mcharg_gilmour_2002	0	0	5.11670113e-02	6.87231163e-01
+fox_mcharg_gilmour_2002	0	1	3.72140408e-02	1.26928174e+00
+grandi_pasqualini_bers_2010_ss	2	0	2.54581640e+01	2.33798637e+00
+grandi_pasqualini_bers_2010_ss	2	1	1.99044540e+01	2.33798740e+00
+grandi_pasqualini_bers_2010_ss_endo	5	0	2.56193891e+01	2.76353602e-01
+grandi_pasqualini_bers_2010_ss_endo	5	1	2.01775751e+01	2.76354889e-01
+hilgemann_noble_model_1987	7	0	4.32028913e+00	4.87571733e-01
+iribe_model_2006	2	0	2.29086494e+00	1.94414326e+00
+iribe_model_2006	2	1	1.49398184e+00	1.94414371e+00
+iyer_2004	5	0	9.27891992e+02	2.80157783e-04
+iyer_2004	5	1	5.97506737e+02	2.80193617e-04
+iyer_model_2007	7	0	2.65581065e+03	4.63493896e+01
+kurata_model_2002	0	0	5.87360859e-02	2.99308801e-03
+kurata_model_2002	0	1	4.97009754e-02	2.95164446e-03
+li_mouse_2010	2	0	9.00352759e+01	2.32919569e-03
+li_mouse_2010	2	1	5.88113790e+01	2.32918969e-03
+livshitz_rudy_2007	5	0	5.77905488e+00	4.71968423e-01
+livshitz_rudy_2007	5	1	3.81297803e+00	4.71968084e-01
+luo_rudy_1991	7	0	4.01301289e+00	1.11700141e+00
+maleckar_model_2009	0	0	3.60379219e-02	1.26877117e+00
+maleckar_model_2009	0	1	3.41289043e-02	2.81309654e+00
+maltsev_2009	2	0	2.81812906e+00	1.89953652e-01
+maltsev_2009	2	1	1.17126107e+00	1.89976548e-01
+matsuoka_model_2003	5	0	2.65277100e+00	4.17564166e+00
+matsuoka_model_2003	5	1	1.69626904e+00	4.17564261e+00
+mcallister_noble_tsien_1975_b	7	0	9.72280729e+01	3.46914642e-02
+noble_model_1962	0	0	7.68423080e-03	1.26637664e-02
+noble_model_1962	0	1	6.90293312e-03	2.59991782e-03
+noble_model_1991	2	0	4.31188083e+00	1.24602656e+00
+noble_model_1991	2	1	2.80129719e+00	1.24602663e+00
+noble_model_1998	5	0	1.38556020e+01	2.50578265e-01
+noble_model_1998	5	1	8.80539203e+00	2.50578328e-01
+noble_model_2001	7	0	2.17788838e+02	8.22734661e-02
+nygren_atrial_model_1998	0	0	4.12399769e-02	2.40145665e+03
+nygren_atrial_model_1998	0	1	3.91659737e-02	2.40314309e+03
+ohara_rudy_2011_endo	2	0	5.41184497e+00	5.36834438e+01
+ohara_rudy_2011_endo	2	1	3.21309996e+00	5.36834479e+01
+ohara_rudy_2011_epi	5	0	2.22629530e+01	1.66523278e+01
+ohara_rudy_2011_epi	5	1	1.26735160e+01	1.66523294e+01
+paci_hyttinen_aaltosetala_severi_atrialVersion	7	0	5.85382485e+00	2.84298356e-01
+pandit_clark_giles_demir_2001_endocardial_cell	0	0	5.83238602e-02	1.19222329e+02
+pandit_clark_giles_demir_2001_endocardial_cell	0	1	5.41360378e-02	2.45997179e+01
+pandit_clark_giles_demir_2001_epicardial_cell	2	0	1.20596949e+02	2.69801958e-03
+pandit_clark_giles_demir_2001_epicardial_cell	2	1	8.38255529e+01	2.69814005e-03
+pasek_simurda_orchard_christe_2008	5	0	9.86359033e+02	7.93980114e-04
+pasek_simurda_orchard_christe_2008	5	1	7.94933464e+02	7.92535586e-04
+priebe_beuckelmann_1998	7	0	6.77399206e+00	2.85813946e+00
+shannon_wang_puglisi_weber_bers_2004	0	0	1.08541965e-01	6.17287582e+00
+shannon_wang_puglisi_weber_bers_2004	0	1	1.00795031e-01	5.00054446e+00
+stewart_zhang_model_2008_ss	2	0	1.01101963e+02	7.00655684e-02
+stewart_zhang_model_2008_ss	2	1	5.22362061e+01	6.97408641e-02
+ten_tusscher_model_2004_M	5	0	5.21133230e+01	1.81727321e-02
+ten_tusscher_model_2004_M	5	1	2.84957159e+01	1.81796511e-02
+ten_tusscher_model_2004_endo	7	0	4.30401318e+01	4.16735845e-01
+ten_tusscher_model_2006_M	0	0	6.60049915e-02	1.99158241e+00
+ten_tusscher_model_2006_M	0	1	5.52911758e-02	3.04406151e-01
+ten_tusscher_model_2006_endo	2	0	5.04660010e+01	1.04441124e-01
+ten_tusscher_model_2006_endo	2	1	2.96599929e+01	1.04440763e-01
+ten_tusscher_model_2006_epi	5	0	5.13035951e+01	1.94670082e-02
+ten_tusscher_model_2006_epi	5	1	3.01340969e+01	1.94669776e-02
+viswanathan_model_1999_epi	7	0	6.16418820e+02	5.66737563e+00
+winslow_model_1999	0	0	1.30301952e-01	3.79897282e+04
+winslow_model_1999	0	1	1.24090910e-01	3.00779133e+04
+zhang_SAN_model_2000_0D_capable	2	0	3.76003039e+02	1.58016747e-05
+zhang_SAN_model_2000_0D_capable	2	1	1.51114602e+02	1.59239389e-05
+aslanidi_Purkinje_model_2009	1	0	1.29405022e-01	5.38912375e+00
+aslanidi_Purkinje_model_2009	1	1	1.05604887e-01	2.46861113e+00
+aslanidi_atrial_model_2009	4	0	3.81955314e+00	1.67825662e-03
+aslanidi_atrial_model_2009	4	1	2.45055103e+00	1.67825819e-03
+beeler_reuter_model_1977	6	0	4.79932830e+01	8.40462542e-03
+beeler_reuter_model_1977	6	1	2.46188860e+01	8.40501970e-03
+benson_epicardial_2008	8	0	4.52009451e+01	2.21520124e+01
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	1	0	8.61368179e-02	1.08858276e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	1	1	7.75580406e-02	1.08538260e+00
+carro_2011_endo	4	0	1.43441720e+01	4.92598093e-03
+carro_2011_endo	4	1	9.69024897e+00	4.92638400e-03
+carro_2011_epi	6	0	5.65547440e+01	5.17823678e-01
+carro_2011_epi	6	1	4.08603520e+01	5.17823462e-01
+clancy_rudy_2002	8	0	5.34825871e+01	3.37396187e-01
+courtemanche_ramirez_nattel_1998	1	0	6.83951378e-02	7.35494847e-01
+courtemanche_ramirez_nattel_1998	1	1	5.20339012e-02	7.07163522e-01
+davies_isap_2012	4	0	2.09559000e+01	9.02690449e-04
+davies_isap_2012	4	1	1.46045430e+01	9.02578053e-04
+decker_2009	6	0	6.92282796e+00	2.61982146e+01
+decker_2009	6	1	5.14791989e+00	2.61981925e+01
+demir_model_1994	8	0	4.52993507e+02	3.23681369e-03
+dokos_model_1996	1	0	5.36239147e-02	3.78599168e-03
+dokos_model_1996	1	1	4.55000401e-02	3.47577114e-03
+earm_noble_model_1990	4	0	5.06114006e-01	8.08302759e-01
+earm_noble_model_1990	4	1	3.63386154e-01	8.08302778e-01
+espinosa_model_1998_normal	6	0	6.49682403e+00	2.81131438e-01
+espinosa_model_1998_normal	6	1	4.34980512e+00	2.81131459e-01
+faber_rudy_2000	8	0	1.22569668e+01	5.31899003e+03
+fox_mcharg_gilmour_2002	1	0	5.62679768e-02	4.53027136e-01
+fox_mcharg_gilmour_2002	1	1	4.05890942e-02	1.07832076e+00
+grandi_pasqualini_bers_2010_ss	4	0	1.28723450e+01	2.16613874e-03
+grandi_pasqualini_bers_2010_ss	4	1	1.01211629e+01	2.16553705e-03
+grandi_pasqualini_bers_2010_ss_endo	6	0	2.71122911e+01	6.37072143e+00
+grandi_pasqualini_bers_2010_ss_endo	6	1	2.16514039e+01	6.37094718e+00
+hilgemann_noble_model_1987	8	0	4.74524498e+00	1.04026441e+00
+hund_rudy_2004	1	0	9.36210155e-02	2.00777686e+00
+hund_rudy_2004	1	1	7.81288147e-02	1.27023293e+00
+iribe_model_2006	4	0	5.79958916e-01	3.30921414e-01
+iribe_model_2006	4	1	3.88397932e-01	3.30921624e-01
+iyer_2004	6	0	4.52313577e+02	1.02677991e-04
+iyer_2004	6	1	2.95288949e+02	1.02699108e-04
+iyer_model_2007	8	0	2.94289468e+03	7.93014474e-02
+kurata_model_2002	1	0	6.75880909e-02	2.99308856e-03
+kurata_model_2002	1	1	5.35612106e-02	2.95164368e-03
+li_mouse_2010	4	0	9.16254859e+01	1.83222634e-06
+li_mouse_2010	4	1	6.06452560e+01	1.83211325e-06
+livshitz_rudy_2007	6	0	1.23130229e+01	1.69172631e+00
+livshitz_rudy_2007	6	1	8.53814411e+00	1.69172721e+00
+luo_rudy_1991	8	0	8.98170710e+00	1.08771191e+00
+maleckar_model_2009	1	0	4.21400070e-02	1.26878248e+00
+maleckar_model_2009	1	1	3.80721092e-02	1.38270070e+00
+maltsev_2009	4	0	2.89521194e+00	5.34055935e-06
+maltsev_2009	4	1	1.20477295e+00	5.13080819e-06
+matsuoka_model_2003	6	0	5.43800902e+00	2.28730360e+00
+matsuoka_model_2003	6	1	3.61290097e+00	2.28730275e+00
+mcallister_noble_tsien_1975_b	8	0	2.11238997e+02	3.46914642e-02
+noble_model_1962	1	0	7.75408745e-03	1.75612184e-02
+noble_model_1962	1	1	7.12108612e-03	2.59464227e-03
+noble_model_1991	4	0	1.09054613e+00	1.98670068e-01
+noble_model_1991	4	1	7.36201048e-01	1.98670115e-01
+noble_model_1998	6	0	2.99331720e+01	3.79776409e-01
+noble_model_1998	6	1	1.94473209e+01	3.79776345e-01
+noble_model_2001	8	0	5.56553259e+01	1.29692108e-01
+nygren_atrial_model_1998	1	0	4.73911762e-02	2.40142610e+03
+nygren_atrial_model_1998	1	1	4.36711311e-02	2.40575292e+03
+ohara_rudy_2011_endo	4	0	2.76071405e+00	1.61347792e+00
+ohara_rudy_2011_endo	4	1	1.66386795e+00	1.61347267e+00
+ohara_rudy_2011_epi	6	0	1.28838811e+01	2.33468539e+01
+ohara_rudy_2011_epi	6	1	8.02506804e+00	2.33468715e+01
+paci_hyttinen_aaltosetala_severi_atrialVersion	8	0	1.22948020e+01	2.77079179e-01
+pandit_clark_giles_demir_2001_endocardial_cell	1	0	7.40120411e-02	1.18946665e+02
+pandit_clark_giles_demir_2001_endocardial_cell	1	1	6.12649918e-02	1.81528501e+02
+pandit_clark_giles_demir_2001_epicardial_cell	4	0	2.43005514e+02	2.46030855e-04
+pandit_clark_giles_demir_2001_epicardial_cell	4	1	1.71558756e+02	2.45973466e-04
+pasek_simurda_orchard_christe_2008	6	0	2.50199090e+02	2.02712450e-02
+pasek_simurda_orchard_christe_2008	6	1	2.05891627e+02	2.02775244e-02
+priebe_beuckelmann_1998	8	0	3.00335488e+01	9.70195062e-01
+shannon_wang_puglisi_weber_bers_2004	1	0	1.47140980e-01	6.17171547e+00
+shannon_wang_puglisi_weber_bers_2004	1	1	1.38895035e-01	4.98683364e+00
+stewart_zhang_model_2008_ss	4	0	3.15049505e+00	9.45371003e-03
+stewart_zhang_model_2008_ss	4	1	1.69405699e+00	9.33533091e-03
+ten_tusscher_model_2004_M	6	0	2.90306458e+01	2.88972299e-01
+ten_tusscher_model_2004_M	6	1	1.72111251e+01	2.88941269e-01
+ten_tusscher_model_2004_endo	8	0	2.19812679e+01	2.35378764e-01
+ten_tusscher_model_2006_M	1	0	7.81269073e-02	2.90424475e+00
+ten_tusscher_model_2006_M	1	1	6.30049706e-02	2.85771590e-01
+ten_tusscher_model_2006_endo	4	0	2.57536762e+01	4.11558146e-06
+ten_tusscher_model_2006_endo	4	1	1.53429811e+01	4.11712851e-06
+ten_tusscher_model_2006_epi	6	0	5.91066599e+01	8.49868453e-02
+ten_tusscher_model_2006_epi	6	1	3.69296148e+01	8.49868329e-02
+viswanathan_model_1999_epi	8	0	1.70079321e+02	4.24264874e+00
+winslow_model_1999	1	0	1.50646210e-01	3.82393836e+04
+winslow_model_1999	1	1	1.39383078e-01	8.21935901e+02
+zhang_SAN_model_2000_0D_capable	4	0	7.25801945e-01	5.35975927e-05
+zhang_SAN_model_2000_0D_capable	4	1	3.30605030e-01	5.36033485e-05
+aslanidi_Purkinje_model_2009	2	0	2.16035008e+00	2.17941282e+01
+aslanidi_Purkinje_model_2009	2	1	1.45561600e+00	2.17941158e+01
+aslanidi_atrial_model_2009	5	0	1.50906019e+01	8.56155092e-01
+aslanidi_atrial_model_2009	5	1	9.66970396e+00	8.56154945e-01
+beeler_reuter_model_1977	7	0	1.21931109e+01	2.83657008e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	0	0	6.87439442e-02	1.15691285e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	0	1	6.96389675e-02	1.15009426e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	2	0	1.55753539e+01	1.97949382e-03
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	2	1	8.49893188e+00	1.97949247e-03
+carro_2011_endo	5	0	2.68392079e+01	2.13983993e-03
+carro_2011_endo	5	1	1.90633330e+01	2.13981363e-03
+carro_2011_epi	7	0	3.41570836e+03	8.09383954e-01
+corrias_purkinje_2011	0	0	7.29019642e-02	7.71273324e+04
+corrias_purkinje_2011	0	1	6.57260418e-02	7.55440708e+04
+courtemanche_ramirez_nattel_1998	2	0	2.80888481e+01	1.36272225e-01
+courtemanche_ramirez_nattel_1998	2	1	1.59355659e+01	1.36271815e-01
+davies_isap_2012	5	0	2.08928680e+01	9.77759031e-01
+davies_isap_2012	5	1	1.42948420e+01	9.77759841e-01
+decker_2009	7	0	6.82073410e+01	1.97962077e+01
+difrancesco_noble_model_1985	0	0	2.58839130e-02	1.78796098e+02
+difrancesco_noble_model_1985	0	1	2.05988884e-02	6.15139988e+01
+dokos_model_1996	2	0	2.81373501e+00	2.39846547e+00
+dokos_model_1996	2	1	2.02529192e+00	2.39832337e+00
+earm_noble_model_1990	5	0	2.02021503e+00	3.07015878e+00
+earm_noble_model_1990	5	1	1.41870189e+00	3.07015877e+00
+espinosa_model_1998_normal	7	0	4.61014249e+01	5.21956527e-01
+fink_noble_giles_model_2008	0	0	6.71021938e-02	1.28563125e+01
+fink_noble_giles_model_2008	0	1	5.73139191e-02	1.65542940e+01
+fox_mcharg_gilmour_2002	2	0	5.76013994e+00	4.71406206e+00
+fox_mcharg_gilmour_2002	2	1	2.93471289e+00	4.71406116e+00
+grandi_pasqualini_bers_2010_ss	5	0	2.56914899e+01	2.59155911e-01
+grandi_pasqualini_bers_2010_ss	5	1	2.01591020e+01	2.59156904e-01
+grandi_pasqualini_bers_2010_ss_endo	7	0	8.20691898e+02	3.26297724e+00
+hodgkin_huxley_squid_axon_model_1952_modified	0	0	2.38640308e-02	3.19882124e+02
+hodgkin_huxley_squid_axon_model_1952_modified	0	1	2.13930607e-02	3.22711683e+02
+hund_rudy_2004	2	0	8.23137589e+01	4.75473133e-01
+hund_rudy_2004	2	1	6.00498290e+01	4.75472575e-01
+iribe_model_2006	5	0	2.30050611e+00	1.13077440e+00
+iribe_model_2006	5	1	1.52726698e+00	1.13077409e+00
+iyer_2004	7	0	2.42331433e+03	5.78639092e+02
+jafri_rice_winslow_model_1998	0	0	1.02113008e-01	3.60593406e+00
+jafri_rice_winslow_model_1998	0	1	9.82120037e-02	6.38142442e-01
+kurata_model_2002	2	0	1.47465110e+00	1.01071545e+00
+kurata_model_2002	2	1	7.02197075e-01	1.01062623e+00
+li_mouse_2010	5	0	4.16838670e+01	2.07557731e-06
+livshitz_rudy_2007	7	0	1.10847850e+01	1.38948194e+00
+mahajan_shiferaw_2008	0	0	4.84650135e-02	8.02817389e+00
+mahajan_shiferaw_2008	0	1	4.41520214e-02	8.78042727e+00
+maleckar_model_2009	2	0	7.48832393e+00	1.99815851e-01
+maleckar_model_2009	2	1	4.51411700e+00	1.99815927e-01
+maltsev_2009	5	0	2.85594296e+00	1.47613492e-07
+maltsev_2009	5	1	1.21646404e+00	1.81471960e-07
+matsuoka_model_2003	7	0	5.26288104e+00	2.97127228e+00
+noble_SAN_model_1989	0	0	3.86691093e-02	1.39370014e-05
+noble_SAN_model_1989	0	1	3.50630283e-02	1.50763348e-05
+noble_model_1962	2	0	2.56001592e+00	9.03554604e+00
+noble_model_1962	2	1	1.80560780e+00	9.03518702e+00
+noble_model_1991	5	0	4.41013503e+00	1.17522225e+00
+noble_model_1991	5	1	2.83042192e+00	1.17522216e+00
+noble_model_1998	7	0	1.08622473e+02	3.88506017e-01
+noble_noble_SAN_model_1984	0	0	3.33828926e-02	6.93835618e-05
+noble_noble_SAN_model_1984	0	1	2.96311378e-02	7.97553421e-05
+nygren_atrial_model_1998	2	0	3.55463982e-01	3.81756759e+02
+nygren_atrial_model_1998	2	1	2.64127970e-01	3.81756814e+02
+ohara_rudy_2011_endo	5	0	2.21239009e+01	1.62621277e+01
+ohara_rudy_2011_endo	5	1	1.29059820e+01	1.62621342e+01
+ohara_rudy_2011_epi	7	0	4.53575282e+01	2.84520262e+01
+paci_hyttinen_aaltosetala_severi_ventricularVersion	0	0	4.13360596e-02	8.00630281e+05
+paci_hyttinen_aaltosetala_severi_ventricularVersion	0	1	3.35857868e-02	9.17041524e+00
+pandit_clark_giles_demir_2001_endocardial_cell	2	0	6.02708628e+01	5.35509066e-02
+pandit_clark_giles_demir_2001_endocardial_cell	2	1	4.31645761e+01	5.35504311e-02
+pandit_clark_giles_demir_2001_epicardial_cell	5	0	2.39980147e+02	1.34209343e-02
+pandit_clark_giles_demir_2001_epicardial_cell	5	1	1.70803196e+02	1.34213640e-02
+pasek_simurda_orchard_christe_2008	7	0	4.31466500e+03	4.24024150e+00
+sakmann_model_2000_epi	0	0	4.14009094e-02	1.24085015e+01
+sakmann_model_2000_epi	0	1	3.34191322e-02	5.42378885e-02
+shannon_wang_puglisi_weber_bers_2004	2	0	2.18791321e+02	1.84271232e-02
+shannon_wang_puglisi_weber_bers_2004	2	1	1.71340640e+02	1.84268631e-02
+stewart_zhang_model_2008_ss	5	0	6.54130316e+00	1.29010292e-04
+stewart_zhang_model_2008_ss	5	1	3.34788203e+00	1.14924899e-04
+ten_tusscher_model_2004_M	7	0	8.88648710e+01	1.96686737e-01
+ten_tusscher_model_2004_epi	0	0	6.52379990e-02	2.01689638e+00
+ten_tusscher_model_2004_epi	0	1	5.47130108e-02	2.92331464e-01
+ten_tusscher_model_2006_M	2	0	1.30216150e+01	6.56814651e-01
+ten_tusscher_model_2006_M	2	1	7.93837905e+00	6.56814965e-01
+ten_tusscher_model_2006_endo	5	0	5.13329978e+01	2.24554738e-02
+ten_tusscher_model_2006_endo	5	1	3.01351130e+01	2.24553799e-02
+ten_tusscher_model_2006_epi	7	0	1.12826662e+01	2.45546401e-01
+wang_sobie_2008	0	0	3.40141058e-01	7.96441040e+00
+wang_sobie_2008	0	1	2.64214993e-01	2.49916184e+00
+winslow_model_1999	2	0	2.32385574e+02	1.79852285e+00
+winslow_model_1999	2	1	1.77269060e+02	1.79852466e+00
+zhang_SAN_model_2000_0D_capable	5	0	7.27164030e-01	7.17433110e-09
+zhang_SAN_model_2000_0D_capable	5	1	3.13855171e-01	8.04366313e-09
+aslanidi_Purkinje_model_2009	4	0	2.18040395e+00	2.97960197e-02
+aslanidi_atrial_model_2009	6	0	8.43290997e+00	8.10385746e-01
+aslanidi_atrial_model_2009	6	1	5.74900198e+00	8.10385682e-01
+beeler_reuter_model_1977	8	0	2.64251578e+01	2.69660827e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	1	0	8.87758732e-02	1.15882395e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	1	1	7.55300522e-02	1.13617669e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	4	0	3.17449870e+01	4.63815262e-06
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	4	1	1.77294869e+01	4.63810341e-06
+carro_2011_endo	6	0	5.68379560e+01	9.42148483e-01
+carro_2011_endo	6	1	4.09682820e+01	9.42147982e-01
+carro_2011_epi	8	0	4.55408304e+02	3.32811420e-01
+corrias_purkinje_2011	1	0	8.50639343e-02	7.74239566e+04
+corrias_purkinje_2011	1	1	7.49709606e-02	7.55547595e+04
+courtemanche_ramirez_nattel_1998	4	0	3.62804317e+00	2.28069023e-03
+courtemanche_ramirez_nattel_1998	4	1	1.99191022e+00	2.28068630e-03
+davies_isap_2012	6	0	9.08337440e+01	5.79586007e-01
+davies_isap_2012	6	1	6.38373809e+01	5.79582932e-01
+decker_2009	8	0	1.54854906e+02	1.32737904e+01
+difrancesco_noble_model_1985	1	0	2.73399353e-02	1.78956543e+02
+difrancesco_noble_model_1985	1	1	2.42218971e-02	6.15258741e+01
+dokos_model_1996	4	0	7.23692179e-01	1.62875957e-02
+dokos_model_1996	4	1	5.33067942e-01	1.62759393e-02
+earm_noble_model_1990	6	0	4.29450488e+00	2.90727257e+00
+earm_noble_model_1990	6	1	3.27218294e+00	2.90727250e+00
+espinosa_model_1998_normal	8	0	9.91905081e+01	5.23105172e-01
+fink_noble_giles_model_2008	1	0	7.98978806e-02	1.74784882e+01
+fink_noble_giles_model_2008	1	1	6.87189102e-02	1.22617512e+01
+fox_mcharg_gilmour_2002	4	0	1.15948138e+01	4.28606419e-05
+fox_mcharg_gilmour_2002	4	1	6.14430094e+00	4.28725738e-05
+grandi_pasqualini_bers_2010_ss	6	0	2.69654069e+01	4.74992621e+00
+grandi_pasqualini_bers_2010_ss	6	1	2.16279681e+01	4.74994875e+00
+grandi_pasqualini_bers_2010_ss_endo	8	0	2.19527751e+02	1.01086165e+00
+hodgkin_huxley_squid_axon_model_1952_modified	1	0	2.44469643e-02	3.22064559e+02
+hodgkin_huxley_squid_axon_model_1952_modified	1	1	2.13038921e-02	3.22795074e+02
+hund_rudy_2004	4	0	1.04612849e+01	1.55969927e-03
+hund_rudy_2004	4	1	7.68693614e+00	1.55981108e-03
+iribe_model_2006	6	0	5.08054399e+00	1.35898770e+00
+iribe_model_2006	6	1	3.51748300e+00	1.35898841e+00
+iyer_2004	8	0	5.44862529e+03	2.65926259e-01
+jafri_rice_winslow_model_1998	1	0	1.23188972e-01	4.83255672e+00
+jafri_rice_winslow_model_1998	1	1	1.14506006e-01	6.74973739e-01
+kurata_model_2002	4	0	1.48323703e+00	3.73941423e-04
+kurata_model_2002	4	1	7.38219976e-01	3.71793610e-04
+li_mouse_2010	6	0	9.76308341e+01	2.48011249e-03
+li_mouse_2010	6	1	6.70582001e+01	2.48010633e-03
+livshitz_rudy_2007	8	0	1.48128700e+00	8.95160360e-01
+mahajan_shiferaw_2008	1	0	6.04751110e-02	6.56609362e+00
+mahajan_shiferaw_2008	1	1	5.53231239e-02	5.59395828e+00
+maleckar_model_2009	4	0	9.44387913e-01	3.21041229e-02
+maleckar_model_2009	4	1	6.02626085e-01	3.21041415e-02
+maltsev_2009	6	0	5.17552760e+01	8.56931721e-02
+maltsev_2009	6	1	2.47221289e+01	8.56659552e-02
+matsuoka_model_2003	8	0	1.42689419e+00	3.23409823e+00
+noble_SAN_model_1989	1	0	4.34441566e-02	1.39265532e-05
+noble_SAN_model_1989	1	1	3.72688770e-02	1.50658492e-05
+noble_model_1962	4	0	8.23369026e-02	1.12049433e+01
+noble_model_1962	4	1	5.93070984e-02	1.12045528e+01
+noble_model_1991	6	0	9.32655811e+00	7.76861456e-01
+noble_model_1991	6	1	6.32493091e+00	7.76861513e-01
+noble_model_1998	8	0	1.38650019e+01	1.85630611e-01
+noble_noble_SAN_model_1984	1	0	3.79841328e-02	6.93835616e-05
+noble_noble_SAN_model_1984	1	1	3.15930843e-02	7.97553562e-05
+nygren_atrial_model_1998	4	0	7.18604088e-01	8.05198949e-02
+nygren_atrial_model_1998	4	1	5.35669088e-01	8.05192440e-02
+ohara_rudy_2011_endo	6	0	1.29863501e+01	2.71888255e+01
+ohara_rudy_2011_endo	6	1	8.18676901e+00	2.71888303e+01
+ohara_rudy_2011_epi	8	0	9.73696051e+01	2.95672738e+01
+paci_hyttinen_aaltosetala_severi_ventricularVersion	1	0	5.02178669e-02	5.02588575e+00
+paci_hyttinen_aaltosetala_severi_ventricularVersion	1	1	4.20320034e-02	1.55571636e+00
+pandit_clark_giles_demir_2001_endocardial_cell	4	0	1.22492813e+02	1.37512381e-02
+pandit_clark_giles_demir_2001_endocardial_cell	4	1	8.75324521e+01	1.37509873e-02
+pandit_clark_giles_demir_2001_epicardial_cell	6	0	1.33045560e+02	1.45707653e-02
+pandit_clark_giles_demir_2001_epicardial_cell	6	1	9.93468339e+01	1.45703450e-02
+pasek_simurda_orchard_christe_2008	8	0	4.93604664e+03	4.52094280e-02
+sakmann_model_2000_epi	1	0	4.56209183e-02	1.22475737e+01
+sakmann_model_2000_epi	1	1	4.04250622e-02	1.89414422e-01
+shannon_wang_puglisi_weber_bers_2004	4	0	1.39515941e+01	2.47153564e-04
+shannon_wang_puglisi_weber_bers_2004	4	1	1.09640911e+01	2.47216101e-04
+stewart_zhang_model_2008_ss	6	0	2.31554684e+02	8.65759560e-02
+stewart_zhang_model_2008_ss	6	1	1.34135352e+02	8.62028358e-02
+ten_tusscher_model_2004_M	8	0	1.19618299e+01	6.95313693e-01
+ten_tusscher_model_2004_epi	1	0	7.70130157e-02	5.93624714e-01
+ten_tusscher_model_2004_epi	1	1	6.18040562e-02	1.46332634e-01
+ten_tusscher_model_2006_M	4	0	2.71316669e+01	2.95231272e-06
+ten_tusscher_model_2006_M	4	1	1.57441211e+01	2.95248166e-06
+ten_tusscher_model_2006_endo	6	0	5.99393821e+01	1.32563225e-01
+ten_tusscher_model_2006_endo	6	1	4.50543661e+01	1.32562929e-01
+ten_tusscher_model_2006_epi	8	0	2.28153319e+01	2.24457608e-01
+wang_sobie_2008	1	0	3.79670858e-01	7.95816146e+00
+wang_sobie_2008	1	1	2.95097828e-01	2.51190900e+00
+winslow_model_1999	4	0	4.58781491e+02	5.99581494e+00
+winslow_model_1999	4	1	3.60100698e+02	5.99562178e+00
+zhang_SAN_model_2000_0D_capable	6	0	4.29240419e+02	2.79317626e-04
+zhang_SAN_model_2000_0D_capable	6	1	2.09918935e+02	2.78467815e-04
+aslanidi_Purkinje_model_2009	5	0	8.70558906e+00	1.78515269e+00
+aslanidi_Purkinje_model_2009	5	1	5.83651400e+00	1.78515562e+00
+aslanidi_atrial_model_2009	7	0	5.71200781e+01	3.71488074e-01
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	2	0	7.84737992e+00	1.07304245e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	2	1	4.30999207e+00	1.07304205e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	5	0	6.30150459e+01	1.66392034e-04
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	5	1	3.50832329e+01	1.66392306e-04
+carro_2011_endo	7	0	3.39049929e+03	1.07001562e+00
+clancy_rudy_2002	0	0	1.40581456e+02	1.06728084e-01
+clancy_rudy_2002	0	1	1.29130732e+02	2.66908343e-02
+corrias_purkinje_2011	2	0	1.63295970e+01	5.10667143e+04
+corrias_purkinje_2011	2	1	1.18232501e+01	5.10667688e+04
+courtemanche_ramirez_nattel_1998	5	0	1.42303412e+01	1.25465220e-01
+courtemanche_ramirez_nattel_1998	5	1	7.86675000e+00	1.25465251e-01
+davies_isap_2012	7	0	3.26551251e+02	1.01888502e+00
+demir_model_1994	0	0	8.32729340e-02	1.02629217e-04
+demir_model_1994	0	1	7.68408775e-02	1.05755259e-04
+difrancesco_noble_model_1985	2	0	5.82244873e-01	9.94875843e+01
+difrancesco_noble_model_1985	2	1	3.63429070e-01	9.94875832e+01
+dokos_model_1996	5	0	1.42251205e+00	2.53942350e-03
+dokos_model_1996	5	1	1.02043200e+00	2.53500420e-03
+earm_noble_model_1990	7	0	2.03978395e+00	1.01395535e+00
+faber_rudy_2000	0	0	8.90450478e-02	5.22377583e+03
+fink_noble_giles_model_2008	2	0	2.76736531e+01	4.33605458e-01
+fink_noble_giles_model_2008	2	1	1.63359730e+01	4.33603562e-01
+fox_mcharg_gilmour_2002	5	0	1.15292039e+01	6.64539853e-01
+fox_mcharg_gilmour_2002	5	1	5.87697792e+00	6.64539368e-01
+grandi_pasqualini_bers_2010_ss	7	0	8.17860704e+02	2.93174625e+00
+hilgemann_noble_model_1987	0	0	2.70390511e-02	2.17521735e+00
+hilgemann_noble_model_1987	0	1	2.42788792e-02	5.67885301e-01
+hodgkin_huxley_squid_axon_model_1952_modified	2	0	5.55528164e-01	1.55080074e+01
+hodgkin_huxley_squid_axon_model_1952_modified	2	1	3.60081911e-01	1.55080044e+01
+hund_rudy_2004	5	0	1.03736160e+01	6.75014264e-01
+hund_rudy_2004	5	1	7.58537006e+00	6.75014941e-01
+iribe_model_2006	7	0	9.54788589e+00	6.38711222e-01
+iyer_model_2007	0	0	2.92719841e-01	1.77967245e+00
+iyer_model_2007	0	1	2.98623085e-01	1.11723929e+00
+jafri_rice_winslow_model_1998	2	0	5.53791351e+01	5.43563149e-02
+jafri_rice_winslow_model_1998	2	1	4.52109411e+01	5.43557571e-02
+kurata_model_2002	5	0	2.99816704e+00	2.62808663e-05
+kurata_model_2002	5	1	1.38414407e+00	2.57534902e-05
+li_mouse_2010	7	0	7.57321680e+02	4.69245324e-02
+luo_rudy_1991	0	0	2.02779770e-02	1.46927715e+01
+luo_rudy_1991	0	1	1.67710781e-02	5.20466310e-01
+mahajan_shiferaw_2008	2	0	6.40453696e+00	1.11462132e+00
+mahajan_shiferaw_2008	2	1	4.65058613e+00	1.11462235e+00
+maleckar_model_2009	5	0	7.61044621e+00	9.59144973e-02
+maleckar_model_2009	5	1	4.80549908e+00	9.59144703e-02
+maltsev_2009	7	0	2.59915102e+02	9.57351853e-02
+mcallister_noble_tsien_1975_b	0	0	1.32310390e-02	5.20628984e-04
+mcallister_noble_tsien_1975_b	0	1	9.37795639e-03	4.66694154e-04
+noble_SAN_model_1989	2	0	6.23449230e+01	1.42956006e-02
+noble_SAN_model_1989	2	1	3.64915540e+01	1.43053733e-02
+noble_model_1962	5	0	1.56841040e-01	3.64468385e-03
+noble_model_1962	5	1	1.09397888e-01	3.63747056e-03
+noble_model_1991	7	0	3.45146539e+01	6.10357206e-01
+noble_model_2001	0	0	4.53119278e-02	2.45380227e-01
+noble_model_2001	0	1	3.93669605e-02	2.14025316e-01
+noble_noble_SAN_model_1984	2	0	2.60103979e+02	2.54029626e-04
+noble_noble_SAN_model_1984	2	1	1.46370781e+02	2.63859726e-04
+nygren_atrial_model_1998	5	0	1.43231606e+00	2.90303671e+02
+nygren_atrial_model_1998	5	1	1.07413602e+00	2.90303720e+02
+ohara_rudy_2011_endo	7	0	4.46368902e+01	2.83844469e+01
+paci_hyttinen_aaltosetala_severi_atrialVersion	0	0	3.71339321e-02	1.07871046e+00
+paci_hyttinen_aaltosetala_severi_atrialVersion	0	1	3.14350128e-02	1.08848383e+00
+paci_hyttinen_aaltosetala_severi_ventricularVersion	2	0	8.76992202e+00	9.02798036e-01
+paci_hyttinen_aaltosetala_severi_ventricularVersion	2	1	5.10285592e+00	1.77476646e-01
+pandit_clark_giles_demir_2001_endocardial_cell	5	0	1.21747217e+02	5.61689833e-04
+pandit_clark_giles_demir_2001_endocardial_cell	5	1	8.77530849e+01	5.61739239e-04
+pandit_clark_giles_demir_2001_epicardial_cell	7	0	3.05203414e+00	3.77372980e+02
+priebe_beuckelmann_1998	0	0	7.56850243e-02	4.98088813e+00
+priebe_beuckelmann_1998	0	1	7.03098774e-02	8.72678597e+00
+sakmann_model_2000_epi	2	0	6.64768314e+00	2.99462315e+00
+sakmann_model_2000_epi	2	1	4.15091491e+00	2.99456706e+00
+shannon_wang_puglisi_weber_bers_2004	5	0	1.08452360e+02	5.01773570e-02
+shannon_wang_puglisi_weber_bers_2004	5	1	8.55805490e+01	5.01778227e-02
+stewart_zhang_model_2008_ss	7	0	1.06274168e+01	2.74897121e-02
+ten_tusscher_model_2004_endo	0	0	6.28199577e-02	5.21565726e-01
+ten_tusscher_model_2004_endo	0	1	5.27222157e-02	3.05953637e-01
+ten_tusscher_model_2004_epi	2	0	2.59743688e+01	1.47391016e-01
+ten_tusscher_model_2004_epi	2	1	1.39424679e+01	1.47267903e-01
+ten_tusscher_model_2006_M	5	0	5.13838260e+01	1.83262184e-02
+ten_tusscher_model_2006_M	5	1	3.01993351e+01	1.83262201e-02
+ten_tusscher_model_2006_endo	7	0	2.24737110e+01	1.44134626e-01
+viswanathan_model_1999_epi	0	0	1.11235857e-01	2.83038731e+01
+viswanathan_model_1999_epi	0	1	9.05339718e-02	1.49204752e+01
+wang_sobie_2008	2	0	7.60393691e+00	3.94467922e+00
+wang_sobie_2008	2	1	3.92013001e+00	3.94467913e+00
+winslow_model_1999	5	0	9.08678739e+02	4.13373764e+00
+winslow_model_1999	5	1	7.03165811e+02	4.13375317e+00
+zhang_SAN_model_2000_0D_capable	7	0	4.23896530e+02	2.23856800e-05
+aslanidi_Purkinje_model_2009	6	0	4.77900100e+00	8.39836178e+00
+aslanidi_Purkinje_model_2009	6	1	3.33890510e+00	8.39835730e+00
+aslanidi_atrial_model_2009	8	0	1.22380681e+02	3.78354167e-01
+benson_epicardial_2008	1	0	9.13679600e-02	2.63375643e+01
+benson_epicardial_2008	1	1	7.87260532e-02	2.33030237e-01
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	4	0	1.58470540e+01	5.02140795e-06
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	4	1	9.04440689e+00	5.02128566e-06
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	6	0	1.68245451e+01	1.95678392e-03
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	6	1	1.00312939e+01	1.95678169e-03
+carro_2011_endo	8	0	4.51279350e+02	4.37923442e-01
+clancy_rudy_2002	1	0	2.49237484e+02	1.28477395e-01
+clancy_rudy_2002	1	1	1.81190461e+02	8.65272428e-02
+corrias_purkinje_2011	4	0	4.14896393e+00	1.01590454e+01
+corrias_purkinje_2011	4	1	3.03793621e+00	1.01598550e+01
+courtemanche_ramirez_nattel_1998	6	0	6.26010718e+01	9.99783366e-02
+courtemanche_ramirez_nattel_1998	6	1	3.76207640e+01	9.99779987e-02
+davies_isap_2012	8	0	1.75296494e+02	2.19159298e+00
+demir_model_1994	1	0	9.36841965e-02	8.72524900e-05
+demir_model_1994	1	1	8.40590000e-02	1.05755187e-04
+difrancesco_noble_model_1985	4	0	5.91476917e-01	3.70786012e-01
+difrancesco_noble_model_1985	4	1	3.70841980e-01	3.70786091e-01
+dokos_model_1996	6	0	6.18486404e+00	1.31597956e+00
+dokos_model_1996	6	1	4.52813387e+00	1.31587375e+00
+earm_noble_model_1990	8	0	4.31511903e+00	1.23070834e+00
+faber_rudy_2000	1	0	1.18623018e-01	5.17921912e+03
+fink_noble_giles_model_2008	4	0	2.82758420e+01	9.68854594e-06
+fink_noble_giles_model_2008	4	1	1.67772930e+01	9.69088665e-06
+fox_mcharg_gilmour_2002	6	0	3.25296378e+00	2.50897990e+01
+fox_mcharg_gilmour_2002	6	1	1.78807902e+00	2.50897961e+01
+grandi_pasqualini_bers_2010_ss	8	0	2.20447107e+02	9.88162507e-01
+hilgemann_noble_model_1987	1	0	3.20668221e-02	2.12580682e+00
+hilgemann_noble_model_1987	1	1	2.80220509e-02	5.66341190e-01
+hodgkin_huxley_squid_axon_model_1952_modified	4	0	1.41947031e-01	3.15536591e+00
+hodgkin_huxley_squid_axon_model_1952_modified	4	1	9.27031040e-02	3.15536607e+00
+hund_rudy_2004	6	0	1.79789318e+02	3.10216763e-01
+hund_rudy_2004	6	1	1.34980887e+02	3.10218705e-01
+iribe_model_2006	8	0	2.55461216e+00	4.68395559e-01
+iyer_model_2007	1	0	3.76091957e-01	4.06471182e+00
+iyer_model_2007	1	1	3.39300871e-01	1.02136002e+00
+jafri_rice_winslow_model_1998	4	0	4.00473061e+01	1.10851308e-05
+jafri_rice_winslow_model_1998	4	1	3.17153828e+01	1.10796271e-05
+kurata_model_2002	6	0	2.72176092e+01	7.24038438e-01
+kurata_model_2002	6	1	1.38849671e+01	7.23943777e-01
+li_mouse_2010	8	0	2.56413641e+01	1.49394998e-03
+luo_rudy_1991	1	0	2.14109421e-02	5.05885356e+00
+luo_rudy_1991	1	1	1.71489716e-02	1.34793545e+00
+mahajan_shiferaw_2008	4	0	3.22534490e+00	1.40948623e-03
+mahajan_shiferaw_2008	4	1	2.35136294e+00	1.40953355e-03
+maleckar_model_2009	6	0	1.94346108e+01	2.19671333e-01
+maleckar_model_2009	6	1	1.22278991e+01	2.19671321e-01
+maltsev_2009	8	0	3.50553951e+01	5.69332651e-02
+mcallister_noble_tsien_1975_b	1	0	1.39238834e-02	1.01677665e-03
+mcallister_noble_tsien_1975_b	1	1	9.84311104e-03	1.85946988e-03
+noble_SAN_model_1989	4	0	9.90014076e-01	2.71546928e-03
+noble_SAN_model_1989	4	1	6.23725176e-01	2.71098574e-03
+noble_model_1962	6	0	1.19661949e+01	5.37214885e+00
+noble_model_1962	6	1	9.54733109e+00	5.37186924e+00
+noble_model_1991	8	0	9.05675220e+00	4.73494707e-01
+noble_model_2001	1	0	5.51140308e-02	5.09066182e-01
+noble_model_2001	1	1	4.36389446e-02	3.50142983e-01
+noble_noble_SAN_model_1984	4	0	5.15041119e+02	7.11873024e-05
+noble_noble_SAN_model_1984	4	1	3.01161560e+02	7.82539028e-05
+nygren_atrial_model_1998	6	0	4.31975126e-01	3.21187242e+02
+nygren_atrial_model_1998	6	1	3.22817087e-01	3.21187196e+02
+ohara_rudy_2011_endo	8	0	9.61071088e+01	2.88219616e+01
+paci_hyttinen_aaltosetala_severi_atrialVersion	1	0	4.18939590e-02	1.07803498e+00
+paci_hyttinen_aaltosetala_severi_atrialVersion	1	1	3.19559574e-02	1.07713192e+00
+paci_hyttinen_aaltosetala_severi_ventricularVersion	4	0	8.48952913e+00	4.18499055e-03
+paci_hyttinen_aaltosetala_severi_ventricularVersion	4	1	5.53700995e+00	4.14859833e-03
+pandit_clark_giles_demir_2001_endocardial_cell	6	0	6.84614460e+01	2.27175524e-01
+pandit_clark_giles_demir_2001_endocardial_cell	6	1	5.01118820e+01	2.27174506e-01
+pandit_clark_giles_demir_2001_epicardial_cell	8	0	6.42884088e+00	3.82707404e+02
+priebe_beuckelmann_1998	1	0	8.80031586e-02	4.73902605e+00
+priebe_beuckelmann_1998	1	1	8.05180073e-02	7.44749482e+00
+sakmann_model_2000_epi	4	0	8.53059053e-01	3.00953112e+00
+sakmann_model_2000_epi	4	1	5.41193962e-01	3.00953142e+00
+shannon_wang_puglisi_weber_bers_2004	6	0	2.29221193e+02	7.89876109e-02
+shannon_wang_puglisi_weber_bers_2004	6	1	1.81402632e+02	7.89864938e-02
+stewart_zhang_model_2008_ss	8	0	2.21831982e+01	3.54225687e-04
+ten_tusscher_model_2004_endo	1	0	7.52429962e-02	5.59332865e-01
+ten_tusscher_model_2004_endo	1	1	5.96449375e-02	1.35990710e-01
+ten_tusscher_model_2004_epi	4	0	2.68376570e+01	4.40413728e-06
+ten_tusscher_model_2004_epi	4	1	1.44207180e+01	2.40165863e-06
+ten_tusscher_model_2006_M	6	0	2.91798511e+01	3.26310425e-01
+ten_tusscher_model_2006_M	6	1	1.84664230e+01	3.26310718e-01
+ten_tusscher_model_2006_endo	8	0	4.45922859e+01	1.57347179e-01
+viswanathan_model_1999_epi	1	0	1.35868788e-01	6.41447564e+00
+viswanathan_model_1999_epi	1	1	1.05548859e-01	3.05047742e+00
+wang_sobie_2008	4	0	8.21094799e+00	8.46810999e-03
+wang_sobie_2008	4	1	4.05205107e+00	8.46811894e-03
+winslow_model_1999	6	0	2.38340830e+02	2.68794641e+00
+winslow_model_1999	6	1	1.90964070e+02	2.68791609e+00
+zhang_SAN_model_2000_0D_capable	8	0	9.41614390e+02	2.23856800e-05
+aslanidi_Purkinje_model_2009	7	0	7.89233398e+00	5.66310726e+00
+beeler_reuter_model_1977	0	0	2.46310234e-02	5.89559147e-01
+beeler_reuter_model_1977	0	1	1.95670128e-02	4.19207622e-02
+benson_epicardial_2008	2	0	1.03363700e+01	4.12386875e+01
+benson_epicardial_2008	2	1	6.83954620e+00	4.12386602e+01
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	5	0	3.16070528e+01	8.29521922e-04
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	5	1	1.76349242e+01	8.29523001e-04
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	7	0	6.94328620e+01	7.84010373e-01
+carro_2011_epi	0	0	1.48622036e-01	4.60042691e-02
+carro_2011_epi	0	1	1.33738995e-01	2.72392304e-01
+clancy_rudy_2002	2	0	9.57393980e+00	3.08550595e-01
+clancy_rudy_2002	2	1	5.44649196e+00	3.08541006e-01
+corrias_purkinje_2011	5	0	8.20898008e+00	7.93177437e+04
+corrias_purkinje_2011	5	1	5.97999001e+00	7.93177746e+04
+courtemanche_ramirez_nattel_1998	7	0	2.54331331e+01	1.15552938e-01
+decker_2009	0	0	2.95784950e-01	2.95575659e+01
+decker_2009	0	1	2.70214081e-01	2.66726080e+01
+demir_model_1994	2	0	3.43033327e+02	7.70984634e-03
+demir_model_1994	2	1	2.25898163e+02	7.77966390e-03
+difrancesco_noble_model_1985	5	0	1.16521907e+00	2.49953395e+01
+difrancesco_noble_model_1985	5	1	7.15867996e-01	2.49953410e+01
+dokos_model_1996	7	0	7.39059091e+00	8.96666838e-01
+espinosa_model_1998_normal	0	0	3.03468704e-02	2.59028875e+02
+espinosa_model_1998_normal	0	1	2.61340141e-02	6.90267251e+01
+faber_rudy_2000	2	0	4.52545595e+00	4.27190503e+03
+faber_rudy_2000	2	1	2.92931008e+00	4.27190401e+03
+fink_noble_giles_model_2008	5	0	5.56435730e+01	1.27445842e-02
+fink_noble_giles_model_2008	5	1	3.41588578e+01	1.27446524e-02
+fox_mcharg_gilmour_2002	7	0	3.95692086e+00	1.20091447e+01
+grandi_pasqualini_bers_2010_ss_endo	0	0	9.08138752e-02	4.20230503e+01
+grandi_pasqualini_bers_2010_ss_endo	0	1	8.06009769e-02	4.22806971e+01
+hilgemann_noble_model_1987	2	0	3.74217010e+00	5.70913604e-01
+hilgemann_noble_model_1987	2	1	2.76983809e+00	5.70913535e-01
+hodgkin_huxley_squid_axon_model_1952_modified	5	0	2.15241790e+00	1.32279597e+01
+hodgkin_huxley_squid_axon_model_1952_modified	5	1	1.34288287e+00	1.32279566e+01
+hund_rudy_2004	7	0	8.17568278e+01	7.69045672e-01
+iyer_2004	0	0	3.00235987e-01	8.35457244e-01
+iyer_2004	0	1	2.90107965e-01	8.60044865e-01
+iyer_model_2007	2	0	1.32259674e+02	2.87243601e-04
+iyer_model_2007	2	1	9.76385250e+01	2.87339459e-04
+jafri_rice_winslow_model_1998	5	0	1.03792633e+02	2.73918998e-03
+kurata_model_2002	7	0	8.28744259e+01	6.85973193e-01
+luo_rudy_1991	2	0	1.40569341e+01	3.91241538e-01
+luo_rudy_1991	2	1	1.00117950e+01	3.91243223e-01
+mahajan_shiferaw_2008	5	0	6.42497015e+00	1.80130118e-01
+mahajan_shiferaw_2008	5	1	4.58201599e+00	1.80130104e-01
+maleckar_model_2009	7	0	3.06464350e+01	1.35130180e-01
+matsuoka_model_2003	0	0	6.38630390e-02	1.07386477e+01
+matsuoka_model_2003	0	1	5.71389198e-02	1.45484329e+01
+mcallister_noble_tsien_1975_b	2	0	4.16311820e+01	6.85492992e-02
+mcallister_noble_tsien_1975_b	2	1	9.67201591e+00	6.84557230e-02
+noble_SAN_model_1989	5	0	4.91971970e-01	6.19496426e-08
+noble_SAN_model_1989	5	1	3.08593035e-01	6.39034773e-08
+noble_model_1962	7	0	7.32244968e-01	5.57915090e+00
+noble_model_1998	0	0	4.55451012e-02	1.03931699e+01
+noble_model_1998	0	1	3.82230282e-02	9.36150838e+00
+noble_model_2001	2	0	1.37946861e+01	9.29250657e-02
+noble_model_2001	2	1	8.38636589e+00	9.29244169e-02
+noble_noble_SAN_model_1984	5	0	1.03342939e+03	7.06793498e-05
+noble_noble_SAN_model_1984	5	1	6.09608645e+02	7.82525593e-05
+nygren_atrial_model_1998	7	0	3.20102692e+00	4.78306936e+02
+ohara_rudy_2011_epi	0	0	3.06087017e-01	1.45024107e+02
+ohara_rudy_2011_epi	0	1	2.59142876e-01	1.63254746e+02
+paci_hyttinen_aaltosetala_severi_atrialVersion	2	0	1.71013439e+01	2.94914616e-01
+paci_hyttinen_aaltosetala_severi_atrialVersion	2	1	1.01021540e+01	2.94614940e-01
+paci_hyttinen_aaltosetala_severi_ventricularVersion	5	0	8.45560598e+00	1.66599386e-03
+paci_hyttinen_aaltosetala_severi_ventricularVersion	5	1	5.09811878e+00	5.23792005e+05
+pandit_clark_giles_demir_2001_endocardial_cell	7	0	6.21886611e+00	2.18446240e+01
+pasek_simurda_orchard_christe_2008	0	0	3.12296867e-01	2.19558481e+00
+pasek_simurda_orchard_christe_2008	0	1	2.88721085e-01	2.21484980e+00
+priebe_beuckelmann_1998	2	0	2.60710890e+01	4.69875764e+00
+priebe_beuckelmann_1998	2	1	1.87769902e+01	4.69875630e+00
+sakmann_model_2000_epi	5	0	3.32693887e+00	3.44408940e+00
+sakmann_model_2000_epi	5	1	2.08657885e+00	3.44408910e+00
+shannon_wang_puglisi_weber_bers_2004	7	0	3.54175427e+03	8.27451500e-02
+ten_tusscher_model_2004_M	0	0	6.45589828e-02	3.88417751e-01
+ten_tusscher_model_2004_M	0	1	5.09309769e-02	1.43722403e-01
+ten_tusscher_model_2004_endo	2	0	1.27848818e+01	7.58651716e-01
+ten_tusscher_model_2004_endo	2	1	6.93065000e+00	7.58305224e-01
+ten_tusscher_model_2004_epi	5	0	5.27131901e+01	1.81825063e-02
+ten_tusscher_model_2004_epi	5	1	2.79088361e+01	1.81710544e-02
+ten_tusscher_model_2006_M	7	0	1.07387002e+01	6.20777002e-01
+ten_tusscher_model_2006_epi	0	0	6.83319569e-02	2.33116174e+00
+ten_tusscher_model_2006_epi	0	1	5.74700832e-02	1.40580972e-01
+viswanathan_model_1999_epi	2	0	1.35427728e+02	6.02913302e+00
+viswanathan_model_1999_epi	2	1	7.39686229e+01	6.02913301e+00
+wang_sobie_2008	5	0	1.54697468e+01	2.82304491e+00
+wang_sobie_2008	5	1	8.02489901e+00	2.82304480e+00
+winslow_model_1999	7	0	1.66953697e+03	1.47476064e+03
+aslanidi_Purkinje_model_2009	8	0	8.25157595e+00	2.12347370e+01
+beeler_reuter_model_1977	1	0	2.62448788e-02	5.85825086e-01
+beeler_reuter_model_1977	1	1	1.96869373e-02	5.00785212e-02
+benson_epicardial_2008	4	0	1.05623598e+01	1.17795654e-01
+benson_epicardial_2008	4	1	7.00701904e+00	1.17793758e-01
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	6	0	8.46765399e+00	1.04696141e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	6	1	5.27691412e+00	1.04696049e-02
+bondarenko_szigeti_bett_kim_rasmusson_2004_septal	8	0	1.90623870e+01	5.13588747e-01
+carro_2011_epi	1	0	1.98403120e-01	5.05693847e-02
+carro_2011_epi	1	1	1.69560909e-01	2.78103919e-01
+clancy_rudy_2002	4	0	8.47316980e-01	4.39482807e-02
+clancy_rudy_2002	4	1	6.38023138e-01	4.39479999e-02
+corrias_purkinje_2011	6	0	1.75169508e+01	5.10660583e+04
+corrias_purkinje_2011	6	1	1.29936080e+01	5.10661127e+04
+courtemanche_ramirez_nattel_1998	8	0	1.37073610e+01	1.76409667e-01
+decker_2009	1	0	3.83018970e-01	2.95795397e+01
+decker_2009	1	1	3.33310127e-01	2.63573242e+01
+demir_model_1994	4	0	1.36307788e+00	4.02170849e-03
+demir_model_1994	4	1	9.52009916e-01	3.97021420e-03
+difrancesco_noble_model_1985	6	0	1.29835701e+00	1.02175603e+02
+difrancesco_noble_model_1985	6	1	8.86157036e-01	1.02175602e+02
+dokos_model_1996	8	0	8.36228609e+00	1.34506666e+00
+espinosa_model_1998_normal	1	0	3.66539955e-02	6.89728959e+01
+espinosa_model_1998_normal	1	1	3.02560329e-02	6.89913269e+01
+faber_rudy_2000	4	0	9.22060204e+00	5.19369567e+03
+faber_rudy_2000	4	1	5.96909690e+00	5.19369540e+03
+fink_noble_giles_model_2008	6	0	5.99284971e+01	2.17115253e-01
+fink_noble_giles_model_2008	6	1	3.95926261e+01	2.17114444e-01
+fox_mcharg_gilmour_2002	8	0	8.50964904e+00	1.28905412e+01
+grandi_pasqualini_bers_2010_ss_endo	1	0	1.21290922e-01	4.75062021e+01
+grandi_pasqualini_bers_2010_ss_endo	1	1	1.10774994e-01	4.18648293e+01
+hilgemann_noble_model_1987	4	0	4.74921942e-01	2.92016707e-01
+hilgemann_noble_model_1987	4	1	3.52753162e-01	2.92016740e-01
+hodgkin_huxley_squid_axon_model_1952_modified	6	0	3.37364912e-01	1.54793932e+01
+hodgkin_huxley_squid_axon_model_1952_modified	6	1	2.41518974e-01	1.54793960e+01
+hund_rudy_2004	8	0	1.10870149e+01	4.79379716e-01
+iyer_2004	1	0	3.57098818e-01	6.93928005e-01
+iyer_2004	1	1	3.41162205e-01	6.37310805e-01
+iyer_model_2007	4	0	2.80530280e+02	5.42692621e-04
+iyer_model_2007	4	1	2.09474137e+02	5.42766540e-04
+jafri_rice_winslow_model_1998	6	0	5.81554489e+01	1.00177397e-01
+jafri_rice_winslow_model_1998	6	1	4.85891161e+01	1.00176881e-01
+kurata_model_2002	8	0	1.08074300e+01	1.21182454e+00
+livshitz_rudy_2007	1	0	4.28590775e-02	1.36531100e+02
+livshitz_rudy_2007	1	1	3.12440395e-02	2.01865799e+01
+luo_rudy_1991	4	0	3.58722091e+00	9.60298070e-04
+luo_rudy_1991	4	1	2.39052701e+00	9.60215332e-04
+mahajan_shiferaw_2008	6	0	1.42147090e+01	7.33680399e-01
+mahajan_shiferaw_2008	6	1	1.02190409e+01	7.33681178e-01
+maleckar_model_2009	8	0	1.69960980e+01	1.04441981e-01
+matsuoka_model_2003	1	0	8.03568363e-02	1.07420531e+01
+matsuoka_model_2003	1	1	6.89561367e-02	3.45654929e+00
+mcallister_noble_tsien_1975_b	4	0	2.65772295e+00	1.12825997e-03
+mcallister_noble_tsien_1975_b	4	1	6.34268045e-01	1.11648633e-03
+noble_SAN_model_1989	6	0	6.90528269e+01	1.23947653e-02
+noble_SAN_model_1989	6	1	4.45466621e+01	1.23853611e-02
+noble_model_1962	8	0	1.62638307e+00	5.57915090e+00
+noble_model_1998	1	0	5.55579662e-02	8.40174957e+00
+noble_model_1998	1	1	4.59070206e-02	6.47356015e+00
+noble_model_2001	4	0	1.76750994e+00	2.36806726e-02
+noble_model_2001	4	1	1.09360194e+00	2.36807549e-02
+noble_noble_SAN_model_1984	6	0	2.80266574e+02	1.72135547e-03
+noble_noble_SAN_model_1984	6	1	1.77297404e+02	1.76087383e-03
+nygren_atrial_model_1998	8	0	7.11603212e+00	4.42954184e+02
+ohara_rudy_2011_epi	1	0	2.95391083e-01	1.27907285e+02
+ohara_rudy_2011_epi	1	1	2.42100954e-01	1.38583428e+02
+paci_hyttinen_aaltosetala_severi_atrialVersion	4	0	2.25087094e+00	3.04927958e-02
+paci_hyttinen_aaltosetala_severi_atrialVersion	4	1	1.40130115e+00	3.03937510e-02
+paci_hyttinen_aaltosetala_severi_ventricularVersion	6	0	3.69955151e+01	1.24199008e+06
+paci_hyttinen_aaltosetala_severi_ventricularVersion	6	1	2.35001788e+01	7.05178622e-02
+pandit_clark_giles_demir_2001_endocardial_cell	8	0	6.48789191e+00	6.31169845e+01
+pasek_simurda_orchard_christe_2008	1	0	4.17371035e-01	2.19564018e+00
+pasek_simurda_orchard_christe_2008	1	1	3.69241953e-01	2.47376130e+00
+priebe_beuckelmann_1998	4	0	2.64359190e+01	3.66141371e-04
+priebe_beuckelmann_1998	4	1	1.91833529e+01	3.66149771e-04
+sakmann_model_2000_epi	6	0	1.39543629e+01	1.93410723e+00
+sakmann_model_2000_epi	6	1	9.02001309e+00	1.93414724e+00
+shannon_wang_puglisi_weber_bers_2004	8	0	4.73552863e+02	5.69566559e-02
+ten_tusscher_model_2004_M	1	0	7.63578415e-02	2.57872014e+00
+ten_tusscher_model_2004_M	1	1	5.76558113e-02	9.05143136e-02
+ten_tusscher_model_2004_endo	4	0	2.62837179e+01	3.89050776e-05
+ten_tusscher_model_2004_endo	4	1	1.43414619e+01	3.17866592e-05
+ten_tusscher_model_2004_epi	6	0	2.92292411e+01	2.89377284e-01
+ten_tusscher_model_2004_epi	6	1	1.70141931e+01	2.89340464e-01
+ten_tusscher_model_2006_M	8	0	1.12717891e+01	7.89271236e-01
+ten_tusscher_model_2006_epi	1	0	8.07249546e-02	2.35694967e+00
+ten_tusscher_model_2006_epi	1	1	6.64629936e-02	1.21229693e-01
+viswanathan_model_1999_epi	4	0	3.43466260e+01	4.89721933e+00
+viswanathan_model_1999_epi	4	1	1.87101231e+01	4.89721956e+00
+wang_sobie_2008	6	0	8.23572803e+00	4.46074607e+00
+wang_sobie_2008	6	1	4.56019616e+00	4.46074597e+00
+winslow_model_1999	8	0	8.86543991e+02	1.23362239e+02
+beeler_reuter_model_1977	2	0	2.01696911e+01	1.79791114e-02
+beeler_reuter_model_1977	2	1	8.73363900e+00	1.79800920e-02
+benson_epicardial_2008	5	0	1.04142880e+01	3.07976432e+00
+benson_epicardial_2008	5	1	7.02103901e+00	3.07976350e+00
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	7	0	6.94878380e+01	1.02373732e+00
+carro_2011_endo	0	0	1.46764994e-01	2.59380754e-01
+carro_2011_endo	0	1	1.33928061e-01	4.09123878e-01
+carro_2011_epi	2	0	5.41115689e+01	2.92430793e-01
+carro_2011_epi	2	1	3.74628451e+01	2.92432559e-01
+clancy_rudy_2002	5	0	4.79784489e+00	1.93068626e-01
+clancy_rudy_2002	5	1	2.77963996e+00	1.93065308e-01
+corrias_purkinje_2011	7	0	6.12426291e+01	5.26037221e+04
+decker_2009	2	0	1.33633130e+01	8.64042089e+00
+decker_2009	2	1	9.51624298e+00	8.64040247e+00
+demir_model_1994	5	0	1.35611892e+00	9.98971933e-07
+demir_model_1994	5	1	9.28118944e-01	6.61552626e-07
+difrancesco_noble_model_1985	7	0	5.91610909e-01	4.18729857e+01
+earm_noble_model_1990	0	0	2.88238525e-02	1.63936011e+00
+earm_noble_model_1990	0	1	2.59120464e-02	5.25370240e-01
+espinosa_model_1998_normal	2	0	1.21307111e+01	2.85876774e-01
+espinosa_model_1998_normal	2	1	8.30177212e+00	2.85876797e-01
+faber_rudy_2000	5	0	9.09572601e+00	5.12124952e+03
+faber_rudy_2000	5	1	5.89301014e+00	5.12124943e+03
+fink_noble_giles_model_2008	7	0	2.57976329e+01	3.12489327e-01
+grandi_pasqualini_bers_2010_ss	0	0	8.65781307e-02	3.10066947e+01
+grandi_pasqualini_bers_2010_ss	0	1	8.34150314e-02	2.84026880e+01
+grandi_pasqualini_bers_2010_ss_endo	2	0	2.52685659e+01	4.08929166e+00
+grandi_pasqualini_bers_2010_ss_endo	2	1	1.98734939e+01	4.08930028e+00
+hilgemann_noble_model_1987	5	0	3.75958514e+00	6.02976058e-01
+hilgemann_noble_model_1987	5	1	2.78958607e+00	6.02976041e-01
+hodgkin_huxley_squid_axon_model_1952_modified	7	0	2.53251195e+00	2.20625132e+01
+iribe_model_2006	0	0	3.37400436e-02	1.45900106e+01
+iribe_model_2006	0	1	2.94899940e-02	1.41517137e+01
+iyer_2004	2	0	4.48552024e+02	1.17190306e-04
+iyer_2004	2	1	2.88567314e+02	1.17303959e-04
+iyer_model_2007	5	0	2.77758273e+02	1.14184623e-03
+iyer_model_2007	5	1	2.05108005e+02	1.14194852e-03
+jafri_rice_winslow_model_1998	7	0	1.00092364e+03	1.40048967e+00
+li_mouse_2010	0	0	7.84628391e-02	5.22574283e-03
+li_mouse_2010	0	1	7.15842247e-02	5.59266543e-02
+livshitz_rudy_2007	2	0	5.59693909e+00	1.86343940e+00
+livshitz_rudy_2007	2	1	3.79520416e+00	1.86344120e+00
+luo_rudy_1991	5	0	7.00983191e+00	3.56992262e-01
+luo_rudy_1991	5	1	4.58917713e+00	3.56994756e-01
+mahajan_shiferaw_2008	7	0	1.97283485e+02	1.17269310e+00
+matsuoka_model_2003	2	0	5.19647384e+00	2.24123144e+00
+matsuoka_model_2003	2	1	3.32823014e+00	2.24123138e+00
+mcallister_noble_tsien_1975_b	5	0	2.58138299e+00	2.33826239e-05
+mcallister_noble_tsien_1975_b	5	1	5.96612930e-01	2.16734069e-05
+noble_SAN_model_1989	7	0	3.24505391e+01	7.76049216e-03
+noble_model_1991	0	0	3.37228775e-02	1.15433317e+01
+noble_model_1991	0	1	2.96289921e-02	4.29930761e+00
+noble_model_1998	2	0	1.35977950e+01	6.41681721e-01
+noble_model_1998	2	1	8.66525698e+00	6.41681535e-01
+noble_model_2001	5	0	1.39037170e+01	2.17050705e-01
+noble_model_2001	5	1	8.49373293e+00	2.17050695e-01
+noble_noble_SAN_model_1984	7	0	1.08240059e+03	2.05710708e-04
+ohara_rudy_2011_endo	0	0	2.35161066e-01	1.43500272e+02
+ohara_rudy_2011_endo	0	1	2.10376024e-01	1.43499540e+02
+ohara_rudy_2011_epi	2	0	1.09223330e+01	1.25736373e+01
+ohara_rudy_2011_epi	2	1	6.23152399e+00	1.25736375e+01
+paci_hyttinen_aaltosetala_severi_atrialVersion	5	0	4.24462199e+00	3.72205727e-03
+paci_hyttinen_aaltosetala_severi_atrialVersion	5	1	2.73238492e+00	3.68124263e-03
+paci_hyttinen_aaltosetala_severi_ventricularVersion	7	0	2.31104481e+01	1.70697134e-02
+pandit_clark_giles_demir_2001_epicardial_cell	0	0	6.04290962e-02	1.20714116e+03
+pandit_clark_giles_demir_2001_epicardial_cell	0	1	5.57849407e-02	8.45564550e+02
+pasek_simurda_orchard_christe_2008	2	0	2.45379951e+02	1.44189339e-02
+pasek_simurda_orchard_christe_2008	2	1	1.95447219e+02	1.44216459e-02
+priebe_beuckelmann_1998	5	0	2.65827789e+01	5.38240566e-01
+priebe_beuckelmann_1998	5	1	1.91696839e+01	5.38240063e-01
+sakmann_model_2000_epi	7	0	2.98775601e+00	4.07213479e+00
+stewart_zhang_model_2008_ss	0	0	2.77030468e-02	6.18932441e-02
+stewart_zhang_model_2008_ss	0	1	2.34808922e-02	9.96527128e-02
+ten_tusscher_model_2004_M	2	0	1.29391670e+01	5.90007828e-01
+ten_tusscher_model_2004_M	2	1	6.94243884e+00	5.89663626e-01
+ten_tusscher_model_2004_endo	5	0	5.16716950e+01	1.78833117e-02
+ten_tusscher_model_2004_endo	5	1	2.82358658e+01	1.78606986e-02
+ten_tusscher_model_2004_epi	7	0	4.29707119e+01	3.93569209e-01
+ten_tusscher_model_2006_endo	0	0	6.74529076e-02	2.59028437e+00
+ten_tusscher_model_2006_endo	0	1	5.62579632e-02	1.91522294e-01
+ten_tusscher_model_2006_epi	2	0	2.56087739e+01	1.79564433e-01
+ten_tusscher_model_2006_epi	2	1	1.48675470e+01	1.79564319e-01
+viswanathan_model_1999_epi	5	0	6.73143749e+01	1.02818907e+00
+viswanathan_model_1999_epi	5	1	3.70492120e+01	1.02818876e+00
+wang_sobie_2008	7	0	2.77148168e+01	2.26336644e+00
+zhang_SAN_model_2000_0D_capable	0	0	4.13539410e-02	7.37321850e-09
+zhang_SAN_model_2000_0D_capable	0	1	3.11558247e-02	1.41034917e-08
+aslanidi_atrial_model_2009	1	0	1.07583046e-01	2.68493281e+00
+aslanidi_atrial_model_2009	1	1	8.76679420e-02	2.76984178e+00
+beeler_reuter_model_1977	4	0	1.30631495e+00	3.64749852e-03
+beeler_reuter_model_1977	4	1	5.84683180e-01	3.64707618e-03
+benson_epicardial_2008	6	0	2.24142570e+01	1.87997414e+01
+benson_epicardial_2008	6	1	1.54700470e+01	1.87997331e+01
+bondarenko_szigeti_bett_kim_rasmusson_2004_apical	8	0	1.91700330e+01	5.46723912e-01
+carro_2011_endo	1	0	2.05317974e-01	1.52862623e-01
+carro_2011_endo	1	1	1.71216965e-01	1.43402148e-01
+carro_2011_epi	4	0	1.34372580e+01	2.60532315e-03
+carro_2011_epi	4	1	9.59851098e+00	2.60545082e-03
+clancy_rudy_2002	6	0	9.95658398e+00	2.23631786e-01
+clancy_rudy_2002	6	1	6.18720889e+00	2.23637571e-01
+corrias_purkinje_2011	8	0	1.31323087e+02	5.26064639e+04
+davies_isap_2012	1	0	1.37554884e-01	1.37801458e-01
+davies_isap_2012	1	1	1.16174936e-01	2.26297498e+00
+decker_2009	4	0	1.35308440e+01	4.84075451e-03
+decker_2009	4	1	9.76082492e+00	4.84057565e-03
+demir_model_1994	6	0	3.87575677e+02	1.36292856e-02
+demir_model_1994	6	1	2.74025622e+02	1.35335453e-02
+difrancesco_noble_model_1985	8	0	1.30147386e+00	4.15342525e+01
+earm_noble_model_1990	1	0	3.47161293e-02	1.64339159e+00
+earm_noble_model_1990	1	1	2.99539566e-02	5.21081905e-01
+espinosa_model_1998_normal	4	0	3.85053873e-01	4.23792855e-01
+espinosa_model_1998_normal	4	1	2.68260002e-01	4.23792863e-01
+faber_rudy_2000	6	0	2.45325708e+00	3.75568741e+03
+faber_rudy_2000	6	1	1.69334102e+00	3.75568351e+03
+fink_noble_giles_model_2008	8	0	6.99193096e+00	5.19497367e-01
+grandi_pasqualini_bers_2010_ss	1	0	1.29081964e-01	3.22965728e+01
+grandi_pasqualini_bers_2010_ss	1	1	1.11181021e-01	2.83986929e+01
+grandi_pasqualini_bers_2010_ss_endo	4	0	1.28661799e+01	3.94217872e-03
+grandi_pasqualini_bers_2010_ss_endo	4	1	1.02139161e+01	3.94168722e-03
+hilgemann_noble_model_1987	6	0	3.96641684e+00	1.61797651e+00
+hilgemann_noble_model_1987	6	1	3.04999900e+00	1.61797646e+00
+hodgkin_huxley_squid_axon_model_1952_modified	8	0	5.85754895e+00	2.20625132e+01
+iribe_model_2006	1	0	3.89430523e-02	8.72907654e-01
+iribe_model_2006	1	1	3.42130661e-02	1.26263826e+00
+iyer_2004	4	0	9.30832690e+02	1.35041329e-04
+iyer_2004	4	1	5.89009771e+02	1.35066386e-04
+iyer_model_2007	6	0	1.34314187e+02	2.65650482e-04
+iyer_model_2007	6	1	9.86042900e+01	2.65686109e-04
+jafri_rice_winslow_model_1998	8	0	5.43897829e+02	2.87925631e-02
+li_mouse_2010	1	0	9.53259468e-02	4.81664748e-02
+li_mouse_2010	1	1	8.50641727e-02	6.41297266e-02
+livshitz_rudy_2007	4	0	2.83801913e+00	3.17357694e-03
+livshitz_rudy_2007	4	1	1.97194195e+00	3.17357642e-03
+luo_rudy_1991	6	0	1.55236731e+01	7.27288852e-01
+luo_rudy_1991	6	1	1.07843311e+01	7.27290193e-01
+mahajan_shiferaw_2008	8	0	1.39900491e+01	3.76569254e-01
+maltsev_2009	1	0	6.33208752e-02	6.98609599e-04
+maltsev_2009	1	1	4.69298363e-02	6.91603783e-04
+matsuoka_model_2003	4	0	6.57683849e-01	2.87889382e+00
+matsuoka_model_2003	4	1	4.36642885e-01	2.87889287e+00
+mcallister_noble_tsien_1975_b	6	0	2.04918525e+02	3.86695669e-02
+mcallister_noble_tsien_1975_b	6	1	8.03094382e+01	3.85987670e-02
+noble_SAN_model_1989	8	0	6.77130420e+01	1.54197990e-02
+noble_model_1991	1	0	4.05521393e-02	4.00233247e+00
+noble_model_1991	1	1	3.28640938e-02	4.40464222e+00
+noble_model_1998	4	0	1.71942186e+00	2.98009229e-01
+noble_model_1998	4	1	1.11951303e+00	2.98008130e-01
+noble_model_2001	6	0	1.46981499e+01	1.96555243e-01
+noble_model_2001	6	1	9.69906998e+00	1.96555280e-01
+noble_noble_SAN_model_1984	8	0	2.28502969e+03	1.05894760e-04
+ohara_rudy_2011_endo	1	0	2.93542147e-01	1.46242628e+02
+ohara_rudy_2011_endo	1	1	2.46045113e-01	1.50591712e+02
+ohara_rudy_2011_epi	4	0	2.79380107e+00	1.57465218e+00
+ohara_rudy_2011_epi	4	1	1.62735415e+00	1.57464945e+00
+paci_hyttinen_aaltosetala_severi_atrialVersion	6	0	7.53821299e+01	1.68641452e-01
+paci_hyttinen_aaltosetala_severi_atrialVersion	6	1	4.74483371e+01	1.68445287e-01
+paci_hyttinen_aaltosetala_severi_ventricularVersion	8	0	6.04242682e+00	1.61060914e+01
+pandit_clark_giles_demir_2001_epicardial_cell	1	0	7.65268803e-02	1.20744291e+03
+pandit_clark_giles_demir_2001_epicardial_cell	1	1	6.53510094e-02	1.24025617e+03
+pasek_simurda_orchard_christe_2008	4	0	4.98687106e+02	9.71082633e-06
+pasek_simurda_orchard_christe_2008	4	1	4.01742157e+02	9.59224452e-06
+priebe_beuckelmann_1998	6	0	5.80044339e+01	2.01807191e+00
+priebe_beuckelmann_1998	6	1	4.32680950e+01	2.01807119e+00
+sakmann_model_2000_epi	8	0	3.18990588e+00	5.03891731e+00
+stewart_zhang_model_2008_ss	1	0	3.24869156e-02	6.26606421e-02
+stewart_zhang_model_2008_ss	1	1	2.72798538e-02	9.80834884e-02
+ten_tusscher_model_2004_M	4	0	2.64854779e+01	2.04817728e-06
+ten_tusscher_model_2004_M	4	1	1.45444560e+01	4.12374015e-06
+ten_tusscher_model_2004_endo	6	0	2.86348538e+01	3.24709358e-01
+ten_tusscher_model_2004_endo	6	1	1.74098420e+01	3.24634211e-01
+ten_tusscher_model_2004_epi	8	0	2.25065470e+01	1.54928502e-01
+ten_tusscher_model_2006_endo	1	0	7.93790817e-02	3.21276248e+00
+ten_tusscher_model_2006_endo	1	1	6.68630600e-02	2.73278628e-01
+ten_tusscher_model_2006_epi	4	0	2.60351319e+01	2.42811153e-06
+ten_tusscher_model_2006_epi	4	1	1.52917390e+01	2.42901506e-06
+viswanathan_model_1999_epi	6	0	1.47182192e+02	6.06018757e+00
+viswanathan_model_1999_epi	6	1	8.83091462e+01	6.05993671e+00
+wang_sobie_2008	8	0	5.88729670e+01	2.26784638e+00
+zhang_SAN_model_2000_0D_capable	1	0	4.87301350e-02	7.37321817e-09
+zhang_SAN_model_2000_0D_capable	1	1	3.51958275e-02	1.41039291e-08

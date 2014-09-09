@@ -75,10 +75,6 @@ public:
 
         std::vector<FileFinder> all_model = CellModelUtilities::GetListOfModels();
 
-        std::vector<std::string> pycml_options;
-        pycml_options.push_back("--cvode");
-        pycml_options.push_back("--expose-annotated-variables");
-
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
                                                  ("noble_model_1991")
