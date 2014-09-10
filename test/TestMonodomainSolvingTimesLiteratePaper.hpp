@@ -135,7 +135,7 @@ public:
              * alter the monodomain conductivity call
              * `HeartConfig::Instance()->SetIntracellularConductivities`
              */
-            HeartConfig::Instance()->SetSimulationDuration(1000); //ms
+            HeartConfig::Instance()->SetSimulationDuration(500); //ms
             std::string output_folder = "Frontiers/MonodomainTiming/" + model + "/results";
             HeartConfig::Instance()->SetOutputDirectory(output_folder);
             HeartConfig::Instance()->SetOutputFilenamePrefix("results");
