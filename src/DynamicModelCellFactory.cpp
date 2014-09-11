@@ -109,6 +109,8 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     if (mStrictTolerance && dynamic_cast<AbstractCvodeCell*>(p_cell))
     {
         static_cast<AbstractCvodeCell*>(p_cell)->SetTolerances(1e-7,1e-9);
+        // NB. We can't set the CVODE cells to 'no reset' here, as it would be overridden by the
+        // Abstract cell factory...!
     }
 
     return p_cell;

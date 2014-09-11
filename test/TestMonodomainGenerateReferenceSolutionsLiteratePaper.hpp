@@ -60,6 +60,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Chaste 'heart' headers
 #include "MonodomainProblem.hpp"
 #include "CellProperties.hpp"
+#include "AbstractCvodeCell.hpp"
 
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
@@ -71,6 +72,12 @@ public:
     {
         // We don't want to find this confusing matters!!
         EXIT_IF_PARALLEL;
+
+        bool reset_cvode = false;
+        if(CommandLineArguments::Instance()->OptionExists("--reset"))
+        {
+            reset_cvode = true;
+        }
 
         /*
          * This test was run with the following values inserted here:
@@ -131,6 +138,10 @@ public:
 
             std::stringstream output_folder_stream;
             output_folder_stream << "Frontiers/MonodomainReference/" << model << "_pde_" << pde_timestep << "_h_" << h;
+            if (reset_cvode)
+            {
+                output_folder_stream<< "_Reset";
+            }
             std::string output_folder = output_folder_stream.str();
 
             // Use a different constructor
@@ -200,6 +211,24 @@ public:
 
             /* Finally, call `Initialise` and `Solve` as before */
             monodomain_problem.Initialise();
+
+            if (reset_cvode)
+            {
+                /* The cells should now be set up...
+                 * We have to hack in to call a method on each one*/
+                DistributedVectorFactory* p_factory = mesh.GetDistributedVectorFactory();
+                Vec monodomain_vec = p_factory->CreateVec();
+                DistributedVector monodomain_distributed_vec = p_factory->CreateDistributedVector(monodomain_vec);
+
+                for (DistributedVector::Iterator index=monodomain_distributed_vec.Begin();
+                     index != monodomain_distributed_vec.End();
+                     ++index)
+                {
+                    AbstractCardiacCellInterface* p_cell = monodomain_problem.GetMonodomainTissue()->GetCardiacCell(index.Global);
+                    static_cast<AbstractCvodeCell*>(p_cell)->SetForceReset(true);
+                }
+            }
+
             try
             {
                 monodomain_problem.Solve();
@@ -228,6 +257,10 @@ public:
             // Output the raw AP data
             std::stringstream file_suffix;
             file_suffix << "_tissue_pde_" << pde_timestep << "_h_" << h;
+            if (reset_cvode)
+            {
+                file_suffix << "_Reset";
+            }
             out_stream p_file = handler.OpenOutputFile(model + file_suffix.str() + ".dat");
             for (unsigned i=0; i<times.size(); i++)
             {
