@@ -16,14 +16,19 @@ model_list = unique(model);
 for m=1:length(model_list)
     figure
     fprintf('Processing model: %s\n', model_list{m});
-    for compiler=1:2
+    for compiler=1:3
     
-        if compiler==1
+        if compiler==1 % IntelProduction on travis without CVODE reset
             prefix = '_tissue_';
-        elseif compiler==2
+            suffix = '';
+        elseif compiler==2 % GccOptNative on skip without CVODE reset
             prefix = '_GccOpt_tissue_';
+            suffix = '';
+        elseif compiler==3 % IntelProduction on travis with CVODE reset
+            prefix = '_tissue_';
+            suffix = '_Reset';
         end
-        file_listing = dir(['reference_traces' filesep model_list{m} prefix '*.summary']);
+        file_listing = dir(['reference_traces' filesep model_list{m} prefix '*' suffix '.summary']);
 
         % Look at the two mesh resolutions separately.    
         for h = [0.01 0.001]
@@ -44,7 +49,7 @@ for m=1:length(model_list)
             for pde_idx = 1:length(pde_timesteps)
                 pde_step = pde_timesteps(pde_idx);
                 file_of_interest = ['reference_traces' filesep model_list{m} ...
-                    prefix 'pde_' num2str(pde_step)  '_h_' num2str(h) '.summary'];
+                    prefix 'pde_' num2str(pde_step)  '_h_' num2str(h) suffix '.summary'];
                 d = importdata(file_of_interest);
                 metrics(:,pde_idx) = d.data;
             end
@@ -52,18 +57,21 @@ for m=1:length(model_list)
             num_metrics = size(metrics,1);
 
             for i=1:num_metrics
-                subplot(1,num_metrics,i)
-                if compiler==1
+                assert(num_metrics==6)
+                subplot(2,3,i)
+                if compiler == 1
                     linestyle = '.-';
-                else
+                elseif compiler == 2
                     linestyle = '.--';
+                elseif compiler == 3
+                    linestyle = 'o-';
                 end
                 semilogx(pde_timesteps,metrics(i,:),linestyle)
                 hold all
-                if i == 3
+                if i == 2
                     title(strrep(model_list{m}, '_', ' '))
                 end
-                xlim([min(pde_timesteps) max(pde_timesteps)])
+                xlim([1e-3 1])
                 xlabel('PDE Timestep (ms)')
                 set(gca,'XTick',[0.001 0.01 0.1 1])
                 ylabel(strrep(d.textdata{i}, '_', ' '))
@@ -71,5 +79,7 @@ for m=1:length(model_list)
             clear metrics
         end
     end
-    legend('h = 0.01 cm Intel travis','h = 0.001 cm Intel travis','h = 0.01 cm GccOpt Skip','h = 0.001 cm GccOpt skip','Location','SouthWest')
+    legend('h = 0.01 cm Intel no Reset', 'h = 0.001 cm Intel no Reset',...
+           'h = 0.01 cm GccOpt no Reset', 'h = 0.001 cm GccOpt no Reset',...
+           'h = 0.01 cm Intel Reset', 'h = 0.001 cm Intel Reset', 'Location', 'EastOutside')
 end
