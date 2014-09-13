@@ -104,11 +104,18 @@ public:
             FileFinder& r_model = models[i];
             std::string model_name = r_model.GetLeafNameNoExtension();
             OutputFileHandler handler("Frontiers/ReferenceTraces/" + model_name);
-            boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, Solvers::CVODE_ANALYTIC_J, false);
+            boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, Solvers::CVODE_NUMERICAL_J, false);
+            boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
+
+            // If there's an analytic Jacobian available, we'll switch it on.
+            if (p_cvode_cell->HasAnalyticJacobian())
+            {
+                p_cvode_cell->ForceUseOfNumericalJacobian(false);
+            }
+
             double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
             /* Set up solver parameters. */
-            boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
             p_cvode_cell->SetTolerances(1e-7 /* relative */, 1e-9 /* absolute */);
 
             /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms). */
