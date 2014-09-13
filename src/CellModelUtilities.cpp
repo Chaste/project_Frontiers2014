@@ -252,7 +252,7 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
     {
         if (p_reg_stim->GetStartTime() > p_reg_stim->GetPeriod())
         {
-            WARNING("Setting start time for stimulus to 0 as was greater than period " << p_reg_stim->GetPeriod()
+            WARNING("Setting start time for stimulus to 0ms as was " << p_reg_stim->GetStartTime() << "ms which is greater than period " << p_reg_stim->GetPeriod()
                     << " in model " << rModelFile.GetLeafNameNoExtension() << ".");
             p_reg_stim->SetStartTime(0.0);
         }
