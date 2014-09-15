@@ -177,9 +177,13 @@ public:
      * Return suitable error metrics (the ones listed above in GetError documentation), for
      * this model for a slack vs. tight CVODE solve.
      *
+     * @param tissue  Whether we want to load the monodomain reference traces (defaults to false)
+     * @param requestedPdeTimestep  The PDE timestep to load if tissue==true.
+     *
      * @return a map between the model name, and the vector of error metrics
      */
-    static std::map<std::string,  std::vector<double> > LoadErrorSummaryFile();
+    static std::map<std::string,  std::vector<double> > LoadErrorSummaryFile(bool tissue=false,
+                                                                             double requestedPdeTimestep=0.01);
 };
 
 #endif // CELLMODELUTILITIES_HPP_
