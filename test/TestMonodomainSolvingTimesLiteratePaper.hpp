@@ -68,12 +68,31 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestMonodomainSolvingTimesLiteratePaper : public CxxTest::TestSuite
 {
 public:
-    void TestMonodomainSolvingTimes() throw (Exception)
+    void TestMonodomainCalculateTimesteps() throw (Exception)
     {
         // We don't want to find this confusing matters!!
         EXIT_IF_PARALLEL;
 
-        std::vector<FileFinder> all_model = CellModelUtilities::GetListOfModels();
+        /*
+         * Load the archived timesteps that are appropriate for each model/solver/pde_timestep combo out of the
+         * file test/data/required_timesteps_tissue.txt
+         */
+        LoadTimestepFile();
+
+        /*
+         * This test was run with the following values inserted here
+         *  * 0.01 ms (typically a fine timestep)
+         *  * 0.1 ms (about average for most studies)
+         */
+        std::vector<double> pde_timesteps = boost::assign::list_of(0.1)(0.01);
+
+        /*
+         * This test is run with the following values, selected by looking at the output of
+         * the convergence test.
+         */
+        double h = 0.01;
+
+        std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
@@ -84,128 +103,285 @@ public:
                                                  ("shannon_wang_puglisi_weber_bers_2004")
                                                  ("iyer_model_2007");
 
-        OutputFileHandler overall_results_folder("Frontiers/MonodomainTiming/", true); // Wipe!
-        out_stream p_file = overall_results_folder.OpenOutputFile(ChasteBuildType() + "_tissue_timings.txt");
+        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::CVODE_ANALYTIC_J)(Solvers::CVODE_NUMERICAL_J)
+                (Solvers::FORWARD_EULER)(Solvers::BACKWARD_EULER)
+                (Solvers::RUNGE_KUTTA_2)(Solvers::RUNGE_KUTTA_4)
+                (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
+
+        OutputFileHandler overall_results_folder("Frontiers/MonodomainTimings/", true); // Wipe!
+        out_stream p_file = overall_results_folder.OpenOutputFile(ChasteBuildType() + "_timings_tissue.txt");
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+
+        /* Repository data location */
+        FileFinder this_file(__FILE__);
+        FileFinder repo_data("data", this_file);
 
         // Loop over models
         BOOST_FOREACH(std::string model, models_to_use)
         {
             // Find the FileFinder associated with the model we want.
             FileFinder model_to_use;
-            for (unsigned i=0; i<all_model.size(); i++)
+            for (unsigned i=0; i<all_models.size(); i++)
             {
-                if (all_model[i].GetLeafNameNoExtension()==model)
+                if (all_models[i].GetLeafNameNoExtension()==model)
                 {
-                    model_to_use = all_model[i];
+                    model_to_use = all_models[i];
                     break;
                 }
             }
-            std::cout << model_to_use.GetAbsolutePath() << std::endl;
 
-            // Use a different constructor
-            OutputFileHandler base_model_handler("Frontiers/MonodomainTiming/" + model);
-            DynamicModelCellFactory cell_factory(model_to_use,
-                                                 base_model_handler,
-                                                 Solvers::CVODE_ANALYTIC_J,
-                                                 false); // Whether to use lookup tables.
-
-            /* We will auto-generate a mesh this time, and pass it in, rather than
-             * provide a mesh file name. This is how to generate a cuboid mesh with
-             * a given spatial stepsize h.
-             *
-             * Using a `DistributedTetrahedralMesh` is faster than `TetrahedralMesh` when running on multiple processes.
-             * However, it permutes the node ordering for output. Most of time time this won't matter, but later in this
-             * test we want to access specific node indices. One method of doing this is to ask `HeartConfig` to use the
-             * original node ordering for the output.
-             *
-             */
-            DistributedTetrahedralMesh<1,1> mesh;
-            double h=0.001;
-            mesh.ConstructRegularSlabMesh(h, 1 /*length*/);
-            HeartConfig::Instance()->SetOutputUsingOriginalNodeOrdering(true);
-
-            /*
-             * EMPTYLINE
-             *
-             * Set the simulation duration, etc, and create an instance of the cell factory.
-             * One thing that should be noted for monodomain problems, the ''intracellular
-             * conductivity'' is used as the monodomain effective conductivity (not a
-             * harmonic mean of intra and extracellular conductivities). So if you want to
-             * alter the monodomain conductivity call
-             * `HeartConfig::Instance()->SetIntracellularConductivities`
-             */
-            HeartConfig::Instance()->SetSimulationDuration(500); //ms
-            std::string output_folder = "Frontiers/MonodomainTiming/" + model + "/results";
-            HeartConfig::Instance()->SetOutputDirectory(output_folder);
-            HeartConfig::Instance()->SetOutputFilenamePrefix("results");
-            HeartConfig::Instance()->SetVisualizeWithVtk(true);
-            double ode_time_step = 0.01;
-            double pde_time_step = 0.01;
-            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(ode_time_step, pde_time_step, 0.1);
-
-            /* Now we declare the problem class */
-            MonodomainProblem<1> monodomain_problem( &cell_factory );
-
-            /* If a mesh-file-name hasn't been set using `HeartConfig`, we have to pass in
-             * a mesh using the `SetMesh` method (must be called before `Initialise`). */
-            monodomain_problem.SetMesh(&mesh);
-
-            /* `SetWriteInfo` is a useful method that means that the min/max voltage is
-             * printed as the simulation runs (useful for verifying that cells are stimulated
-             * and the wave propagating, for example) (although note scons does buffer output
-             * before printing to screen) */
-            monodomain_problem.SetWriteInfo();
-
-            /* Finally, call `Initialise` and `Solve` as before */
-            monodomain_problem.Initialise();
-
-            double time_taken;
-            try
+            /* Iterate over each available solver, using a handy boost method */
+            BOOST_FOREACH(Solvers::Value solver, solvers)
             {
-                Timer::Reset();
-                monodomain_problem.Solve();
-                time_taken = Timer::GetElapsedTime();
-            }
-            catch (Exception& e)
-            {
-                WARNING("Model '" << model << "' simulation failed with: " << e.GetMessage());
-                continue;
-            }
+                // Used to get the correct timestep to use later on...
+                std::pair<std::string, Solvers::Value> model_solver_combo(model,solver);
 
-            OutputFileHandler handler(output_folder, false);
-
-            /*
-             * Read some of the outputted data back in, and evaluate AP properties at the last node,
-             * as per the single cell stuff.
-             */
-            Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
-            std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-            std::vector<double> voltages_at_last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
-
-            try
-            {
-                std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, voltages_at_last_node, model, pde_time_step);
-
-                std::cout << "Model: " << model << ". Time taken = " << time_taken << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
-                        ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
-                        ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << std::endl;
-
-                // Write to file too.
-                *p_file << model << "\t" << ode_time_step << "\t" << pde_time_step  << "\t" << time_taken;
-                for (unsigned i=0; i<errors.size(); i++)
+                std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
+                BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
                 {
-                    *p_file << "\t" << errors[i];
+                    std::string lookup_tables_description = "";
+                    if (use_lookup_tables)
+                    {
+                        lookup_tables_description = " with lookup tables";
+                    }
+                    std::cout << "Running timings for " << model << " with solver " << CellModelUtilities::GetSolverName(solver) << lookup_tables_description << std::endl;
+
+                    std::stringstream output_folder_stream;
+                    output_folder_stream << "Frontiers/MonodomainTimings/" << model << "/" << CellModelUtilities::GetSolverName(solver) << "_" << use_lookup_tables;
+                    std::string output_folder = output_folder_stream.str();
+
+                    // Use a different constructor
+                    OutputFileHandler base_model_handler(output_folder);
+                    DynamicModelCellFactory cell_factory(model_to_use,
+                                                         base_model_handler,
+                                                         solver,
+                                                         use_lookup_tables);
+
+                    /* We will auto-generate a mesh this time, and pass it in, rather than
+                     * provide a mesh file name. This is how to generate a cuboid mesh with
+                     * a given spatial stepsize h.
+                     *
+                     * Using a `DistributedTetrahedralMesh` is faster than `TetrahedralMesh` when running on multiple processes.
+                     * However, it permutes the node ordering for output. Most of time time this won't matter, but later in this
+                     * test we want to access specific node indices. One method of doing this is to ask `HeartConfig` to use the
+                     * original node ordering for the output.
+                     *
+                     */
+                    DistributedTetrahedralMesh<1,1> mesh;
+
+                    mesh.ConstructRegularSlabMesh(h, 1 /*length*/);
+                    HeartConfig::Instance()->SetOutputUsingOriginalNodeOrdering(true);
+
+                    BOOST_FOREACH(double pde_timestep, pde_timesteps)
+                    {
+                        /*
+                         * EMPTYLINE
+                         *
+                         * Set the simulation duration, etc, and create an instance of the cell factory.
+                         * One thing that should be noted for monodomain problems, the ''intracellular
+                         * conductivity'' is used as the monodomain effective conductivity (not a
+                         * harmonic mean of intra and extracellular conductivities). So if you want to
+                         * alter the monodomain conductivity call
+                         * `HeartConfig::Instance()->SetIntracellularConductivities()`
+                         */
+                        HeartConfig::Instance()->SetSimulationDuration(500); //ms
+
+                        double ode_timestep = pde_timestep; // Default for CVODE solvers
+                        if ((solver != Solvers::CVODE_ANALYTIC_J) && (solver != Solvers::CVODE_NUMERICAL_J))
+                        {
+                            if (pde_timestep==0.1)
+                            {
+                                ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
+                            }
+                            else if (pde_timestep==0.01)
+                            {
+                                ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
+                            }
+                            else
+                            {
+                                EXCEPTION("Summat went wrong. pde_timestep = " << pde_timestep << ", which wasn't in my files.");
+                            }
+                        }
+                        std::cout << "Model: " << model << " is being solved with " << CellModelUtilities::GetSolverName(solver)
+                            << lookup_tables_description << " with ODE timestep = " << ode_timestep << "ms." << std::endl;
+                        HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(ode_timestep, pde_timestep, 0.1);
+
+                        std::stringstream output_subfolder;
+                        output_subfolder << "/results_pde_" <<  pde_timestep;
+
+                        HeartConfig::Instance()->SetOutputDirectory(output_folder + output_subfolder.str());
+                        HeartConfig::Instance()->SetOutputFilenamePrefix("results");
+                        HeartConfig::Instance()->SetVisualizeWithVtk(true);
+
+                        /* Now we declare the problem class */
+                        MonodomainProblem<1> monodomain_problem( &cell_factory );
+
+                        /* If a mesh-file-name hasn't been set using `HeartConfig`, we have to pass in
+                         * a mesh using the `SetMesh` method (must be called before `Initialise`). */
+                        monodomain_problem.SetMesh(&mesh);
+
+                        HeartEventHandler::Reset();
+
+                        /* Finally, call `Initialise` and `Solve` as usual */
+                        monodomain_problem.Initialise();
+
+                        double elapsed_time;
+                        try
+                        {
+                            Timer::Reset();
+                            monodomain_problem.Solve();
+                            elapsed_time = Timer::GetElapsedTime();
+                        }
+                        catch (Exception& e)
+                        {
+                            std::cout << model << " failed to solve with ODE timestep " << ode_timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
+                            continue;
+                        }
+                        HeartEventHandler::Headings();
+                        HeartEventHandler::Report();
+
+                        /*
+                         * Read some of the outputted data back in, and evaluate AP properties at the last node,
+                         * as per the single cell stuff.
+                         */
+                        Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
+                        std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
+                        std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
+
+                        try
+                        {
+                            std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
+
+                            std::cout << "Model: " << model << ". Time taken = " << elapsed_time << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
+                                    ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
+                                    ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << std::endl;
+
+                            // Write to file too.
+                            *p_file << model << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_timestep << "\t" << ode_timestep  << "\t"
+                                    << elapsed_time;
+                            for (unsigned i=0; i<errors.size(); i++)
+                            {
+                                *p_file << "\t" << errors[i];
+                            }
+                            *p_file << std::endl;
+                        }
+                        catch(Exception &e)
+                        {
+                            WARNING("Model " << model << ": analysis of voltage at last node failed.");
+                        }
+                    }
                 }
-                *p_file << std::endl;
-            }
-            catch(Exception &e)
-            {
-                WARNING("Model " << model << ": analysis of voltage at last node failed.");
             }
         }
 
         p_file ->close();
+    }
+
+private:
+
+    /**
+     * A map between the model/solver/pde-timestep and the ODE timestep/whether it's a 'refined enough' result.
+     * See TestMonodomainCalculateRequiredTimestepsLiteratePaper.hpp
+     *
+     * For PDE step 0.1ms.
+     */
+    std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> > mTimestepsPde0_1;
+
+    /**
+     * A map between the model/solver/pde-timestep and the ODE timestep/whether it's a 'refined enough' result.
+     * See TestMonodomainCalculateRequiredTimestepsLiteratePaper.hpp
+     *
+     * For PDE step 0.01ms.
+     */
+    std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> > mTimestepsPde0_01;
+
+    /**
+     * A helper method that populates mTimesteps from the stored data file in
+     * Frontiers2014/test/data/required_steps.txt
+     */
+    void LoadTimestepFile()
+    {
+        FileFinder this_file(__FILE__);
+        FileFinder summary_file("data/required_steps_tissue.txt", this_file);
+
+        std::ifstream indata; // indata is like cin
+        indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
+        if(!indata.good())
+        { // file couldn't be opened
+            EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
+        }
+
+        while (indata.good())
+        {
+           std::string this_line;
+           getline(indata, this_line);
+
+           if (this_line=="" || this_line=="\r")
+           {
+               if (indata.eof())
+               {    // If the blank line is the last line carry on OK.
+                   break;
+               }
+               else
+               {
+                   EXCEPTION("No data found on this line");
+               }
+           }
+           std::stringstream line(this_line);
+
+           // Load a standard data line.
+           std::string model_name;
+           double tmp, pde_timestep, ode_timestep;
+           bool is_satisfactory;
+           int solver_index;
+
+           line >> model_name;
+           line >> pde_timestep;
+           line >> solver_index;
+           line >> ode_timestep;
+           for (unsigned i=0; i<7; i++)
+           {
+               line >> tmp;
+           }
+           line >> is_satisfactory;
+
+           std::cout << model_name << "\t" << solver_index << "\t" << pde_timestep << "\t" << ode_timestep << "\t" << is_satisfactory << "\n";
+
+           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from
+           std::pair<std::string, Solvers::Value> model_solver_combo(model_name,solver);
+           std::pair<double, bool> timestep_pair(ode_timestep, is_satisfactory);
+           if (pde_timestep==0.1)
+           {
+               mTimestepsPde0_1[model_solver_combo] = timestep_pair;
+           }
+           else
+           {
+               mTimestepsPde0_01[model_solver_combo] = timestep_pair;
+           }
+        }
+
+        if (!indata.eof())
+        {
+            EXCEPTION("A file reading error occurred");
+        }
+
+        std::cout << "Other format:\n";
+
+        // Print to screen just to check they are correct...
+        for (std::map<std::pair<std::string, Solvers::Value>, std::pair<double, bool> >::iterator it = mTimestepsPde0_1.begin();
+             it!=mTimestepsPde0_1.end();
+             ++it)
+        {
+            if (!((it->second).second))
+            {
+                WARNING("Using non-satisfactory timestep for model " << (it->first).first << " and solver "
+                        << CellModelUtilities::GetSolverName((it->first).second));
+            }
+            // Print model, solver, timestep and whether it was satisfactory for a converged answer.
+            std::cout << (it->first).first << "\t'" << CellModelUtilities::GetSolverName((it->first).second) << "'\t" << (it->second).first << "\t" << (it->second).second << std::endl;
+        }
+
+        std::cout << std::flush;
     }
 };
 

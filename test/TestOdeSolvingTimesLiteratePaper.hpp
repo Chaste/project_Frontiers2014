@@ -365,14 +365,17 @@ private:
 
            // Load a standard data line.
            std::string model_name;
-           double error_value, timestep;
+           double tmp, timestep;
            bool is_satisfactory;
            int solver_index;
 
            line >> model_name;
            line >> solver_index;
            line >> timestep;
-           line >> error_value;
+           for (unsigned i=0; i<7; i++)
+           {
+               line >> tmp;
+           }
            line >> is_satisfactory;
 
            Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from

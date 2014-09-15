@@ -241,8 +241,6 @@ public:
                         std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
                         std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
-                        std::cout << "times.size() = " << times.size() << ", last node.size() = " << last_node.size() << "\n";
-
                         try
                         {
                             std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
