@@ -113,8 +113,6 @@ public:
         /* Each process writes its timings to a separate file as we go along, in case of catastrophe. */
         out_stream p_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings_", PetscTools::GetMyRank(), ".txt");
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
-//        out_stream p_tissue_style_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings_pde_", PetscTools::GetMyRank(), ".txt");
-//        *p_tissue_style_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
         /* Iterate over model/solver combinations, distributed over processes. */
         PetscTools::IsolateProcesses();
@@ -142,7 +140,7 @@ public:
                 std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'";
 
                 /* Get timestep to use if available.
-                 * Note that the CreateCellModel method above sets suitable tolerances for CVODE.
+                 * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
                  */
                 double suggested_timestep = 0.0; // Signifies 'not set'
                 std::pair<std::string, Solvers::Value> model_and_solver(model_name, solver);
@@ -214,17 +212,6 @@ public:
                         }
                         *p_file << std::endl;
 
-//                        double pde_time_step = 0.01;
-//                        elapsed_time = TimeSimulationTissueStyle(p_cell, pde_time_step);
-//                        std::cout << "Model " << model_name << " solver '" << solver_name << (use_lookup_tables ? " and lookup tables" : "") << "' PDE step " << pde_time_step << " took time " << elapsed_time << "s" << std::endl;
-//                        /* Record the result. */
-//                        *p_tissue_style_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_time_step << "\t" << elapsed_time << std::endl;
-//
-//                        pde_time_step = 0.1;
-//                        elapsed_time = TimeSimulationTissueStyle(p_cell, pde_time_step);
-//                        std::cout << "Model " << model_name << " solver '" << solver_name << (use_lookup_tables ? " and lookup tables" : "") << "' PDE step " << pde_time_step << " took time " << elapsed_time << "s" << std::endl;
-//                        /* Record the result. */
-//                        *p_tissue_style_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_time_step << "\t" << elapsed_time << std::endl;
                     }
                     catch (const Exception& r_e)
                     {
@@ -237,7 +224,6 @@ public:
 
         /* Close each process' results file. */
         p_file->close();
-        //p_tissue_style_file->close();
 
         /* Turn off process isolation and wait for all files to be written. */
         PetscTools::IsolateProcesses(false);
@@ -257,18 +243,6 @@ public:
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
-
-//            out_stream p_tissue_combined_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings_pde.txt", std::ios::out | std::ios::trunc | std::ios::binary);
-//            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
-//            {
-//                std::stringstream process_file_name;
-//                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << ChasteBuildType() << "_timings_pde_" << i << ".txt";
-//                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
-//                TS_ASSERT(process_file.is_open());
-//                TS_ASSERT(process_file.good());
-//                *p_tissue_combined_file << process_file.rdbuf();
-//            }
-//            p_tissue_combined_file->close();
         }
 	}
 

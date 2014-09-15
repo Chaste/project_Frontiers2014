@@ -164,12 +164,14 @@ public:
      * @param rTestTimes  the test simulation printing times
      * @param rTestVoltages  the test simulation voltages at these times on last node.
      * @param rModelName  the name of the model simulated, used to find the reference results in the project folder
+     * @param rPdeTimestep  the PDE timestep we are using, so we load the same reference trace to avoid confusing PDE and ODE convergence.
      *
      * @return the error metrics listed above.
      */
     static std::vector<double> GetTissueErrors(const std::vector<double>& rTestTimes,
                                                const std::vector<double>& rTestVoltages,
-                                               const std::string& rModelName);
+                                               const std::string& rModelName,
+                                               const double& rPdeTimestep);
 
     /**
      * Return suitable error metrics (the ones listed above in GetError documentation), for

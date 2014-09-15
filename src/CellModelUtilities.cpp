@@ -333,14 +333,19 @@ std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, 
 
 std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double>& rTestTimes,
                                                         const std::vector<double>& rTestVoltages,
-                                                        const std::string& rModelName)
+                                                        const std::string& rModelName,
+                                                        const double& rPdeTimestep)
 {
     std::vector<double> errors;
     FileFinder this_file(__FILE__);
     FileFinder reference_folder("../test/data/reference_traces", this_file);
 
+    // Load up the CVODE with resetting as the definitive trace.
+    std::stringstream filename_stream;
+    filename_stream << rModelName << "_tissue_pde_" << rPdeTimestep << "_h_0.01_Reset.dat";
+
     // Load the reference traces from file
-    FileFinder reference_trace(rModelName + "_tissue.dat", reference_folder);
+    FileFinder reference_trace(filename_stream.str(), reference_folder);
     EXCEPT_IF_NOT(reference_trace.IsFile());
 
     std::vector<double> valid_times;

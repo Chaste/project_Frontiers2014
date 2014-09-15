@@ -185,7 +185,7 @@ public:
 
             try
             {
-                std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, voltages_at_last_node, model);
+                std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, voltages_at_last_node, model, pde_time_step);
 
                 std::cout << "Model: " << model << ". Time taken = " << time_taken << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
                         ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
