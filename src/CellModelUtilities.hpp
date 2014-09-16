@@ -198,8 +198,8 @@ public:
      * @param pCell  A pointer to something that can be cast as an AbstractCvodeCell (will throw if not)
      * @param index  The index of the row of the table to use (i.e. how many steps of refinement to use).
      */
-    static void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-                                                       unsigned index);
+    static void SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+                                   unsigned index);
 };
 
 #endif // CELLMODELUTILITIES_HPP_
