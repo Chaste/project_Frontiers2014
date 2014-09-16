@@ -195,6 +195,7 @@ public:
                     std::cout << "\nTarget sq. error for PDE step of " << pde_timestep << "ms is within 5% of " << error_results[model][0] << std::endl << std::flush;
 
                     /* Keep solving with smaller timesteps until we meet the desired accuracy */
+                    double elapsed_time;
                     do
                     {
                         double ode_timestep = pde_timestep / timestep_divisor;
@@ -223,7 +224,9 @@ public:
 
                         try
                         {
+                            Timer::Reset();
                             monodomain_problem.Solve();
+                            elapsed_time = Timer::GetElapsedTime();
                         }
                         catch (Exception& e)
                         {
@@ -259,7 +262,7 @@ public:
                             {
                                 *p_file << "\t" << errors[i];
                             }
-                            *p_file << "\t" << within_tolerance;
+                            *p_file << "\t" << within_tolerance << "\t" << elapsed_time;
                             *p_file << std::endl;
                         }
                         catch (const Exception& r_e)
@@ -268,9 +271,22 @@ public:
                             std::cout << r_e.GetMessage() << std::endl;
                             WARNING(r_e.GetMessage());
                         }
+
+                        /* We stop bothering if the simulation took longer than 5 minutes
+                         * (as we know even Iyer on PDE 0.01ms was solved in 140 seconds using CVODE)
+                         * so we're in a regime where it is less accurate and takes at least twice as long
+                         * as CVODE, we don't need to know any more to discount this! */
+                        if (elapsed_time >= 300)
+                        {
+                            std::stringstream message;
+                            message << "Model: " << model << " with solver '" << CellModelUtilities::GetSolverName(solver) << "' and timestep " << ode_timestep << " took longer than 5 minutes to solve, so we're not refining any more.\n";
+                            std::cout << message.str() << std::flush;
+                            WARNING(message.str());
+                            break;
+                        }
                     }
                     while (!within_tolerance && timestep_divisor <= 2048);
-                    /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
+                    /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048).*/
                 }
             }
         }

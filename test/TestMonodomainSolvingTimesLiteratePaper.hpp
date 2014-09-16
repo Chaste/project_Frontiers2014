@@ -68,7 +68,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class TestMonodomainSolvingTimesLiteratePaper : public CxxTest::TestSuite
 {
 public:
-    void TestMonodomainCalculateTimesteps() throw (Exception)
+    void TestMonodomainSolvingTimes() throw (Exception)
     {
         // We don't want to find this confusing matters!!
         EXIT_IF_PARALLEL;
