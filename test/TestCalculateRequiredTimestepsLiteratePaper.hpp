@@ -91,10 +91,10 @@ public:
 
         /* The model / solver combinations to find a suitable time step for. */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
-        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::FORWARD_EULER)(Solvers::RUNGE_KUTTA_2)
-                                                                    (Solvers::RUNGE_KUTTA_4)(Solvers::RUSH_LARSEN)
-                                                                    (Solvers::GENERALISED_RUSH_LARSEN_1)
-                                                                    (Solvers::GENERALISED_RUSH_LARSEN_2);
+        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::CVODE_ANALYTIC_J)(Solvers::CVODE_NUMERICAL_J)
+                (Solvers::FORWARD_EULER)(Solvers::BACKWARD_EULER)
+                (Solvers::RUNGE_KUTTA_2)(Solvers::RUNGE_KUTTA_4)
+                (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
         /* Create the output folder structure before isolating processes, to avoid race conditions. */
         OutputFileHandler test_base_handler("Frontiers/CalculateTimesteps/", false);
@@ -128,6 +128,8 @@ public:
             /* Iterate over each available solver, using a handy boost method */
             BOOST_FOREACH(Solvers::Value solver, solvers)
             {
+                bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
+
                 /* This simple if allows us to parallelise the sweep to speed up running it */
                 if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
                 {
@@ -145,15 +147,28 @@ public:
                 /* Set up solver parameters. */
                 double sampling_time = 0.1;
                 unsigned timestep_divisor = 1u;
+                unsigned refinement_idx = 1u;
                 bool within_tolerance = false;
                 std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
 
-                /* Keep solving with smaller timesteps until we meet the desired accuracy */
+                /* For the one step models: keep solving with smaller timesteps until we meet the desired accuracy.
+                 * For CVODE, use the timestep divisor to index a vector of tolerance pairs. */
                 do
                 {
                     double timestep = sampling_time / timestep_divisor;
+                    if (cvode_solver)
+                    {
+                        CellModelUtilities::SetCvodeTolerances(p_cell, timestep_divisor);
+                        timestep = (double)(refinement_idx); // We just hijack this variable for the log filenames.
+                    }
+                    else
+                    {
+                        p_cell->SetTimestep(timestep);
+                    }
+
                     timestep_divisor *= 2; // Ready for next iteration
-                    p_cell->SetTimestep(timestep);
+                    refinement_idx++; // Ready for next iteration
+
                     /* Make sure the model is in exactly the same state at the beginning of every run */
                     p_cell->SetStateVariables(initial_conditions);
 
@@ -174,7 +189,14 @@ public:
                     }
                     catch (const Exception &e)
                     {
-                        std::cout << model_name << " failed to solve with timestep " << timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
+                        if (cvode_solver)
+                        {
+                            std::cout << model_name << " failed to solve with CVODE tolerances of " << pow(10,-1.0-refinement_idx) << "," << pow(10,-3.0-refinement_idx) << ", got: " << e.GetMessage() << std::endl << std::flush;
+                        }
+                        else
+                        {
+                            std::cout << model_name << " failed to solve with timestep " << timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
+                        }
                         continue;
                     }
 
@@ -184,10 +206,16 @@ public:
                     solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
                     try
                     {
+//                        std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
+//                        std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << "' error with timestep of " << timestep << ", = "
+//                                << errors[0] << ", required error = " << error_results[model_name][0] << "." << std::endl;
+//                        within_tolerance = (errors[0] <= error_results[model_name][0] * 1.05);
+
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-                        std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << "' error with timestep of " << timestep << ", = "
-                                << errors[0] << ", required error = " << error_results[model_name][0] << "." << std::endl;
-                        within_tolerance = (errors[0] <= error_results[model_name][0] * 1.05);
+                        assert(errors.size()==7u);
+                        std::cout << model_name << ": '" << CellModelUtilities::GetSolverName(solver) << "' MRMS error with timestep of " << timestep << ", = "
+                                << errors[7] << ", required error = 0.01." << std::endl;
+                        within_tolerance = (errors[7] <= 0.01);
 
                         /* Write result to file, tab separated */
                         *p_file << model_name << "\t" << solver << "\t" << timestep;

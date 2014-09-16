@@ -283,6 +283,37 @@ double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCel
     return period;
 }
 
+void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell, unsigned index)
+{
+    if (index >= 7u)
+    {
+        /*
+         * Since 1e-7, 1e-9 was used to generate the reference traces, we should never need to go below this,
+         * so throw an Exception if this happens.
+         */
+        EXCEPTION("SetCvodeTolerances: Asking for more refinement of CVODE than we think should be necessary!");
+    }
+
+    std::vector<std::pair<double,double> > possible_tolerances;
+    for (double relative_tol = 1e-2; relative_tol > 1e-8; relative_tol/=10.0)
+    {
+        std::pair<double, double> tolerance_pair(relative_tol, relative_tol/100.0);
+        possible_tolerances.push_back(tolerance_pair);
+    }
+
+    boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(pCell);
+
+    if (p_cvode_cell)
+    {
+        p_cvode_cell->SetTolerances(possible_tolerances[index].first, possible_tolerances[index].second);
+    }
+    else
+    {
+        EXCEPTION("You need to pass a pointer to (something that can be cast to) an AbstractCvodeCell to the method SetCvodeTolerances().");
+    }
+
+}
+
 std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, const std::string& rModelName)
 {
     std::vector<double> errors;
@@ -300,11 +331,16 @@ std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, 
     EXCEPT_IF_NOT(valid_voltages.size() == new_voltages.size());
 
     double square_error = 0.0;
+    double mixed_root_mean_square = 0.0;
     for (unsigned i=0; i<valid_times.size(); i++)
     {
         EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(valid_times[i], r_new_times[i], 1e-12));
-        square_error += SmallPow((valid_voltages[i] - new_voltages[i]), 2u);
+        double tmp = SmallPow((valid_voltages[i] - new_voltages[i]), 2u);
+        square_error += tmp;
+        mixed_root_mean_square += tmp / SmallPow(1 + fabs(valid_voltages[i]), 2u);
     }
+    mixed_root_mean_square = sqrt(mixed_root_mean_square/(double)(valid_times.size()));
+
     errors.push_back(square_error);
 
     CellProperties reference_properties(valid_voltages, valid_times);
@@ -327,6 +363,8 @@ std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, 
 
     errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
                      - test_properties.GetLastMaxUpstrokeVelocity());
+
+    errors.push_back(mixed_root_mean_square);
 
     return errors;
 }

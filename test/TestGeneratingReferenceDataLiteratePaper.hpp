@@ -179,7 +179,7 @@ public:
             /* Write this solution to file so we can compare graphs, and print the error metric. */
             solution.WriteToFile(handler.GetRelativePath(), model_name + "_rough", "ms", 1, false, 16, false);
             std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-            std::cout << "Model " << model_name << " square error " << errors[0] << std::endl;
+            std::cout << "Model " << model_name << " square error " << errors[0] << " MRMS error = " << errors[7] << std::endl;
             error_results[model_name] = errors;
         }
 

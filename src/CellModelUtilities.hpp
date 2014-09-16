@@ -184,6 +184,22 @@ public:
      */
     static std::map<std::string,  std::vector<double> > LoadErrorSummaryFile(bool tissue=false,
                                                                              double requestedPdeTimestep=0.01);
+
+    /**
+     * Set the CVODE tolerances from a table that looks like
+     *
+     * Index    RelTol  AbsTol
+     * 1        1e-2    1e-4
+     * 2        1e-3    1e-5
+     * 3        1e-4    1e-6
+     * 4        1e-5    1e-7
+     * ...      ...     ...
+     *
+     * @param pCell  A pointer to something that can be cast as an AbstractCvodeCell (will throw if not)
+     * @param index  The index of the row of the table to use (i.e. how many steps of refinement to use).
+     */
+    static void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+                                                       unsigned index);
 };
 
 #endif // CELLMODELUTILITIES_HPP_

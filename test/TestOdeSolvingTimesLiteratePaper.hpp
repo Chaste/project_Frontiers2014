@@ -136,6 +136,8 @@ public:
                     continue; // Let another process do this combination
                 }
 
+                bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
+
                 std::string solver_name = CellModelUtilities::GetSolverName(solver);
                 std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'";
 
@@ -170,20 +172,22 @@ public:
                         double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                         /* Set timestep if available. */
-                        if (suggested_timestep > 0.0)
+                        if (suggested_timestep <= 0.0)
                         {
-                            p_cell->SetTimestep(suggested_timestep);
+                            // We should have skipped any models that fell over...
+                            EXCEPTION("No suggested timestep set for model " << model_name << " solver '" << solver_name << "'");
                         }
                         else
                         {
-                            boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
-                            if (p_cvode_cell)
+                            if (cvode_solver)
                             {
-                                std::cout << "Using maximum timestep of " << p_cvode_cell->GetTimestep() << std::endl;
+                                // We hijacked the timestep in the log file to provide a refinement level.
+                                unsigned refinement_idx = (unsigned)(suggested_timestep);
+                                CellModelUtilities::SetCvodeTolerances(p_cell,refinement_idx);
                             }
                             else
                             {
-                                WARNING("No suggested timestep set for model " << model_name << " solver '" << solver_name << "'");
+                                p_cell->SetTimestep(suggested_timestep);
                             }
                         }
 
