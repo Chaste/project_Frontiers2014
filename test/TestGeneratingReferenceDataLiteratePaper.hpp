@@ -169,61 +169,6 @@ public:
                 WARNING("Action potential properties calculation failed for model " << model_name);
                 continue;
             }
-
-            /* Perform another simulation with lower CVODE tolerances,
-             * to give us an error bound to set other solvers' time steps with. */
-            p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
-            p_cvode_cell->ResetToInitialConditions();
-            solution = p_cvode_cell->Compute(0.0, period, 0.1);
-
-            /* Write this solution to file so we can compare graphs, and print the error metric. */
-            solution.WriteToFile(handler.GetRelativePath(), model_name + "_rough", "ms", 1, false, 16, false);
-            std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-            std::cout << "Model " << model_name << " square error " << errors[0] << " MRMS error = " << errors[7] << std::endl;
-            error_results[model_name] = errors;
-        }
-
-        /* Write a file containing the target error metric for each model.
-         * Since we may have run simulations in parallel, each process writes its own file, and the master processes then
-         * concatenates these and copies the resulting single file into the Chaste repository.
-         */
-
-        /* Each process writes its own file, at high precision */
-        out_stream p_error_file = test_base_handler.OpenOutputFile("error_summary_", PetscTools::GetMyRank(), ".txt");
-        *p_error_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
-        typedef std::pair<std::string, std::vector<double> > StringDoublesPair;
-        BOOST_FOREACH(StringDoublesPair error, error_results)
-        {
-            *p_error_file << error.first;
-            for (unsigned i=0; i<(error.second).size(); i++)
-            {
-                *p_error_file << "\t" << (error.second)[i];
-            }
-            *p_error_file << std::endl;
-        }
-        p_error_file->close();
-
-        /* Turn off process isolation and wait for all files to be written */
-        PetscTools::IsolateProcesses(false);
-        PetscTools::Barrier("TestGenerateTraces");
-
-        /* Master process writes the concatenated file */
-        if (PetscTools::AmMaster())
-        {
-            out_stream p_combined_file = test_base_handler.OpenOutputFile("error_summary.txt", std::ios::out | std::ios::trunc | std::ios::binary);
-            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
-            {
-                std::stringstream process_file_name;
-                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << "error_summary_" << i << ".txt";
-                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
-                TS_ASSERT(process_file.is_open());
-                TS_ASSERT(process_file.good());
-                *p_combined_file << process_file.rdbuf();
-            }
-            p_combined_file->close();
-            /* Copy to repository for use by the next test */
-            FileFinder error_summary_file = test_base_handler.FindFile("error_summary.txt");
-            error_summary_file.CopyTo(repo_data_summary);
         }
     }
 };

@@ -91,17 +91,16 @@ public:
 
 	void TestSolvingTimes() throw (Exception)
 	{
-	    /* First load the suggested time steps to use for non-adaptive solvers. */
+	    /* First load the suggested time steps to use */
         LoadTimestepFile();
-        std::map<std::string, std::vector<double> > error_results = CellModelUtilities::LoadErrorSummaryFile();
 
         /* The model / solver combinations to find a suitable time step for. */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
-        std::vector<Solvers::Value> solvers = boost::assign::list_of(Solvers::CVODE_ANALYTIC_J)(Solvers::CVODE_NUMERICAL_J)
-                                                                    (Solvers::FORWARD_EULER)(Solvers::RUNGE_KUTTA_2)
-                                                                    (Solvers::RUNGE_KUTTA_4)(Solvers::RUSH_LARSEN)
-                                                                    (Solvers::GENERALISED_RUSH_LARSEN_1)
-                                                                    (Solvers::GENERALISED_RUSH_LARSEN_2);
+        std::vector<Solvers::Value> solvers = boost::assign::list_of
+                (Solvers::CVODE_ANALYTIC_J)(Solvers::CVODE_NUMERICAL_J)
+                (Solvers::FORWARD_EULER)(Solvers::BACKWARD_EULER)
+                (Solvers::RUNGE_KUTTA_2)(Solvers::RUNGE_KUTTA_4)(Solvers::RUSH_LARSEN)
+                (Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
         /* Create the output folder structure before isolating processes, to avoid race conditions. */
         OutputFileHandler test_base_handler("Frontiers/SingleCellTimings/", false);
@@ -114,20 +113,16 @@ public:
         out_stream p_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings_", PetscTools::GetMyRank(), ".txt");
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
+        /* Each process writes its catastrophies too. */
+        out_stream p_errors_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_errors_", PetscTools::GetMyRank(), ".txt");
+        *p_errors_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+
         /* Iterate over model/solver combinations, distributed over processes. */
         PetscTools::IsolateProcesses();
         unsigned iteration = 0u;
         BOOST_FOREACH(FileFinder& r_model, models)
         {
             std::string model_name = r_model.GetLeafNameNoExtension();
-
-            // Check if there is a reference error metric for this model, and skip it if not
-            if (error_results.find(model_name) == error_results.end())
-            {
-                std::cout << "No reference error metric for model " << model_name << "; skipping." << std::endl;
-                WARNING("No reference error metric for model " << model_name << "; skipping.");
-                continue;
-            }
 
             BOOST_FOREACH(Solvers::Value solver, solvers)
             {
@@ -136,10 +131,7 @@ public:
                     continue; // Let another process do this combination
                 }
 
-                bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
-
                 std::string solver_name = CellModelUtilities::GetSolverName(solver);
-                std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'";
 
                 /* Get timestep to use if available.
                  * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
@@ -150,9 +142,15 @@ public:
                 if (dt_iter != mTimesteps.end())
                 {
                     suggested_timestep = dt_iter->second;
-                    std::cout << " using timestep " << suggested_timestep;
+                    std::cout << "Simulating " << model_name << " with solver '" << solver_name << "' using timestep " << suggested_timestep << std::endl;
                 }
-                std::cout << std::endl;
+                else
+                {
+                    std::cout << "No timestep result found for " << model_name << " with solver '" << solver_name << "', skipping it." << std::endl;
+                    continue;
+                }
+
+                bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
 
                 std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
                 BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
@@ -162,46 +160,44 @@ public:
                         /* Generate the cell model from CellML. */
                         std::stringstream folder_name;
                         folder_name << "Frontiers/SingleCellTimings/" << model_name;
+                        folder_name << "/" << solver;
                         if (use_lookup_tables)
                         {
                             folder_name << "_Opt";
                         }
-                        folder_name << "/" << solver;
                         OutputFileHandler handler(folder_name.str());
-                        boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
+                        boost::shared_ptr<AbstractCardiacCellInterface> p_cell;
+                        p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
                         double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
-                        /* Set timestep if available. */
-                        if (suggested_timestep <= 0.0)
+                        if (cvode_solver)
                         {
-                            // We should have skipped any models that fell over...
-                            EXCEPTION("No suggested timestep set for model " << model_name << " solver '" << solver_name << "'");
+                            // We hijacked the timestep in the log file to provide a refinement level.
+                            unsigned refinement_idx = (unsigned)(suggested_timestep);
+                            CellModelUtilities::SetCvodeTolerances(p_cell, refinement_idx);
                         }
                         else
                         {
-                            if (cvode_solver)
-                            {
-                                // We hijacked the timestep in the log file to provide a refinement level.
-                                unsigned refinement_idx = (unsigned)(suggested_timestep);
-                                CellModelUtilities::SetCvodeTolerances(p_cell,refinement_idx);
-                            }
-                            else
-                            {
-                                p_cell->SetTimestep(suggested_timestep);
-                            }
+                            p_cell->SetTimestep(suggested_timestep);
                         }
 
-                        /* Run a single pace to check accuracy. */
+                        /*
+                         * Run a single pace to check accuracy.
+                         * This will also set up lookup tables if they are requested, and prevent the
+                         * one-off setup cost being timed
+                         */
                         OdeSolution solution = p_cell->Compute(0.0, period, 0.1);
                         solution.WriteToFile(handler.GetRelativePath(), model_name, "ms", 1, false, 16, false);
+
+                        /* Just double check the accuracy is what we expect before a timing run */
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " square error " << errors[0] << std::endl;
-                        if (errors[0] > error_results[model_name][0] * 1.05)
+                        std::cout << "Model " << model_name << " solver '" << solver_name << "'"
+                                << (use_lookup_tables ? " and lookup tables" : "") << " MRMS error = " << errors[7] << std::endl;
+                        if (errors[7] > 0.01)
                         {
                             WARNING("Model " << model_name << " with solver '" << solver_name << "'"
                                     << (use_lookup_tables ? " and lookup tables" : "")
-                                    << " did not reach error target. Wanted "
-                                    << error_results[model_name][0] * 1.05 << ", got " << errors[0] << ".");
+                                    << " did not reach error target. Wanted 0.01, got " << errors[7] << ".");
                         }
 
                         /* Time simulating multiple paces. */
@@ -219,8 +215,11 @@ public:
                     }
                     catch (const Exception& r_e)
                     {
-                        WARNING("Error simulating model " << model_name << " with solver '" << solver_name << "'" <<  (use_lookup_tables ? " and lookup tables" : "") << ": " << r_e.GetMessage());
-                        std::cout << "Error simulating model " << model_name << " with solver '" << solver_name << "'" <<  (use_lookup_tables ? " and lookup tables" : "") << ": " << r_e.GetMessage() << std::endl;
+                        std::stringstream error_message;
+                        error_message << "Error simulating model " << model_name << " with solver '" << solver_name << "'" <<  (use_lookup_tables ? " and lookup tables" : "") << ": " << r_e.GetMessage();
+                        WARNING(error_message.str());
+                        std::cout << error_message.str() << std::endl;
+                        *p_errors_file << error_message.str() << std::endl;
                     }
                 }
             }
@@ -228,25 +227,31 @@ public:
 
         /* Close each process' results file. */
         p_file->close();
+        p_errors_file->close();
 
         /* Turn off process isolation and wait for all files to be written. */
         PetscTools::IsolateProcesses(false);
         PetscTools::Barrier("TestSolvingTimes");
 
-        /* Master process writes the concatenated file. */
+        /* Master process writes the concatenated files. */
         if (PetscTools::AmMaster())
         {
-            out_stream p_combined_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings.txt", std::ios::out | std::ios::trunc | std::ios::binary);
-            for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+            // Do both the timings and errors files.
+            std::vector<std::string> file_types = boost::assign::list_of("timings")("errors");
+            BOOST_FOREACH(std::string file_type, file_types)
             {
-                std::stringstream process_file_name;
-                process_file_name << test_base_handler.GetOutputDirectoryFullPath() << ChasteBuildType() << "_timings_" << i << ".txt";
-                std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
-                TS_ASSERT(process_file.is_open());
-                TS_ASSERT(process_file.good());
-                *p_combined_file << process_file.rdbuf();
+                out_stream p_combined_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_" + file_type + ".txt", std::ios::out | std::ios::trunc | std::ios::binary);
+                for (unsigned i=0; i<PetscTools::GetNumProcs(); ++i)
+                {
+                    std::stringstream process_file_name;
+                    process_file_name << test_base_handler.GetOutputDirectoryFullPath() << ChasteBuildType() << "_" << file_type << "_" << i << ".txt";
+                    std::ifstream process_file(process_file_name.str().c_str(), std::ios::binary);
+                    TS_ASSERT(process_file.is_open());
+                    TS_ASSERT(process_file.good());
+                    *p_combined_file << process_file.rdbuf();
+                }
+                p_combined_file->close();
             }
-            p_combined_file->close();
         }
 	}
 
@@ -285,40 +290,6 @@ private:
 	    return minimum;
 	}
 
-    /**
-     * Find out how long it takes to simulate the given model, with stopping and starting as per tissue simulations.
-     * The cell will be reset to initial conditions prior to simulation.
-     * We assume the cell has a regular square wave stimulus defined.
-     *
-     * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
-     *
-     * @param pCell  the cell model to simulate, with solver attached
-     * @param effectivePdeStep  stop and start the ODE simulation this often.
-     * @return  elapsed wall clock time, in seconds
-     */
-    double TimeSimulationTissueStyle(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-                                     double effectivePdeStep)
-    {
-        double solution_time = 1000;
-
-        double minimum = DBL_MAX;
-        for (unsigned i=0; i<NUM_RUNS; i++)
-        {
-            boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
-
-            Timer::Reset();
-            for (double start_time = 0; start_time < solution_time; start_time += effectivePdeStep)
-            {
-                pCell->SolveAndUpdateState(start_time, start_time + effectivePdeStep);
-            }
-            double elapsed_time = Timer::GetElapsedTime();
-            if (elapsed_time < minimum)
-            {
-                minimum = elapsed_time;
-            }
-        }
-        return minimum;
-    }
 
     /**
      * A map between the model/solver and the timestep which gave a 'refined enough' result.
@@ -376,7 +347,7 @@ private:
            line >> model_name;
            line >> solver_index;
            line >> timestep;
-           for (unsigned i=0; i<7; i++)
+           for (unsigned i=0; i<8; i++)
            {
                line >> tmp;
            }
