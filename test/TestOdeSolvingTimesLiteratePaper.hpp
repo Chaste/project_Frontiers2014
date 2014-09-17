@@ -225,6 +225,7 @@ public:
         }
 
         /* Close each process' results file. */
+        *p_file << "# Complete" << std::endl;
         p_file->close();
         p_errors_file->close();
 
@@ -352,7 +353,7 @@ private:
            }
            line >> is_satisfactory;
 
-           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from
+           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from this.
            std::pair<std::string, Solvers::Value> model_solver_pair(model_name,solver);
            mTimesteps[model_solver_pair] = timestep;
            mTimestepIsSatisfactory[model_solver_pair] = is_satisfactory; // We always have the most refined last in the file, so this overwriting should work.

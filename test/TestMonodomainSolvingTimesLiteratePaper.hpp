@@ -254,7 +254,7 @@ public:
 
                             std::cout << "Model: " << model << ". Time taken = " << elapsed_time << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
                                     ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
-                                    ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << std::endl;
+                                    ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
 
                             // Write to file too.
                             *p_file << model << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_timestep << "\t" << ode_timestep  << "\t"
@@ -347,7 +347,7 @@ private:
 
            std::cout << model_name << "\t" << solver_index << "\t" << pde_timestep << "\t" << ode_timestep << "\t" << is_satisfactory << "\n";
 
-           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from
+           Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from this
            std::pair<std::string, Solvers::Value> model_solver_combo(model_name,solver);
            std::pair<double, bool> timestep_pair(ode_timestep, is_satisfactory);
            if (pde_timestep==0.1)
