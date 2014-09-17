@@ -161,7 +161,7 @@ public:
                             // CVODE is struggling, probably because it is hitting singularity.
                             break;
                         }
-                        CellModelUtilities::SetCvodeTolerances(p_cell, refinement_idx);
+                        CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
                         timestep = (double)(refinement_idx); // We just hijack this variable for the log filenames.
                         refinement_description_stream << " CVODE tolerances of " << pow(10,-1.0-refinement_idx) <<
                                 ", " << pow(10,-3.0-refinement_idx) ;

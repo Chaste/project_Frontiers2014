@@ -283,7 +283,7 @@ double CellModelUtilities::GetDefaultPeriod(boost::shared_ptr<AbstractCardiacCel
     return period;
 }
 
-void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell, unsigned index)
+void CellModelUtilities::SetCvodeTolerances(AbstractCardiacCellInterface* pCell, unsigned index)
 {
     if (index >= 7u)
     {
@@ -301,7 +301,7 @@ void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCel
         possible_tolerances.push_back(tolerance_pair);
     }
 
-    boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(pCell);
+    AbstractCvodeCell* p_cvode_cell = dynamic_cast<AbstractCvodeCell*>(pCell);
 
     if (p_cvode_cell)
     {
@@ -316,7 +316,6 @@ void CellModelUtilities::SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCel
 
 std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, const std::string& rModelName)
 {
-    std::vector<double> errors;
     FileFinder this_file(__FILE__);
     FileFinder reference_folder("../test/data/reference_traces", this_file);
 
@@ -327,46 +326,7 @@ std::vector<double> CellModelUtilities::GetErrors(const OdeSolution& rSolution, 
     const std::vector<double>& r_new_times = rSolution.rGetTimes();
     std::vector<double> new_voltages = rSolution.GetAnyVariable("membrane_voltage");
 
-    EXCEPT_IF_NOT(valid_times.size() == r_new_times.size());
-    EXCEPT_IF_NOT(valid_voltages.size() == new_voltages.size());
-
-    double square_error = 0.0;
-    double mixed_root_mean_square = 0.0;
-    for (unsigned i=0; i<valid_times.size(); i++)
-    {
-        EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(valid_times[i], r_new_times[i], 1e-12));
-        double tmp = SmallPow((valid_voltages[i] - new_voltages[i]), 2u);
-        square_error += tmp;
-        mixed_root_mean_square += tmp / SmallPow(1 + fabs(valid_voltages[i]), 2u);
-    }
-    mixed_root_mean_square = sqrt(mixed_root_mean_square/(double)(valid_times.size()));
-
-    errors.push_back(square_error);
-
-    CellProperties reference_properties(valid_voltages, valid_times);
-    CellProperties test_properties(new_voltages, r_new_times);
-
-    errors.push_back(reference_properties.GetLastActionPotentialDuration(90.0)
-                     - test_properties.GetLastActionPotentialDuration(90.0));
-
-    errors.push_back(reference_properties.GetLastActionPotentialDuration(50.0)
-                     - test_properties.GetLastActionPotentialDuration(50.0));
-
-    errors.push_back(reference_properties.GetLastActionPotentialDuration(30.0)
-                     - test_properties.GetLastActionPotentialDuration(30.0));
-
-    errors.push_back(reference_properties.GetLastPeakPotential()
-                     - test_properties.GetLastPeakPotential());
-
-    errors.push_back(reference_properties.GetLastRestingPotential()
-                     - test_properties.GetLastRestingPotential());
-
-    errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
-                     - test_properties.GetLastMaxUpstrokeVelocity());
-
-    errors.push_back(mixed_root_mean_square);
-
-    return errors;
+    return GetCommonErrorCalculations(valid_times,valid_voltages,r_new_times,new_voltages);
 }
 
 std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double>& rTestTimes,
@@ -374,7 +334,7 @@ std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double
                                                         const std::string& rModelName,
                                                         const double& rPdeTimestep)
 {
-    std::vector<double> errors;
+
     FileFinder this_file(__FILE__);
     FileFinder reference_folder("../test/data/reference_traces", this_file);
 
@@ -432,15 +392,34 @@ std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double
         EXCEPT_IF_NOT(valid_voltages.size() == rTestVoltages.size());
     }
 
+    return GetCommonErrorCalculations(valid_times,valid_voltages,rTestTimes,rTestVoltages);
+}
+
+std::vector<double> CellModelUtilities::GetCommonErrorCalculations(const std::vector<double>& rValidTimes,
+                                                                   const std::vector<double>& rValidVoltages,
+                                                                   const std::vector<double>& rTestTimes,
+                                                                   const std::vector<double>& rTestVoltages)
+{
+    std::vector<double> errors;
+
+    EXCEPT_IF_NOT(rValidTimes.size() == rTestTimes.size());
+    EXCEPT_IF_NOT(rValidVoltages.size() == rTestVoltages.size());
+    EXCEPT_IF_NOT(rValidVoltages.size() == rValidTimes.size());
+
     double square_error = 0.0;
-    for (unsigned i=0; i<valid_times.size(); i++)
+    double mixed_root_mean_square = 0.0;
+    for (unsigned i=0; i<rValidTimes.size(); i++)
     {
-        EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(valid_times[i], rTestTimes[i], 1e-12));
-        square_error += SmallPow((valid_voltages[i] - rTestVoltages[i]), 2u);
+        EXCEPT_IF_NOT(CompareDoubles::WithinAbsoluteTolerance(rValidTimes[i], rTestTimes[i], 1e-12));
+        double tmp = SmallPow((rValidVoltages[i] - rTestVoltages[i]), 2u);
+        square_error += tmp;
+        mixed_root_mean_square += tmp / SmallPow(1 + fabs(rValidVoltages[i]), 2u);
     }
+    mixed_root_mean_square = sqrt(mixed_root_mean_square/(double)(rValidTimes.size()));
+
     errors.push_back(square_error);
 
-    CellProperties reference_properties(valid_voltages, valid_times);
+    CellProperties reference_properties(rValidVoltages, rValidTimes);
     CellProperties test_properties(rTestVoltages, rTestTimes);
 
     errors.push_back(reference_properties.GetLastActionPotentialDuration(90.0)
@@ -460,6 +439,8 @@ std::vector<double> CellModelUtilities::GetTissueErrors(const std::vector<double
 
     errors.push_back(reference_properties.GetLastMaxUpstrokeVelocity()
                      - test_properties.GetLastMaxUpstrokeVelocity());
+
+    errors.push_back(mixed_root_mean_square);
 
     return errors;
 }

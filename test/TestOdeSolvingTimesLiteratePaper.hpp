@@ -166,15 +166,14 @@ public:
                             folder_name << "_Opt";
                         }
                         OutputFileHandler handler(folder_name.str());
-                        boost::shared_ptr<AbstractCardiacCellInterface> p_cell;
-                        p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
+                        boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
                         double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                         if (cvode_solver)
                         {
                             // We hijacked the timestep in the log file to provide a refinement level.
                             unsigned refinement_idx = (unsigned)(suggested_timestep);
-                            CellModelUtilities::SetCvodeTolerances(p_cell, refinement_idx);
+                            CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
                         }
                         else
                         {

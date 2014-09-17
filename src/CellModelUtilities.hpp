@@ -85,6 +85,21 @@ private:
     static boost::shared_ptr<AbstractCardiacCellInterface> CreateCellModel(const FileFinder& rModelFile,
                                                                            OutputFileHandler& rOutputDir,
                                                                            const std::vector<std::string>& rOptions);
+
+    /**
+     * A helper method to do the error metric calculations.
+     *
+     * @param rValidTimes  The time trace for the reference case
+     * @param rValidVoltages  The voltage trace for the reference case
+     * @param rTestTimes  The time trace for the test case
+     * @param rTestVoltages  The voltage trace for the test case
+     *
+     * @return A vector of error metrics (square error, APD90, APD50, APD30, Vmax, Vmin, dVdt_max, MRMS).
+     */
+    static std::vector<double> GetCommonErrorCalculations(const std::vector<double>& rValidTimes,
+                                                          const std::vector<double>& rValidVoltages,
+                                                          const std::vector<double>& rTestTimes,
+                                                          const std::vector<double>& rTestVoltages);
 public:
     /**
      * Read the CellML project folder and return all the .cellml files defined therein.
@@ -198,7 +213,7 @@ public:
      * @param pCell  A pointer to something that can be cast as an AbstractCvodeCell (will throw if not)
      * @param index  The index of the row of the table to use (i.e. how many steps of refinement to use).
      */
-    static void SetCvodeTolerances(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+    static void SetCvodeTolerances(AbstractCardiacCellInterface* pCell,
                                    unsigned index);
 };
 
