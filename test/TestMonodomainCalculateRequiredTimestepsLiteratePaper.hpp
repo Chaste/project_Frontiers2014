@@ -216,7 +216,7 @@ public:
                         }
                         std::string refinement_description = refinement_description_stream.str();
 
-                        std::cout << "Computing error for PDE dt = " << pde_timestep << " model: " << model << " solver: '" << CellModelUtilities::GetSolverName(solver) << "' with" << refinement_description << std::endl;
+                        std::cout << std::endl << "Computing error for PDE dt = " << pde_timestep << " model: " << model << " solver: '" << CellModelUtilities::GetSolverName(solver) << "' with" << refinement_description << std::endl;
 
                         std::stringstream output_subfolder;
                         output_subfolder << "/results_pde_" <<  pde_timestep << "_ode_" << ode_timestep;
@@ -280,6 +280,16 @@ public:
                         std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
                         std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
+                        /* Put this trace into a file for easy plotting and comparison with the reference later on. */
+                        OutputFileHandler handler(output_folder + output_subfolder.str(), false);
+                        out_stream p_trace_file = handler.OpenOutputFile("last_node_trace.dat");
+                        for (unsigned i=0; i<times.size(); i++)
+                        {
+                            *p_trace_file << times[i] << "\t" << last_node[i] << std::endl;
+                        }
+                        p_trace_file->close();
+
+                        /* Analyse the error associated with this run compared to the reference trace in the repository.*/
                         try
                         {
                             std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
