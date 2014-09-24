@@ -189,17 +189,34 @@ public:
                         double ode_timestep = pde_timestep; // Default for CVODE solvers
                         if ((solver != Solvers::CVODE_ANALYTIC_J) && (solver != Solvers::CVODE_NUMERICAL_J))
                         {
+                            bool found = false;
                             if (pde_timestep==0.1)
                             {
-                                ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
+                                std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_1.find(model_solver_combo);
+                                if (it != mTimestepsPde0_1.end())
+                                {
+                                    ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
+                                    found = true;
+                                }
                             }
                             else if (pde_timestep==0.01)
                             {
-                                ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
+                                std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_01.find(model_solver_combo);
+                                if (it != mTimestepsPde0_01.end())
+                                {
+                                    ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
+                                    found = true;
+                                }
                             }
                             else
                             {
                                 EXCEPTION("Summat went wrong. pde_timestep = " << pde_timestep << ", which wasn't in my files.");
+                            }
+
+                            if (!found)
+                            {
+                                WARNING("No suggested timestep found for " << model << " with '" << CellModelUtilities::GetSolverName(solver) << "' for pde timestep " << pde_timestep << ".\nSkipping this.");
+                                continue;
                             }
                         }
                         std::cout << "Model: " << model << " is being solved with " << CellModelUtilities::GetSolverName(solver)
@@ -235,6 +252,7 @@ public:
                         catch (Exception& e)
                         {
                             std::cout << model << " failed to solve with ODE timestep " << ode_timestep << ", got: " << e.GetMessage() << std::endl << std::flush;
+                            WARNING(model << " failed to solve with ODE timestep " << ode_timestep << ", got: " << e.GetMessage());
                             continue;
                         }
                         HeartEventHandler::Headings();
