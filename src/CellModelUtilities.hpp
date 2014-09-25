@@ -150,6 +150,7 @@ public:
      *    > V_max,
      *    > V_min, (perhaps always initial condition, so not that useful)
      *    > dVdt_max.
+     *  * MRMS error (see Megan Marsh Thesis)
      *
      * Note that a lot of these may end up being zero, due to output time steps making the calculations
      * quite coarse.
@@ -175,6 +176,7 @@ public:
      *    > V_max,
      *    > V_min, (perhaps always initial condition, so not that useful)
      *    > dVdt_max.
+     *  * MRMS error (see Megan Marsh Thesis)
      *
      * @param rTestTimes  the test simulation printing times
      * @param rTestVoltages  the test simulation voltages at these times on last node.
@@ -189,7 +191,7 @@ public:
                                                const double& rPdeTimestep);
 
     /**
-     * Return suitable error metrics (the ones listed above in GetError documentation), for
+     * Return suitable error metrics (the ones listed above in GetErrors documentation), for
      * this model for a slack vs. tight CVODE solve.
      *
      * @param tissue  Whether we want to load the monodomain reference traces (defaults to false)

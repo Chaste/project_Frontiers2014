@@ -83,6 +83,8 @@ class TestCalculateRequiredTimesteps : public CxxTest::TestSuite
 public:
     void TestCalculateTimesteps() throw (Exception)
     {
+        const double required_mrms_error = 0.05; // 5%
+
         /* The model / solver combinations to find a suitable time step for. */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
         std::vector<Solvers::Value> solvers = boost::assign::list_of
@@ -210,8 +212,8 @@ public:
                     {
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
                         assert(errors.size()==8u);
-                        std::cout << "MRMS error = " << errors[7] << " (required = 0.01)." << std::endl;
-                        within_tolerance = (errors[7] <= 0.01);
+                        std::cout << "MRMS error = " << errors[7] << " (required = " << required_mrms_error << ")." << std::endl;
+                        within_tolerance = (errors[7] <= required_mrms_error);
 
                         /* Write result to file, tab separated */
                         *p_file << model_name << "\t" << solver << "\t" << timestep;

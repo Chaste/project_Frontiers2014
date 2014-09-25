@@ -94,6 +94,8 @@ public:
 	    /* First load the suggested time steps to use */
         LoadTimestepFile();
 
+        const double required_mrms_error = 0.05; // 5%
+
         /* The model / solver combinations to find a suitable time step for. */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
         std::vector<Solvers::Value> solvers = boost::assign::list_of
@@ -192,11 +194,11 @@ public:
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
                         std::cout << "Model " << model_name << " solver '" << solver_name << "'"
                                 << (use_lookup_tables ? " and lookup tables" : "") << " MRMS error = " << errors[7] << std::endl;
-                        if (errors[7] > 0.01)
+                        if (errors[7] > required_mrms_error)
                         {
                             WARNING("Model " << model_name << " with solver '" << solver_name << "'"
                                     << (use_lookup_tables ? " and lookup tables" : "")
-                                    << " did not reach error target. Wanted 0.01, got " << errors[7] << ".");
+                                    << " did not reach error target. Wanted " << required_mrms_error << ", got " << errors[7] << ".");
                         }
 
                         /* Time simulating multiple paces. */

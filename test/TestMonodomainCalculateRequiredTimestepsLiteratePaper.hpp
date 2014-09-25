@@ -86,6 +86,8 @@ public:
         // We don't want to find this confusing matters!!
         EXIT_IF_PARALLEL;
 
+        const double required_mrms_error = 0.05; // 5%
+
         /*
          * This test was run with the following values inserted here
          *  * 0.01 ms (typically a fine timestep)
@@ -298,7 +300,7 @@ public:
                                     ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
                                     ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
 
-                            within_tolerance = (errors[7] <= 0.01);
+                            within_tolerance = (errors[7] <= required_mrms_error);
 
                             std::cout << "For timestep " << ode_timestep << " ms MRMS error = " << errors[7] << ". Good enough ? " << within_tolerance << std::endl << std::flush;
 

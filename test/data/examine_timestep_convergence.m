@@ -6,6 +6,8 @@ clear all
 
 file_listing = dir(['reference_traces' filesep '*.dat']);
 
+required_steps_data = importdata('required_steps.txt');
+
 for i=1:length(file_listing)
     
     % Skip the files that are to do with tissue sims
@@ -13,7 +15,9 @@ for i=1:length(file_listing)
         continue
     end
     
-    file_listing(i).name
+    %file_listing(i).name
+    k = strfind(file_listing(i).name, '.dat');
+    model_name = file_listing(i).name(1:k-1);
     
     d = importdata(['reference_traces' filesep file_listing(i).name]);
     if (isstruct(d))
@@ -21,97 +25,84 @@ for i=1:length(file_listing)
     else
         data = d;
     end
-
-    figure(i)
-    plot(data(:,1), data(:,2),'b-')
-    hold on
-    title(file_listing(i).name)    
-    xlabel('Time (ms)')
-    xlabel('Voltage (mV)')   
+    
+    figure(i)    
+    
+    % Now see how many different timestep approximations we have for this
+    hardcoded_results_folder = '/export/testoutput/Frontiers/CalculateTimesteps/';
+    
+    for gbu = 1:3
+        % Good, bad, ugly errors
+        subplot(3,1,gbu)
+        plot(data(:,1), data(:,2),'-')
+        hold all
+        xlabel('Time (ms)')
+        ylabel('Voltage (mV)')
+        legend_entries{1} = 'reference';
+        
+        model_rows = find(strcmp(model_name, required_steps_data.textdata));
+        
+        for i=0:8
+            
+            solver_rows = find(i==required_steps_data.data(:,1));
+            relevant_rows = intersect(model_rows,solver_rows);
+            if (isempty(relevant_rows))
+                continue
+            end
+            
+            folder_name = [hardcoded_results_folder model_name filesep num2str(i) filesep];
+            refine_list = dir([folder_name model_name '_deltaT_*.dat']);
+            for j=1:length(refine_list)
+                
+                % Work out the timesteps for the legend
+                start_idx = strfind(refine_list(j).name, '_deltaT_') + 8;
+                last_idx = strfind(refine_list(j).name, '.dat') - 1;
+                dt = refine_list(j).name(start_idx:last_idx);
+            
+                % Work out the error metric associated with this
+                dt_number = str2num(dt);
+                
+                timestep_rows = find(dt_number==required_steps_data.data(:,2));
+                this_row = intersect(timestep_rows,relevant_rows);
+                
+                if (isempty(this_row))
+                    continue
+                else
+                    assert(length(this_row)==1)
+                    mrms_error = required_steps_data.data(this_row,10);
+                    if (gbu==1)
+                       if mrms_error > 0.01
+                           continue
+                       end
+                       title('Good')
+                    elseif (gbu==2)
+                       if mrms_error < 0.01 || mrms_error > 0.05
+                           continue
+                       end
+                       title([model_name ' Bad'])
+                    else % gbu==3
+                        if mrms_error < 0.05
+                            continue
+                        end
+                        title('Ugly')
+                    end
+                end
+                               
+                d = importdata([folder_name refine_list(j).name]);
+                
+                if length(legend_entries)<7
+                    linestyle = '-';
+                else
+                    linestyle = '--';
+                end
+                plot(d.data(:,1), d.data(:,2), linestyle)
+                
+                legend_entries{end+1} = ['Solver ' num2str(i) ' dt = ' dt];
+            end
+        end
+        legend(legend_entries)
+        clear legend_entries
+    end
 end
 
-% 
-% 
-% 
-% file_listing = dir(['reference_traces' filesep '*_GccOpt_tissue_*.dat']);
-% 
-% % Pull out the model names
-% for i=1:length(file_listing)
-%     file = file_listing(i).name;
-%     k = strfind(file, '_GccOpt_tissue_');
-%     model{i} = file(1:k-1);
-% end
-% 
-% model_list = unique(model);
-% 
-% % Let's look at summary files first for each model
-% for m=1:length(model_list)
-%     figure
-%     fprintf('Processing model: %s\n', model_list{m});
-%     for compiler=1:3
-%     
-%         if compiler==1 % IntelProduction on travis without CVODE reset
-%             prefix = '_tissue_';
-%             suffix = '';
-%         elseif compiler==2 % GccOptNative on skip without CVODE reset
-%             prefix = '_GccOpt_tissue_';
-%             suffix = '';
-%         elseif compiler==3 % IntelProduction on travis with CVODE reset
-%             prefix = '_tissue_';
-%             suffix = '_Reset';
-%         end
-%         file_listing = dir(['reference_traces' filesep model_list{m} prefix '*' suffix '.summary']);
-% 
-%         % Look at the two mesh resolutions separately.    
-%         for h = [0.01 0.001]
-%             pde_timesteps = [];
-%             % Find all the traces to do with this h
-%             for i=1:length(file_listing)
-%                 file = file_listing(i).name;
-%                 j = strfind(file, '_pde_');
-%                 k = strfind(file, ['_h_' num2str(h)]);
-%                 if (isempty(k))
-%                     continue
-%                 end
-%                 pde_timesteps = [pde_timesteps; str2num(file(j+5:k-1))];
-%             end
-% 
-%             % Right, now we have all the available combinations, let's plot the
-%             % convergence of the summary metrics
-%             for pde_idx = 1:length(pde_timesteps)
-%                 pde_step = pde_timesteps(pde_idx);
-%                 file_of_interest = ['reference_traces' filesep model_list{m} ...
-%                     prefix 'pde_' num2str(pde_step)  '_h_' num2str(h) suffix '.summary'];
-%                 d = importdata(file_of_interest);
-%                 metrics(:,pde_idx) = d.data;
-%             end
-% 
-%             num_metrics = size(metrics,1);
-% 
-%             for i=1:num_metrics
-%                 assert(num_metrics==6)
-%                 subplot(2,3,i)
-%                 if compiler == 1
-%                     linestyle = '.-';
-%                 elseif compiler == 2
-%                     linestyle = '.--';
-%                 elseif compiler == 3
-%                     linestyle = 'o-';
-%                 end
-%                 semilogx(pde_timesteps,metrics(i,:),linestyle)
-%                 hold all
-%                 if i == 2
-%                     title(strrep(model_list{m}, '_', ' '))
-%                 end
-%                 xlim([1e-3 1])
-%                 xlabel('PDE Timestep (ms)')
-%                 set(gca,'XTick',[0.001 0.01 0.1 1])
-%                 ylabel(strrep(d.textdata{i}, '_', ' '))
-%             end        
-%             clear metrics
-%         end
-%     end
-%     legend('h = 0.01 cm Intel no Reset', 'h = 0.001 cm Intel no Reset',...
-%            'h = 0.01 cm GccOpt no Reset', 'h = 0.001 cm GccOpt no Reset',...
-%            'h = 0.01 cm Intel Reset', 'h = 0.001 cm Intel Reset', 'Location', 'EastOutside')
-% end
+
