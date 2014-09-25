@@ -97,7 +97,7 @@ for i=1:length(file_listing)
                 end
                 plot(d.data(:,1), d.data(:,2), linestyle)
                 
-                legend_entries{end+1} = ['Solver ' num2str(i) ' dt = ' dt];
+                legend_entries{end+1} = ['Solver ' num2str(i) ' dt = ' dt ' MRMS = ' num2str(mrms_error)];
             end
         end
         legend(legend_entries)
