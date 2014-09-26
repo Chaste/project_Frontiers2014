@@ -148,7 +148,7 @@ public:
                 std::cout << "Calculating timestep for " << model << " with solver " << CellModelUtilities::GetSolverName(solver) << std::endl;
 
                 std::stringstream output_folder_stream;
-                output_folder_stream << "Frontiers/MonodomainCalculateTimesteps/" << model << "/" << CellModelUtilities::GetSolverName(solver);
+                output_folder_stream << "Frontiers/MonodomainCalculateTimesteps/" << model << "/" << solver;
                 std::string output_folder = output_folder_stream.str();
 
                 // Use a different constructor
