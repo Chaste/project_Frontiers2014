@@ -154,11 +154,13 @@ public:
                      * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
                      */
                     double suggested_timestep = 0.0; // Signifies 'not set'
+                    double time_to_simulate = 10; // seconds, a default
                     KeyType key(model_name, solver, use_lookup_tables);
                     TimestepMapType::iterator dt_iter = mTimesteps.find(key);
                     if (dt_iter != mTimesteps.end())
                     {
                         suggested_timestep = dt_iter->second;
+                        time_to_simulate = mSimulationTime[key];
                         std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'" << using_tables
                                   << " using timestep " << suggested_timestep << std::endl;
                     }
@@ -213,8 +215,8 @@ public:
                         }
 
                         /* Time simulating multiple paces. */
-                        double elapsed_time = TimeSimulation(p_cell, 10u);
-                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " took time " << elapsed_time << "s" << std::endl;
+                        double elapsed_time = TimeSimulation(p_cell, time_to_simulate);
+                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " took time " << elapsed_time << "s per simulated sec" << std::endl;
 
                         /* Record the result. */
                         *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << elapsed_time;
@@ -278,29 +280,34 @@ private:
 	 * The cell will be reset to initial conditions prior to simulation.
 	 * We assume the cell has a regular square wave stimulus defined.
 	 *
-	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid counting lookup tables setup.
+	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid
+	 * counting lookup tables setup.
+	 *
+	 * We convert the result so that it tells us how many wall clock seconds are required
+	 * for a simulation of one second of electrophysiology.
 	 *
 	 * @param pCell  the cell model to simulate, with solver attached
-	 * @param numPaces  the number of simulated paces to time
-	 * @return  elapsed wall clock time, in seconds
+	 * @param timeToSimulate  the amount of time to simulate in seconds
+	 * @return  number of wall clock seconds to simulate one second's worth of this model activity.
 	 */
 	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-	                      unsigned numPaces)
+	                      double timeToSimulate)
 	{
 	    double minimum = DBL_MAX;
 	    for (unsigned i=0; i<NUM_RUNS; i++)
 	    {
             boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
-            double period = CellModelUtilities::GetDefaultPeriod(pCell);
             Timer::Reset();
-            pCell->SolveAndUpdateState(0.0, numPaces * period);
+            pCell->SolveAndUpdateState(0.0, 1000*timeToSimulate);
             double elapsed_time = Timer::GetElapsedTime();
             if (elapsed_time < minimum)
             {
                 minimum = elapsed_time;
             }
 	    }
-	    return minimum;
+
+	    /* Convert the elapsed time into a time per simulated second.*/
+	    return minimum/timeToSimulate;
 	}
 
 
@@ -309,6 +316,12 @@ private:
      * See TestCalculateRequiredTimesteps.hpp
      */
     TimestepMapType mTimesteps;
+
+    /**
+     * A map between the model/solver and the number of paces we should simulate.
+     * This is set by looking at how long one pace took in #LoadTimestepFile.
+     */
+    TimestepMapType mSimulationTime;
 
     /**
      * A map between the model/solver/use of look uptables, and whether the timestep in #mTimesteps
@@ -356,6 +369,7 @@ private:
            double tmp, timestep;
            bool is_satisfactory, lt_used;
            int solver_index;
+           double time_taken;
 
            line >> model_name;
            line >> solver_index;
@@ -366,11 +380,17 @@ private:
                line >> tmp;
            }
            line >> is_satisfactory;
+           line >> time_taken;
 
            Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from this.
            KeyType key(model_name, solver, lt_used);
            mTimesteps[key] = timestep;
            mTimestepIsSatisfactory[key] = is_satisfactory; // We always have the most refined last in the file, so this overwriting should work.
+
+           // Now calculate a sensible amount of time to 'time' each model/solver for.
+           // We'll aim for 5 seconds of simulation
+           double target_time = 5.0; // seconds
+           mSimulationTime[key] = target_time/time_taken;
         }
 
         if (!indata.eof())
