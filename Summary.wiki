@@ -12,17 +12,51 @@ This section contains pages generated automatically from the source code accompa
 
 Before running these examples you will need to [wiki:InstallGuides/InstallGuide install Chaste's dependencies] and the [http://www.cs.ox.ac.uk/chaste/download.html source code for version 3.3].
 The easiest way to do this is using an Ubuntu machine (or an Ubuntu virtual machine) as discussed on InstallGuides/UbuntuPackage.
-Note that Chaste is only supported on !Linux/Unix systems, so users of Windows or Mac OS X will need to follow the virtual machine route.
+Note that cardiac Chaste is not supported on Windows, so users of Windows will need to follow the virtual machine route.
 For manual installation of each dependency, on any version of Linux, see DeveloperInstallGuide.
 
-The paper is organised around examples that are annotated and explained here.
-Before looking at these, you may wish to look at some of the [UserTutorials basic user tutorials].
+The benchmark simulations from the paper are explained and annotated below.
+For further information on using Chaste to solve these and related problems, see our [wiki:ChasteGuides extensive guide material].
 
 == Cellular electrophysiology benchmarks ==
 
 The steps required to reproduce the study are:
- 1. Generate accurate reference traces and calculate an acceptable level of error for each model ([wiki:PaperTutorials/Frontiers2014/GeneratingReferenceData Generating reference data])
- 1. Work out the timesteps for each numerical method that are required to meet this error tolerance ([wiki:PaperTutorials/Frontiers2014/CalculateRequiredTimesteps Calculate Required Timesteps])
- 1. Benchmark solvers with these timesteps ([wiki:PaperTutorials/Frontiers2014/OdeSolvingTimes Ode Solving Times])
+ 1. Generate accurate reference traces and calculate an acceptable level of error for each model ([wiki:./GeneratingReferenceData Generating Reference Data])
+ 1. Work out the timesteps for each numerical method that are required to meet this error tolerance ([wiki:./CalculateRequiredTimesteps Calculate Required Timesteps])
+ 1. Benchmark solvers with these timesteps ([wiki:./OdeSolvingTimes Ode Solving Times])
 
-For further information on using Chaste to solve these and related problems, see our [wiki:ChasteGuides extensive guide material].
+You may if you wish run just the final step to benchmark the solvers on your system against our reference data and suggested timesteps.
+
+== Tissue electrophysiology benchmarks ==
+
+The steps required to reproduce the study are:
+ 1. Study the convergence of reference monodomain tissue simulation solutions ([wiki:./MonodomainConvergence Monodomain Convergence])
+ 1. Calculate the required ODE solver timesteps to meet target PDE accuracy ([wiki:./MonodomainCalculateRequiredTimesteps Monodomain Calculate Required Timesteps])
+ 1. Benchmark monodomain tissue simulation solving times with different numerical methods ([wiki:./MonodomainSolvingTimes Monodomain Solving Times])
+
+Again, you may if you wish run just the final step to benchmark the solvers on your system against our reference data and suggested timesteps.
+
+== Sample commands to install and run everything ==
+
+If you wish to install Chaste and this project direct from our repository, you may do so from the command line as follows:
+{{{
+#!sh
+svn checkout https://chaste.cs.ox.ac.uk/svn/chaste/trunk Chaste
+cd Chaste/projects
+svn checkout https://chaste.cs.ox.ac.uk/svn/chaste/projects/Frontiers2014
+}}}
+
+To run all the steps listed above, exploiting multiple cores on your machine, use:
+{{{
+#!sh
+cd path/to/Chaste
+# Change the occurrences of 8 below to match the number of cores available
+scons chaste_libs=1 brief=1 build=GccOptNative_8 -j8 projects/Frontiers2014/test/TestGeneratingReferenceDataLiteratePaper.hpp
+scons chaste_libs=1 brief=1 build=GccOptNative_8 -j8 projects/Frontiers2014/test/TestCalculateRequiredTimestepsLiteratePaper.hpp
+scons chaste_libs=1 brief=1 build=GccOptNative_8 -j8 projects/Frontiers2014/test/TestOdeSolvingTimesLiteratePaper.hpp
+
+# Note the change in build= option: these simulations cannot run in parallel
+scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainConvergenceLiteratePaper.hpp
+scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainCalculateRequiredTimestepsLiteratePaper.hpp
+scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainSolvingTimesLiteratePaper.hpp
+}}}
