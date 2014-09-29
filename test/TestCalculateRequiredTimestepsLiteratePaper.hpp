@@ -74,6 +74,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "PetscTools.hpp"
 #include "Warnings.hpp"
 #include "IsNan.hpp"
+#include "Timer.hpp"
 
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
@@ -184,10 +185,13 @@ public:
                     p_cell->SetStateVariables(initial_conditions);
 
                     OdeSolution solution;
+                    double time_taken;
                     /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes */
                     try
                     {
+                        Timer::Reset();
                         solution = p_cell->Compute(0.0, period, sampling_time);
+                        time_taken = Timer::GetElapsedTime();
                         std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
                         std::vector<double>& r_times = solution.rGetTimes();
                         for (unsigned i=0; i<voltages.size(); i++)
@@ -221,7 +225,7 @@ public:
                         {
                             *p_file << "\t" << errors[i];
                         }
-                        *p_file << "\t" << within_tolerance << std::endl;
+                        *p_file << "\t" << within_tolerance << "\t" << time_taken << std::endl;
                     }
                     catch (const Exception& r_e)
                     {
