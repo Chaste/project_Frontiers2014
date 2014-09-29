@@ -115,127 +115,141 @@ public:
         {
             std::string model_name = r_model.GetLeafNameNoExtension();
 
-            /* Iterate over each available solver, using a handy boost method */
+            /* Iterate over each available solver, using a handy boost method. */
             BOOST_FOREACH(Solvers::Value solver, solvers)
             {
                 bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
 
-                /* This simple if allows us to parallelise the sweep to speed up running it */
-                if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
+                /* We calculate separate timesteps for with and without lookup tables,
+                 * since for some model/solver combinations including lookup tables can push things outside the stable regime.
+                 */
+                std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
+                BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
                 {
-                    continue; // Let another process do this combination
-                }
-                std::cout << "Calculating timestep for " << model_name << " with solver " << CellModelUtilities::GetSolverName(solver) << std::endl;
+                    std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
 
-                /* Generate the cell model from CellML. */
-                std::stringstream folder_name;
-                folder_name << "Frontiers/CalculateTimesteps/" << model_name << "/" << solver;
-                OutputFileHandler handler(folder_name.str());
-                boost::shared_ptr<AbstractCardiacCellInterface> p_cell;
-                try
-                {
-                    p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, false);
-                }
-                catch (Exception &e)
-                {
-                    // This probably fires off if there is no Analytic Jacobian available.
-                    // Move on to the next model/solver combination.
-                    continue;
-                }
-                double period = CellModelUtilities::GetDefaultPeriod(p_cell);
-
-                /* Set up solver parameters. */
-                double sampling_time = 0.1;
-                unsigned timestep_divisor = 1u;
-                unsigned refinement_idx = 1u;
-                bool within_tolerance = false;
-                std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
-
-                /* For the one step models: keep solving with smaller timesteps until we meet the desired accuracy.
-                 * For CVODE, use the timestep divisor to index a vector of tolerance pairs. */
-                do
-                {
-                    double timestep = sampling_time / timestep_divisor;
-                    std::stringstream refinement_description_stream;
-                    if (cvode_solver)
+                    /* This simple if allows us to parallelise the sweep to speed up running it. */
+                    if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())
                     {
-                        if (refinement_idx>=7u)
-                        {
-                            // CVODE is struggling, probably because it is hitting singularity.
-                            break;
-                        }
-                        CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
-                        timestep = (double)(refinement_idx); // We just hijack this variable for the log filenames.
-                        refinement_description_stream << " CVODE tolerances of " << pow(10,-1.0-refinement_idx) <<
-                                ", " << pow(10,-3.0-refinement_idx) ;
+                        continue; // Let another process do this combination
                     }
-                    else
+                    std::cout << "Calculating timestep for " << model_name << " with solver " << CellModelUtilities::GetSolverName(solver) << using_tables << std::endl;
+
+                    /* Generate the cell model from CellML. */
+                    std::stringstream folder_name;
+                    folder_name << "Frontiers/CalculateTimesteps/" << model_name << "/" << solver;
+                    if (use_lookup_tables)
                     {
-                        p_cell->SetTimestep(timestep);
-                        refinement_description_stream << " timestep of " << timestep << "ms";
+                        folder_name << "_Opt";
                     }
-                    std::string refinement_description = refinement_description_stream.str();
-
-                    std::cout << "Computing error for model " << model_name << " solver '" << CellModelUtilities::GetSolverName(solver) << "' with" << refinement_description << std::endl;
-
-                    timestep_divisor *= 2; // Ready for next iteration
-                    refinement_idx++; // Ready for next iteration
-
-                    /* Make sure the model is in exactly the same state at the beginning of every run */
-                    p_cell->SetStateVariables(initial_conditions);
-
-                    OdeSolution solution;
-                    double time_taken;
-                    /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes */
+                    OutputFileHandler handler(folder_name.str());
+                    boost::shared_ptr<AbstractCardiacCellInterface> p_cell;
                     try
                     {
-                        Timer::Reset();
-                        solution = p_cell->Compute(0.0, period, sampling_time);
-                        time_taken = Timer::GetElapsedTime();
-                        std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
-                        std::vector<double>& r_times = solution.rGetTimes();
-                        for (unsigned i=0; i<voltages.size(); i++)
-                        {
-                            if (std::isnan(voltages[i]))
-                            {
-                                EXCEPTION("Voltage at t(" << r_times[i] << ") = " << voltages[i] << ".");
-                            }
-                        }
+                        p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
                     }
-                    catch (const Exception &e)
+                    catch (Exception &e)
                     {
-                        std::cout << model_name << " failed to solve with" << refinement_description << ".\n Got: " << e.GetMessage() << std::endl << std::flush;
+                        // This probably fires off if there is no Analytic Jacobian available.
+                        // Move on to the next model/solver combination.
                         continue;
                     }
+                    double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
-                    /* Calculate the error associated with this simulated trace (compare to reference) */
-                    std::stringstream filename;
-                    filename << model_name << "_deltaT_" << timestep;
-                    solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
-                    try
+                    /* Set up solver parameters. */
+                    double sampling_time = 0.1;
+                    unsigned timestep_divisor = 1u;
+                    unsigned refinement_idx = 1u;
+                    bool within_tolerance = false;
+                    std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
+
+                    /* For the one step models: keep solving with smaller timesteps until we meet the desired accuracy.
+                     * For CVODE, use the timestep divisor to index a vector of tolerance pairs. */
+                    do
                     {
-                        std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-                        assert(errors.size()==8u);
-                        std::cout << "MRMS error = " << errors[7] << " (required = " << required_mrms_error << ")." << std::endl;
-                        within_tolerance = (errors[7] <= required_mrms_error);
-
-                        /* Write result to file, tab separated */
-                        *p_file << model_name << "\t" << solver << "\t" << timestep;
-                        for (unsigned i=0; i<errors.size(); i++)
+                        double timestep = sampling_time / timestep_divisor;
+                        std::stringstream refinement_description_stream;
+                        if (cvode_solver)
                         {
-                            *p_file << "\t" << errors[i];
+                            if (refinement_idx>=7u)
+                            {
+                                // CVODE is struggling, probably because it is hitting a singularity.
+                                break;
+                            }
+                            CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
+                            timestep = (double)(refinement_idx); // We just hijack this variable for the log filenames.
+                            refinement_description_stream << " CVODE tolerances of " << pow(10,-1.0-refinement_idx) <<
+                                    ", " << pow(10,-3.0-refinement_idx);
                         }
-                        *p_file << "\t" << within_tolerance << "\t" << time_taken << std::endl;
+                        else
+                        {
+                            p_cell->SetTimestep(timestep);
+                            refinement_description_stream << " timestep of " << timestep << "ms";
+                        }
+                        std::string refinement_description = refinement_description_stream.str();
+
+                        std::cout << "Computing error for model " << model_name << " solver '" << CellModelUtilities::GetSolverName(solver) << "'"
+                                  << using_tables << " with" << refinement_description << std::endl;
+
+                        timestep_divisor *= 2; // Ready for next iteration
+                        refinement_idx++; // Ready for next iteration
+
+                        /* Make sure the model is in exactly the same state at the beginning of every run */
+                        p_cell->SetStateVariables(initial_conditions);
+
+                        OdeSolution solution;
+                        double time_taken;
+                        /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes */
+                        try
+                        {
+                            Timer::Reset();
+                            solution = p_cell->Compute(0.0, period, sampling_time);
+                            time_taken = Timer::GetElapsedTime();
+                            std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
+                            std::vector<double>& r_times = solution.rGetTimes();
+                            for (unsigned i=0; i<voltages.size(); i++)
+                            {
+                                if (std::isnan(voltages[i]))
+                                {
+                                    EXCEPTION("Voltage at t(" << r_times[i] << ") = " << voltages[i] << ".");
+                                }
+                            }
+                        }
+                        catch (const Exception &e)
+                        {
+                            std::cout << model_name << " failed to solve with" << refinement_description << ".\n Got: " << e.GetMessage() << std::endl << std::flush;
+                            continue;
+                        }
+
+                        /* Calculate the error associated with this simulated trace (compare to reference) */
+                        std::stringstream filename;
+                        filename << model_name << "_deltaT_" << timestep;
+                        solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
+                        try
+                        {
+                            std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
+                            assert(errors.size()==8u);
+                            std::cout << "MRMS error = " << errors[7] << " (required = " << required_mrms_error << ")." << std::endl;
+                            within_tolerance = (errors[7] <= required_mrms_error);
+
+                            /* Write result to file, tab separated */
+                            *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << timestep;
+                            for (unsigned i=0; i<errors.size(); i++)
+                            {
+                                *p_file << "\t" << errors[i];
+                            }
+                            *p_file << "\t" << within_tolerance << "\t" << time_taken << std::endl;
+                        }
+                        catch (const Exception& r_e)
+                        {
+                            std::cout << "Exception computing error for model " << model_name << " solver " << CellModelUtilities::GetSolverName(solver) << using_tables;
+                            std::cout << r_e.GetMessage() << std::endl;
+                            WARNING(r_e.GetMessage());
+                        }
                     }
-                    catch (const Exception& r_e)
-                    {
-                        std::cout << "Exception computing error for model " << model_name << " solver " << CellModelUtilities::GetSolverName(solver);
-                        std::cout << r_e.GetMessage() << std::endl;
-                        WARNING(r_e.GetMessage());
-                    }
+                    while (!within_tolerance && timestep_divisor <= 2048);
+                    /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
                 }
-                while (!within_tolerance && timestep_divisor <= 2048);
-                /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
             }
         }
 

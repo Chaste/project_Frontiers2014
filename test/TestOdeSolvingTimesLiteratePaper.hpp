@@ -60,6 +60,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 
 // Headers specific to this project
 #include "CellModelUtilities.hpp"
@@ -77,7 +79,13 @@ static unsigned NUM_RUNS = 3u;
 
 class TestOdeSolvingTimes : public CxxTest::TestSuite
 {
+    /* These are some type aliases to save typing. */
+    typedef boost::tuple<std::string, Solvers::Value, bool> KeyType; // Keys in the map types below
+    typedef std::map<KeyType, double> TimestepMapType; // Type of the map giving suggested timesteps
+    typedef std::map<KeyType, bool> TimestepOkMapType; // Type of the map indicating convergence solutions
+
 public:
+    /* This is a small visual check that we have the expected CellML models available. */
 	void TestListingModels() throw (Exception)
 	{
 		std::vector<FileFinder> models(CellModelUtilities::GetListOfModels());
@@ -89,9 +97,10 @@ public:
 		TS_ASSERT_LESS_THAN(20u, models.size());
 	}
 
+	/* This is the main test that actually does the benchmarking. */
 	void TestSolvingTimes() throw (Exception)
 	{
-	    /* First load the suggested time steps to use */
+	    /* First load the suggested time steps to use. */
         LoadTimestepFile();
 
         const double required_mrms_error = 0.05; // 5%
@@ -135,34 +144,36 @@ public:
 
                 std::string solver_name = CellModelUtilities::GetSolverName(solver);
 
-                /* Get timestep to use if available.
-                 * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
-                 */
-                double suggested_timestep = 0.0; // Signifies 'not set'
-                std::pair<std::string, Solvers::Value> model_and_solver(model_name, solver);
-                std::map<std::pair<std::string, Solvers::Value>, double>::iterator dt_iter = mTimesteps.find(model_and_solver);
-                if (dt_iter != mTimesteps.end())
-                {
-                    suggested_timestep = dt_iter->second;
-                    std::cout << "Simulating " << model_name << " with solver '" << solver_name << "' using timestep " << suggested_timestep << std::endl;
-                }
-                else
-                {
-                    std::cout << "No timestep result found for " << model_name << " with solver '" << solver_name << "', skipping it." << std::endl;
-                    continue;
-                }
-
                 bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
 
                 std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
                 BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
                 {
+                    std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
+                    /* Get timestep to use if available.
+                     * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
+                     */
+                    double suggested_timestep = 0.0; // Signifies 'not set'
+                    KeyType key(model_name, solver, use_lookup_tables);
+                    TimestepMapType::iterator dt_iter = mTimesteps.find(key);
+                    if (dt_iter != mTimesteps.end())
+                    {
+                        suggested_timestep = dt_iter->second;
+                        std::cout << "Simulating " << model_name << " with solver '" << solver_name << "'" << using_tables
+                                  << " using timestep " << suggested_timestep << std::endl;
+                    }
+                    else
+                    {
+                        std::cout << "No timestep result found for " << model_name << " with solver '" << solver_name << "'" << using_tables
+                                  << ", skipping it." << std::endl;
+                        continue;
+                    }
+
                     try
                     {
                         /* Generate the cell model from CellML. */
                         std::stringstream folder_name;
-                        folder_name << "Frontiers/SingleCellTimings/" << model_name;
-                        folder_name << "/" << solver;
+                        folder_name << "Frontiers/SingleCellTimings/" << model_name << "/" << solver;
                         if (use_lookup_tables)
                         {
                             folder_name << "_Opt";
@@ -203,7 +214,7 @@ public:
 
                         /* Time simulating multiple paces. */
                         double elapsed_time = TimeSimulation(p_cell, 10u);
-                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " took time " << elapsed_time << "s" << std::endl;
+                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " took time " << elapsed_time << "s" << std::endl;
 
                         /* Record the result. */
                         *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << elapsed_time;
@@ -217,7 +228,7 @@ public:
                     catch (const Exception& r_e)
                     {
                         std::stringstream error_message;
-                        error_message << "Error simulating model " << model_name << " with solver '" << solver_name << "'" <<  (use_lookup_tables ? " and lookup tables" : "") << ": " << r_e.GetMessage();
+                        error_message << "Error simulating model " << model_name << " with solver '" << solver_name << "'" <<  using_tables << ": " << r_e.GetMessage();
                         WARNING(error_message.str());
                         std::cout << error_message.str() << std::endl;
                         *p_errors_file << error_message.str() << std::endl;
@@ -294,17 +305,17 @@ private:
 
 
     /**
-     * A map between the model/solver and the timestep which gave a 'refined enough' result.
+     * A map between the model/solver/use of lookup tables, and the timestep which gave a 'refined enough' result.
      * See TestCalculateRequiredTimesteps.hpp
      */
-    std::map<std::pair<std::string, Solvers::Value>, double> mTimesteps;
+    TimestepMapType mTimesteps;
 
     /**
-     * A map between the model/solver and whether the timestep in #mTimesteps
+     * A map between the model/solver/use of look uptables, and whether the timestep in #mTimesteps
      * gave a 'refined enough' result.
      * See TestCalculateRequiredTimesteps.hpp
      */
-    std::map<std::pair<std::string, Solvers::Value>, bool> mTimestepIsSatisfactory;
+    TimestepOkMapType mTimestepIsSatisfactory;
 
     /**
      * A helper method that populates mTimesteps from the stored data file in
@@ -343,11 +354,12 @@ private:
            // Load a standard data line.
            std::string model_name;
            double tmp, timestep;
-           bool is_satisfactory;
+           bool is_satisfactory, lt_used;
            int solver_index;
 
            line >> model_name;
            line >> solver_index;
+           line >> lt_used;
            line >> timestep;
            for (unsigned i=0; i<8; i++)
            {
@@ -356,9 +368,9 @@ private:
            line >> is_satisfactory;
 
            Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from this.
-           std::pair<std::string, Solvers::Value> model_solver_pair(model_name,solver);
-           mTimesteps[model_solver_pair] = timestep;
-           mTimestepIsSatisfactory[model_solver_pair] = is_satisfactory; // We always have the most refined last in the file, so this overwriting should work.
+           KeyType key(model_name, solver, lt_used);
+           mTimesteps[key] = timestep;
+           mTimestepIsSatisfactory[key] = is_satisfactory; // We always have the most refined last in the file, so this overwriting should work.
         }
 
         if (!indata.eof())
@@ -367,24 +379,26 @@ private:
         }
 
         // Warn for any model/solver combination not satisfactory
-        for (std::map<std::pair<std::string, Solvers::Value>, bool>::iterator it = mTimestepIsSatisfactory.begin();
+        for (TimestepOkMapType::iterator it = mTimestepIsSatisfactory.begin();
              it!=mTimestepIsSatisfactory.end();
              ++it)
         {
             if (!it->second)
             {
-                WARNING("Using non-satisfactory timestep for model " << (it->first).first << " and solver "
-                        << CellModelUtilities::GetSolverName((it->first).second));
+                WARNING("Using non-satisfactory timestep for model " << (it->first).get<0>() << " and solver "
+                        << CellModelUtilities::GetSolverName((it->first).get<1>())
+                        << ((it->first).get<2>() ? " with lookup tables" : ""));
             }
         }
 
         // Print to screen just to check they are correct...
-        for (std::map<std::pair<std::string, Solvers::Value>, double>::iterator it = mTimesteps.begin();
+        for (TimestepMapType::iterator it = mTimesteps.begin();
              it!=mTimesteps.end();
              ++it)
         {
             // Print model, solver, timestep and whether it was satisfactory for a converged answer.
-            std::cout << (it->first).first << "\t'" << CellModelUtilities::GetSolverName((it->first).second) << "'\t" << it->second << "\t" << mTimestepIsSatisfactory[it->first] << std::endl;
+            std::cout << (it->first).get<0>() << "\t'" << CellModelUtilities::GetSolverName((it->first).get<1>()) << "'\t" << (it->first).get<2>() << "\t"
+                      << it->second << "\t" << mTimestepIsSatisfactory[it->first] << std::endl;
         }
     }
 
