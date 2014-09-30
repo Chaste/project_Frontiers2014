@@ -288,6 +288,9 @@ public:
                             WARNING("Model " << model << ": analysis of voltage at last node failed.");
                         }
                     }
+
+                    // Free memory for lookup tables if used
+                    cell_factory.FreeLookupTableMemory();
                 }
             }
         }

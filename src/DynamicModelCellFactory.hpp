@@ -54,14 +54,17 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class DynamicModelCellFactory : public AbstractCardiacCellFactory<1u>
 {
 private:
-    /** Whether to switch CVODE onto a very high tolerance for the reference solution */
+    /** Whether to switch CVODE onto a very high tolerance for the reference solution. */
     bool mStrictTolerance;
 
     /** A simple stimulus to apply at one end at t=1.0 */
     boost::shared_ptr<SimpleStimulus> mpSimpleStimulus;
 
-    /** The shared library location */
+    /** The shared library location. */
     FileFinder mSharedLibraryLocation;
+
+    /** The lookup tables used by cells we create. */
+    AbstractLookupTableCollection* mpLookupTables;
 
 public:
     /**
@@ -78,7 +81,7 @@ public:
                             OutputFileHandler& rOutputDir,
                             Solvers::Value solver,
                             bool useLookupTables,
-                            bool highTol = false);
+                            bool highTol=false);
 
     /** Destructor*/
     ~DynamicModelCellFactory();
@@ -88,6 +91,11 @@ public:
      * @param pNode pointer to the node.
      */
     AbstractCardiacCellInterface* CreateCardiacCellForTissueNode(Node<1u>* pNode);
+
+    /**
+     * This can be called at the end of a simulation to free the memory used by lookup tables, if any.
+     */
+    void FreeLookupTableMemory();
 };
 
 

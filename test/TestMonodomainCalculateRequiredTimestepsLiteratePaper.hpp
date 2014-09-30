@@ -97,13 +97,13 @@ public:
 
         /*
          * This test is run with the following values, selected by looking at the output of
-         * the convergence test.
+         * [TestMonodomainConvergenceLiteratePaper the convergence test].
          */
         double h = 0.01;
 
         std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
-        // A list of models that we want to do tissue simulations with.
+        /* A list of models that we want to do tissue simulations with, and then the solvers to test. */
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
                                                  ("beeler_reuter_model_1977")
                                                  ("nygren_atrial_model_1998")
@@ -125,22 +125,15 @@ public:
         /* Repository data location */
         FileFinder this_file(__FILE__);
         FileFinder repo_data("data", this_file);
+        FileFinder model_folder("../cellml", this_file);
 
         // Loop over models
         BOOST_FOREACH(std::string model, models_to_use)
         {
-            // Find the FileFinder associated with the model we want.
-            FileFinder model_to_use;
-            for (unsigned i=0; i<all_models.size(); i++)
-            {
-                if (all_models[i].GetLeafNameNoExtension()==model)
-                {
-                    model_to_use = all_models[i];
-                    break;
-                }
-            }
+            /* Find the CellML file for this model. */
+            FileFinder model_to_use(model + ".cellml", model_folder);
 
-            /* Iterate over each available solver, using a handy boost method */
+            /* Iterate over each available solver, using a handy boost method. */
             BOOST_FOREACH(Solvers::Value solver, solvers)
             {
                 bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
@@ -156,7 +149,7 @@ public:
                 DynamicModelCellFactory cell_factory(model_to_use,
                                                      base_model_handler,
                                                      solver,
-                                                     false);// Whether to use lookup tables.
+                                                     false); // Whether to use lookup tables.
 
                 /* We will auto-generate a mesh this time, and pass it in, rather than
                  * provide a mesh file name. This is how to generate a cuboid mesh with
@@ -176,8 +169,6 @@ public:
                 BOOST_FOREACH(double pde_timestep, pde_timesteps)
                 {
                     /*
-                     * EMPTYLINE
-                     *
                      * Set the simulation duration, etc, and create an instance of the cell factory.
                      * One thing that should be noted for monodomain problems, the ''intracellular
                      * conductivity'' is used as the monodomain effective conductivity (not a
@@ -204,7 +195,7 @@ public:
                             HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, sampling_time);
                             if (refinement_idx>=7u)
                             {
-                                // CVODE is struggling, probably because it is hitting singularity?
+                                // CVODE is struggling, probably because it is hitting a singularity?
                                 break;
                             }
                             ode_timestep = (double)(refinement_idx); // We just hijack this variable for the logs.
@@ -291,7 +282,7 @@ public:
                         }
                         p_trace_file->close();
 
-                        /* Analyse the error associated with this run compared to the reference trace in the repository.*/
+                        /* Analyse the error associated with this run compared to the reference trace in the repository. */
                         try
                         {
                             std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
@@ -336,6 +327,9 @@ public:
                     while (!within_tolerance && timestep_divisor <= 2048);
                     /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048).*/
                 }
+
+                // Free memory for lookup tables if used
+                cell_factory.FreeLookupTableMemory();
             }
         }
 

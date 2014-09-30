@@ -50,13 +50,14 @@ DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
                                                  bool useLookupTables,
                                                  bool highTol)
     : AbstractCardiacCellFactory<1u>(),
-      mStrictTolerance(highTol)
+      mStrictTolerance(highTol),
+      mpLookupTables(NULL)
 {
     // Create a simple stimulus to use in the CreateCardiacCellForTissueNode method.
     // The stimulus is a bit of a compromise, needs to be big enough to fire off all the models, but not
     // so big that it pushes the voltage up to 'unphysiological' for certain models.
     mpSimpleStimulus = boost::shared_ptr<SimpleStimulus>(new SimpleStimulus(-30000, 4, 1)); // magnitude, duration, start time.
-    
+
     // Do a single run to do the conversion and create the .so model that we will want to use (discard model it gives).
     CellModelUtilities::CreateCellModel(rModelFile,rOutputDir,solver,useLookupTables);
 
@@ -104,7 +105,7 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     }
 
     // Generate lookup tables if present
-    p_cell->GetLookupTableCollection();
+    mpLookupTables = p_cell->GetLookupTableCollection();
 
     if (mStrictTolerance && dynamic_cast<AbstractCvodeCell*>(p_cell))
     {
@@ -116,3 +117,10 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     return p_cell;
 }
 
+void DynamicModelCellFactory::FreeLookupTableMemory()
+{
+    if (mpLookupTables)
+    {
+        mpLookupTables->FreeMemory();
+    }
+}
