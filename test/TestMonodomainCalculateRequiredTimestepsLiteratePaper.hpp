@@ -42,9 +42,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * On this wiki page we describe in detail the code that is used to run this example from the paper.
  *
  * This test performs a monodomain simulation with a range of models, using with each ODE solver.
- * It reduces the time step used until the error metric (based on sum of squares for voltage trace at last node)
- * is within tolerances based on the reference solutions from
- * in PaperTutorials/Frontiers2014/MonodomainConvergence
+ * It reduces the time step used until the error metric is within tolerances based on the reference
+ * solutions from MonodomainConvergence.
  *
  * This is intended to define a time step required for each method to
  * get a numerical solution of comparable accuracy, for fair timing comparisons.
@@ -97,7 +96,7 @@ public:
 
         /*
          * This test is run with the following values, selected by looking at the output of
-         * [TestMonodomainConvergenceLiteratePaper the convergence test].
+         * [MonodomainConvergence the convergence test].
          */
         double h = 0.01;
 

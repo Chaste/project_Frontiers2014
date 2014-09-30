@@ -88,7 +88,7 @@ public:
 
         /*
          * This test is run with the following values, selected by looking at the output of
-         * the convergence test.
+         * [MonodomainConvergence the convergence test].
          */
         double h = 0.01;
 
