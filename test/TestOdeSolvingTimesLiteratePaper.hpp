@@ -298,7 +298,9 @@ private:
 	                      double timeToSimulate)
 	{
 	    // Drop any fractional part of the simulation time (converted to ms) so it is divided by the timestep
-	    timeToSimulate = floor(timeToSimulate * 1000.0);
+	    double millisecs_to_simulate = floor(timeToSimulate * 1000.0);
+
+	    //std::cout << "Simulating " << millisecs_to_simulate << "ms of activity." << std::endl;
 
 	    // Run NUM_RUNS simulations and record the quickest
 	    double minimum = DBL_MAX;
@@ -306,7 +308,7 @@ private:
 	    {
             boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
             Timer::Reset();
-            pCell->SolveAndUpdateState(0.0, 1000*timeToSimulate);
+            pCell->SolveAndUpdateState(0.0, millisecs_to_simulate);
             double elapsed_time = Timer::GetElapsedTime();
             if (elapsed_time < minimum)
             {
@@ -315,7 +317,7 @@ private:
 	    }
 
 	    /* Convert the elapsed time into a time per simulated second. */
-	    return minimum/timeToSimulate*1000.0;
+	    return minimum/timeToSimulate;
 	}
 
 
