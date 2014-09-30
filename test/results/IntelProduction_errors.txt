@@ -1,0 +1,114 @@
+Error simulating model faber_rudy_2000 with solver 'CVODE (numerical Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model fink_noble_giles_model_2008 with solver 'Backward Euler' and lookup tables: 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model iribe_model_2006 with solver 'CVODE (analytic Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model li_mouse_2010 with solver 'Runge-Kutta (4th order)' and lookup tables: 
+Chaste error: heart/build/intel_production/dynamic/tmp_32970_1412093656/li_mouse_2010.cpp:1104: membrane_voltage outside lookup table range
+At independent variable (usually time) = 338.831
+State:
+	membrane_voltage:-11813.7 millivolt
+	cytosolic_calcium_concentration:5430.98 micromolar
+	diadicspace_calcium_concentration:-7.68827e+28 micromolar
+	JSR_calcium_concentration:2.19665e+28 micromolar
+	calcium_concentration__CaNSR:196.635 micromolar
+	calcium_fluxes__P_RyR:-1648.47 dimensionless
+	calcium_fluxes__CaMKt:0.736374 dimensionless
+	ryanodine_receptors__P_O1:-1.30948e+56 dimensionless
+	ryanodine_receptors__P_O2:3.23381e+45 dimensionless
+	ryanodine_receptors__P_C2:3.6526e+14 dimensionless
+	L_type_calcium_current__O:0.092466 dimensionless
+	L_type_calcium_current__I:929.537 dimensionless
+	L_type_calcium_current__y_gate:0.626962 dimensionless
+	cytosolic_sodium_concentration:12369.7 micromolar
+	fast_sodium_current__O_Na:0.00371631 dimensionless
+	fast_sodium_current__C_Na1:0.000367923 dimensionless
+	fast_sodium_current__C_Na2:1.9547e-05 dimensionless
+	fast_sodium_current__I1_Na:0.00544907 dimensionless
+	fast_sodium_current__I2_Na:2.43702e-05 dimensionless
+	fast_sodium_current__IF_Na:0.934434 dimensionless
+	fast_sodium_current__IC_Na2:0.0541113 dimensionless
+	fast_sodium_current__IC_Na3:0.00187722 dimensionless
+	cytosolic_potassium_concentration:115598 micromolar
+	ultra_rapidly_activating_delayed_rectifier_K_I__aur:0.49758 dimensionless
+	ultra_rapidly_activating_delayed_rectifier_K_I__iur:0.952565 dimensionless
+	non_inactivating_steady_state_K_I__aKss:0.323462 dimensionless
+	non_inactivating_steady_state_K_I__iKss:1 dimensionless
+	rapid_delayed_rectifier_K_I__O_K:0.00886934 dimensionless
+	rapid_delayed_rectifier_K_I__C_K1:0.0705892 dimensionless
+	rapid_delayed_rectifier_K_I__C_K2:0.00381564 dimensionless
+	rapid_delayed_rectifier_K_I__I_K:0.00529212 dimensionless
+	slow_delayed_rectifier_K_I__nKs:0.00377391 dimensionless
+	fast_transient_outward_K_I__ato_f:0.957937 dimensionless
+	fast_transient_outward_K_I__ito_f:0.700951 dimensionless
+	slow_transient_outward_K_I__ato_s:0.497599 dimensionless
+	slow_transient_outward_K_I__ito_s:0.889921 dimensionless
+
+Error simulating model clancy_rudy_2002 with solver 'Backward Euler': 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model clancy_rudy_2002 with solver 'Backward Euler' and lookup tables: 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model pasek_simurda_orchard_christe_2008 with solver 'CVODE (analytic Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model priebe_beuckelmann_1998 with solver 'CVODE (numerical Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model ten_tusscher_model_2004_M with solver 'Generalised Rush-Larsen 1' and lookup tables: 
+Chaste error: heart/build/intel_production/dynamic/tmp_32972_1412095189/ten_tusscher_model_2004_M.cpp:1457: membrane_voltage outside lookup table range
+At independent variable (usually time) = 47327.9
+State:
+	membrane_voltage:-3491.49 millivolt
+	rapid_time_dependent_potassium_current_Xr1_gate__Xr1:0.98577 dimensionless
+	rapid_time_dependent_potassium_current_Xr2_gate__Xr2:0.024223 dimensionless
+	slow_time_dependent_potassium_current_Xs_gate__Xs:0.166269 dimensionless
+	membrane_fast_sodium_current_m_gate:0.996328 dimensionless
+	membrane_fast_sodium_current_h_gate:4.26807e-09 dimensionless
+	membrane_fast_sodium_current_j_gate:3.90345e-09 dimensionless
+	membrane_L_type_calcium_current_d_gate:0.665129 dimensionless
+	membrane_L_type_calcium_current_f_gate:0.186116 dimensionless
+	membrane_L_type_calcium_current_fCa_gate:0.214483 dimensionless
+	transient_outward_current_s_gate__s:0.0132329 dimensionless
+	transient_outward_current_r_gate__r:0.041261 dimensionless
+	cytosolic_calcium_concentration:0.0002402 millimolar
+	JSR_calcium_concentration:0.582299 millimolar
+	calcium_dynamics__g:2.9637e-07 dimensionless
+	cytosolic_sodium_concentration:11.1764 millimolar
+	cytosolic_potassium_concentration:138.408 millimolar
+
+Error simulating model aslanidi_Purkinje_model_2009 with solver 'Runge-Kutta (2nd order)' and lookup tables: 
+Chaste error: heart/build/intel_production/dynamic/tmp_32973_1412091280/aslanidi_Purkinje_model_2009.cpp:1009: membrane_voltage outside lookup table range
+At independent variable (usually time) = 1610.99
+State:
+	membrane_voltage:107.983 millivolt
+	membrane_fast_sodium_current_m_gate:-0.206036 dimensionless
+	membrane_fast_sodium_current_h_gate:0.682158 dimensionless
+	membrane_fast_sodium_current_j_gate:0.96193 dimensionless
+	i_Na_L_m_L_gate__m_L:-0.206036 dimensionless
+	i_Na_L_h_L_gate__h_L:0.859809 dimensionless
+	membrane_L_type_calcium_current_d_gate:0.0422538 dimensionless
+	membrane_L_type_calcium_current_f_gate:0.990219 dimensionless
+	membrane_L_type_calcium_current_f2_gate:0.740033 dimensionless
+	membrane_L_type_calcium_current_fCa_gate:0.959189 dimensionless
+	membrane_L_type_calcium_current_fCa2_gate:0.806398 dimensionless
+	i_Ca_T_b_gate__b:0.245855 dimensionless
+	i_Ca_T_g_gate__g:0.474281 dimensionless
+	i_to_1_a_gate__a:0.0814376 dimensionless
+	i_to_1_i_gate__i:0.994557 dimensionless
+	i_to_1_i2_gate__i2:0.975753 dimensionless
+	i_Kr_xr_gate__xr:0.158386 dimensionless
+	i_Ks_xs1_gate__xs1:0.00139203 dimensionless
+	i_Ks_xs2_gate__xs2:0.0013838 dimensionless
+	i_to_2_a_gate__a:0.00139632 dimensionless
+	cytosolic_sodium_concentration:9.93902 millimolar
+	intracellular_ion_concentrations__Cl_i:18.9057 millimolar
+	cytosolic_potassium_concentration:141.956 millimolar
+	cytosolic_calcium_concentration:0.000209477 millimolar
+	Ca_MK_act__Ca_MK_trap:3.72298e-06 dimensionless
+	Ca_NSR__Ca_NSR:1.21847 millimolar
+	JSR_calcium_concentration:1.165 millimolar
+	diadicspace_calcium_concentration:0.000214686 millimolar
+	q_rel_ri_gate__ri:0.715248 dimensionless
+	q_rel_ro_gate__ro:0.000172872 dimensionless
+
+Error simulating model pasek_simurda_christe_2006 with solver 'CVODE (numerical Jacobian)': 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_CONV_FAILURE
