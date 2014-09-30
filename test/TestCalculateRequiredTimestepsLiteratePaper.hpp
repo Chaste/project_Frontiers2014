@@ -115,18 +115,21 @@ public:
         {
             std::string model_name = r_model.GetLeafNameNoExtension();
 
-            /* Iterate over each available solver, using a handy boost method. */
-            BOOST_FOREACH(Solvers::Value solver, solvers)
+            /* We calculate separate timesteps for with and without lookup tables,
+             * since for some model/solver combinations including lookup tables can push things outside the stable regime.
+             */
+            std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
+            BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
             {
-                bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
+                std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
 
-                /* We calculate separate timesteps for with and without lookup tables,
-                 * since for some model/solver combinations including lookup tables can push things outside the stable regime.
+                /* Iterate over each available solver.
+                 * This is the inner loop since it iterates over 9 items, making it unlikely to be divisible by the number
+                 * of processes and hence hopefully giving a more even distribution of work.
                  */
-                std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
-                BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
+                BOOST_FOREACH(Solvers::Value solver, solvers)
                 {
-                    std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
+                    bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
 
                     /* This simple if allows us to parallelise the sweep to speed up running it. */
                     if (iteration++ % PetscTools::GetNumProcs() != PetscTools::GetMyRank())

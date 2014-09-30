@@ -150,6 +150,7 @@ public:
                 BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
                 {
                     std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
+
                     /* Get timestep to use if available.
                      * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
                      */
@@ -205,18 +206,16 @@ public:
 
                         /* Just double check the accuracy is what we expect before a timing run */
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
-                        std::cout << "Model " << model_name << " solver '" << solver_name << "'"
-                                << (use_lookup_tables ? " and lookup tables" : "") << " MRMS error = " << errors[7] << std::endl;
+                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " MRMS error = " << errors[7] << std::endl;
                         if (errors[7] > required_mrms_error)
                         {
-                            WARNING("Model " << model_name << " with solver '" << solver_name << "'"
-                                    << (use_lookup_tables ? " and lookup tables" : "")
+                            WARNING("Model " << model_name << " with solver '" << solver_name << "'" << using_tables
                                     << " did not reach error target. Wanted " << required_mrms_error << ", got " << errors[7] << ".");
                         }
 
                         /* Time simulating multiple paces. */
                         double elapsed_time = TimeSimulation(p_cell, time_to_simulate);
-                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << (use_lookup_tables ? " and lookup tables" : "") << " took time " << elapsed_time << "s per simulated sec" << std::endl;
+                        std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " took time " << elapsed_time << "s per simulated sec" << std::endl;
 
                         /* Record the result. */
                         *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << elapsed_time;
