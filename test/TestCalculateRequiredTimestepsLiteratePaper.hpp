@@ -252,6 +252,12 @@ public:
                     }
                     while (!within_tolerance && timestep_divisor <= 2048);
                     /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
+
+                    // Free memory for lookup tables, if used
+                    if (use_lookup_tables)
+                    {
+                        p_cell->GetLookupTableCollection()->FreeMemory();
+                    }
                 }
             }
         }

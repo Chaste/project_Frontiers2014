@@ -225,6 +225,11 @@ public:
                         }
                         *p_file << std::endl;
 
+                        // Free memory for lookup tables, if used
+                        if (use_lookup_tables)
+                        {
+                            p_cell->GetLookupTableCollection()->FreeMemory();
+                        }
                     }
                     catch (const Exception& r_e)
                     {
