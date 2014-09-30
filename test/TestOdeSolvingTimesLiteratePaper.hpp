@@ -317,7 +317,7 @@ private:
 	    }
 
 	    /* Convert the elapsed time into a time per simulated second. */
-	    return minimum/timeToSimulate;
+	    return 1000*minimum/millisecs_to_simulate;
 	}
 
 
