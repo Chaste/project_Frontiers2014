@@ -292,6 +292,10 @@ private:
 	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
 	                      double timeToSimulate)
 	{
+	    // Drop any fractional part of the simulation time (converted to ms) so it is divided by the timestep
+	    timeToSimulate = floor(timeToSimulate * 1000.0);
+
+	    // Run NUM_RUNS simulations and record the quickest
 	    double minimum = DBL_MAX;
 	    for (unsigned i=0; i<NUM_RUNS; i++)
 	    {
@@ -305,8 +309,8 @@ private:
             }
 	    }
 
-	    /* Convert the elapsed time into a time per simulated second.*/
-	    return minimum/timeToSimulate;
+	    /* Convert the elapsed time into a time per simulated second. */
+	    return minimum/timeToSimulate*1000.0;
 	}
 
 
