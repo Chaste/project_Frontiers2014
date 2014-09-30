@@ -55,6 +55,8 @@ def make_key(line):
             key.append(float(item))
         except:
             key.append(item)
+    if len(key) < 4:
+        key.extend([0]*4)
     return tuple(key)
 
 # Read the files
