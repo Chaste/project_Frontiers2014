@@ -62,14 +62,18 @@ for i=1:length(file_listing)
                 % Work out the error metric associated with this
                 dt_number = str2num(dt);
                 
-                timestep_rows = find(dt_number==required_steps_data.data(:,2));
+                timestep_rows = find(dt_number==required_steps_data.data(:,3));
                 this_row = intersect(timestep_rows,relevant_rows);
+                
+                % Only look at the non-lookup table cases
+                lookup_rows = find(0==required_steps_data.data(:,2));
+                this_row = intersect(this_row,lookup_rows);                
                 
                 if (isempty(this_row))
                     continue
                 else
                     assert(length(this_row)==1)
-                    mrms_error = required_steps_data.data(this_row,10);
+                    mrms_error = required_steps_data.data(this_row,11);
                     if (gbu==1)
                        if mrms_error > 0.01
                            continue

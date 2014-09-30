@@ -2,8 +2,8 @@ close all
 clear all
 
 build_types = {'GccOptNative'};
-               % 'IntelProductionCvode',...
-               % 'IntelProduction',...
+               %'IntelProductionCvode',...
+               %'IntelProduction',...
                %,'Intel'...
                %,'GccOpt'...
                %,'debug'};
@@ -22,19 +22,21 @@ look_at_fake_pde_step_timings = false;
 all_results = [];
     
 for b=1:length(build_types)
-    d = importdata([build_types{b} '_timings.txt']);
+    d = importdata([build_types{b} '_timings_tissue.txt']);
 
     % Get the raw data out
     model = d.textdata;
     solver = d.data(:,1);
     optimised = d.data(:,2);
-    times = d.data(:,3);
+    pde_timesteps = d.data(:,3);
+    times = d.data(:,5);
     clear d
 
     if b==1 % This file recently updated to include all the options, this 'if' could go if all updated to the same.
         model_list = unique(model);
         solver_list = unique(solver);
         optimised_list = unique(optimised);
+        pde_list = unique(pde_timesteps);
     end
     
     for model_idx = 1:length(model_list)
@@ -44,13 +46,18 @@ for b=1:length(build_types)
             index_this_combination = intersect(indices_this_model,indices_this_solver);
             for optimised_idx = 1:length(optimised_list)
                 indices_this_optimisation = find(optimised==optimised_list(optimised_idx));
-                index_complete_combination = intersect(index_this_combination,indices_this_optimisation);               
-            
-                if (~isempty(index_complete_combination))
-                    assert(length(index_complete_combination)==1)
-                    all_results(model_idx, solver_idx,b, optimised_idx) = times(index_complete_combination);
-                else
-                    all_results(model_idx, solver_idx,b, optimised_idx) = -1;
+                index_complete_combination = intersect(index_this_combination,indices_this_optimisation);       
+                
+                for pde_timestep_idx = 1:2
+                    indices_this_timestep = find(pde_timesteps==pde_list(pde_timestep_idx));
+                    index_complete_combination = intersect(index_complete_combination,indices_this_timestep);   
+                    
+                    if (~isempty(index_complete_combination))
+                        assert(length(index_complete_combination)==1)
+                        all_results(model_idx, solver_idx,b, optimised_idx, pde_timestep_idx) = times(index_complete_combination);
+                    else
+                        all_results(model_idx, solver_idx,b, optimised_idx, pde_timestep_idx) = -1;
+                    end
                 end
             end
         end
@@ -134,9 +141,7 @@ xlabel('Model index')
 ylabel('Wall time taken for 10 paces (s)')
 title('Compiler benchmarking with CVODE NJ')
 legend(build_types,'Location','NorthWest')
-xlim([1 66])
-% NB - We've removed the last model - clancy rudy, as it is mental and 
-% obscures anything you can say about the build times.
+xlim([1 7])
 
 figure
 color_idx = 1;
@@ -186,13 +191,13 @@ title('Solver benchmarking')
 legend(solvers_legend,'Location','EastOutside')
 xlabel('Model indices, ordered by time taken using CVODE NJ')
 ylabel('Wall time taken for 10 paces (s)')
-xlim([1 67]) % Include Clancy-Rudy again.
+xlim([1 7])
 
 figure
 %semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
 xlabel('Model indices ordered by time taken for each solver')
 ylabel('Wall time taken for 10 paces (s)')
-for i=1:8
+for i=1:length(solver_list)
     valid_results = find(all_results(:, i, 1, 1)>0);
     [~, ordering] = sort(all_results(valid_results, i, 1, 1));
     if i<8 
@@ -205,7 +210,7 @@ for i=1:8
 end
 title('Solver benchmarking')
 legend(solvers{solver_list+1},'Location','EastOutside')
-xlim([1 67]) % Include Clancy-Rudy again.
+xlim([1 7]) 
 
 
 % analytic_result_rows_opt = find(all_results(ordering, 1, 1, 2)>0);
