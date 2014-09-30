@@ -102,6 +102,13 @@ private:
                                                           const std::vector<double>& rTestVoltages);
 public:
     /**
+     * The number of error metrics returned by #GetCommonErrorCalculations.
+     * Useful to have this defined in one place, to prevent inadvertent disasters when
+     * a new one is added.
+     */
+    static const unsigned NUM_ERROR_METRICS = 8u;
+
+    /**
      * Read the CellML project folder and return all the .cellml files defined therein.
      */
     static std::vector<FileFinder> GetListOfModels();
@@ -189,18 +196,6 @@ public:
                                                const std::vector<double>& rTestVoltages,
                                                const std::string& rModelName,
                                                const double& rPdeTimestep);
-
-    /**
-     * Return suitable error metrics (the ones listed above in GetErrors documentation), for
-     * this model for a slack vs. tight CVODE solve.
-     *
-     * @param tissue  Whether we want to load the monodomain reference traces (defaults to false)
-     * @param requestedPdeTimestep  The PDE timestep to load if tissue==true.
-     *
-     * @return a map between the model name, and the vector of error metrics
-     */
-    static std::map<std::string,  std::vector<double> > LoadErrorSummaryFile(bool tissue=false,
-                                                                             double requestedPdeTimestep=0.01);
 
     /**
      * Set the CVODE tolerances from a table that looks like

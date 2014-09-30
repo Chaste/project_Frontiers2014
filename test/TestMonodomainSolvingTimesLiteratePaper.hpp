@@ -76,6 +76,8 @@ public:
         /*
          * Load the archived timesteps that are appropriate for each model/solver/pde_timestep combo out of the
          * file test/data/required_timesteps_tissue.txt
+         *
+         * We load and print them to screen in a small separate test here, so it can be run easily
          */
         LoadTimestepFile();
 
@@ -190,6 +192,7 @@ public:
                         if ((solver != Solvers::CVODE_ANALYTIC_J) && (solver != Solvers::CVODE_NUMERICAL_J))
                         {
                             bool found = false;
+                            bool accurate_enough = false;
                             if (pde_timestep==0.1)
                             {
                                 std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_1.find(model_solver_combo);
@@ -197,6 +200,10 @@ public:
                                 {
                                     ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
                                     found = true;
+                                    if ((mTimestepsPde0_1[model_solver_combo]).second)
+                                    {
+                                        accurate_enough = true;
+                                    }
                                 }
                             }
                             else if (pde_timestep==0.01)
@@ -206,6 +213,10 @@ public:
                                 {
                                     ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
                                     found = true;
+                                    if ((mTimestepsPde0_01[model_solver_combo]).second)
+                                    {
+                                        accurate_enough = true;
+                                    }
                                 }
                             }
                             else
@@ -215,7 +226,15 @@ public:
 
                             if (!found)
                             {
-                                WARNING("No suggested timestep found for " << model << " with '" << CellModelUtilities::GetSolverName(solver) << "' for pde timestep " << pde_timestep << ".\nSkipping this.");
+                                WARNING("No suggested timestep found for " << model << " with '" << CellModelUtilities::GetSolverName(solver)
+                                        << "' for pde timestep " << pde_timestep << ".\nSkipping this.");
+                                continue;
+                            }
+
+                            if (!accurate_enough)
+                            {
+                                WARNING("Timestep " << ode_timestep << " for " << model << " with '" << CellModelUtilities::GetSolverName(solver) << "' for pde timestep " <<
+                                        pde_timestep << " is not accurate enough, took longer than CVODE in calculate timesteps.\nSo skipping this.");
                                 continue;
                             }
                         }
@@ -360,13 +379,13 @@ private:
            line >> pde_timestep;
            line >> solver_index;
            line >> ode_timestep;
-           for (unsigned i=0; i<7; i++)
+           for (unsigned i=0; i<CellModelUtilities::NUM_ERROR_METRICS; i++)
            {
                line >> tmp;
            }
            line >> is_satisfactory;
 
-           std::cout << model_name << "\t" << solver_index << "\t" << pde_timestep << "\t" << ode_timestep << "\t" << is_satisfactory << "\n";
+           //std::cout << model_name << "\t" << solver_index << "\t" << pde_timestep << "\t" << ode_timestep << "\t" << is_satisfactory << "\n";
 
            Solvers::Value solver = (Solvers::Value)(solver_index); // We can read an int from this
            std::pair<std::string, Solvers::Value> model_solver_combo(model_name,solver);
@@ -386,21 +405,20 @@ private:
             EXCEPTION("A file reading error occurred");
         }
 
-        std::cout << "Other format:\n";
-
-        // Print to screen just to check they are correct...
-        for (std::map<std::pair<std::string, Solvers::Value>, std::pair<double, bool> >::iterator it = mTimestepsPde0_1.begin();
-             it!=mTimestepsPde0_1.end();
-             ++it)
-        {
-            if (!((it->second).second))
-            {
-                WARNING("Using non-satisfactory timestep for model " << (it->first).first << " and solver "
-                        << CellModelUtilities::GetSolverName((it->first).second));
-            }
-            // Print model, solver, timestep and whether it was satisfactory for a converged answer.
-            std::cout << (it->first).first << "\t'" << CellModelUtilities::GetSolverName((it->first).second) << "'\t" << (it->second).first << "\t" << (it->second).second << std::endl;
-        }
+//        std::cout << "Other format:\n";
+//        // Print to screen just to check they are correct...
+//        for (std::map<std::pair<std::string, Solvers::Value>, std::pair<double, bool> >::iterator it = mTimestepsPde0_1.begin();
+//             it!=mTimestepsPde0_1.end();
+//             ++it)
+//        {
+//            if (!((it->second).second))
+//            {
+//                WARNING("Using non-satisfactory timestep for model " << (it->first).first << " and solver "
+//                        << CellModelUtilities::GetSolverName((it->first).second));
+//            }
+//            // Print model, solver, timestep and whether it was satisfactory for a converged answer.
+//            std::cout << (it->first).first << "\t'" << CellModelUtilities::GetSolverName((it->first).second) << "'\t" << (it->second).first << "\t" << (it->second).second << std::endl;
+//        }
 
         std::cout << std::flush;
     }

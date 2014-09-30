@@ -385,7 +385,7 @@ private:
            line >> solver_index;
            line >> lt_used;
            line >> timestep;
-           for (unsigned i=0; i<8; i++)
+           for (unsigned i=0; i<CellModelUtilities::NUM_ERROR_METRICS; i++)
            {
                line >> tmp;
            }
