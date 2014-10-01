@@ -70,7 +70,7 @@ line_keys = map(make_key, lines)
 # Zip lines with their keys
 zipped = [(line,) + key for line,key in itertools.izip(lines, line_keys)]
 # Secondary sort by timestep, largest first
-zipped.sort(key=operator.itemgetter(4), reverse=True)
+#zipped.sort(key=operator.itemgetter(4), reverse=True)
 # Primary sort by model,solver,LT
 zipped.sort(key=operator.itemgetter(1,2,3))
 
