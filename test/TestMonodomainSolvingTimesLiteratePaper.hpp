@@ -130,7 +130,9 @@ public:
                 // Used to get the correct timestep to use later on...
                 std::pair<std::string, Solvers::Value> model_solver_combo(model,solver);
 
-                std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
+				bool cvode_solver = ((solver==Solvers::CVODE_ANALYTIC_J) || (solver==Solvers::CVODE_NUMERICAL_J));
+	
+	            std::vector<bool> lookup_table_options = boost::assign::list_of(false)(true);
                 BOOST_FOREACH(bool use_lookup_tables, lookup_table_options)
                 {
                     std::string lookup_tables_description = "";
@@ -178,59 +180,66 @@ public:
                          */
                         HeartConfig::Instance()->SetSimulationDuration(500); //ms
 
-                        double ode_timestep = pde_timestep; // Default for CVODE solvers
-                        if ((solver != Solvers::CVODE_ANALYTIC_J) && (solver != Solvers::CVODE_NUMERICAL_J))
+                        double ode_timestep = pde_timestep; // Default
+
+                        bool found = false;
+                        bool accurate_enough = false;
+                        if (pde_timestep==0.1)
                         {
-                            bool found = false;
-                            bool accurate_enough = false;
-                            if (pde_timestep==0.1)
+                            std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_1.find(model_solver_combo);
+                            if (it != mTimestepsPde0_1.end())
                             {
-                                std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_1.find(model_solver_combo);
-                                if (it != mTimestepsPde0_1.end())
+                                ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
+                                found = true;
+                                if ((mTimestepsPde0_1[model_solver_combo]).second)
                                 {
-                                    ode_timestep = (mTimestepsPde0_1[model_solver_combo]).first;
-                                    found = true;
-                                    if ((mTimestepsPde0_1[model_solver_combo]).second)
-                                    {
-                                        accurate_enough = true;
-                                    }
+                                    accurate_enough = true;
                                 }
                             }
-                            else if (pde_timestep==0.01)
+                        }
+                        else if (pde_timestep==0.01)
+                        {
+                            std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_01.find(model_solver_combo);
+                            if (it != mTimestepsPde0_01.end())
                             {
-                                std::map<std::pair<std::string, Solvers::Value>, std::pair<double,bool> >::iterator it = mTimestepsPde0_01.find(model_solver_combo);
-                                if (it != mTimestepsPde0_01.end())
+                                ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
+                                found = true;
+                                if ((mTimestepsPde0_01[model_solver_combo]).second)
                                 {
-                                    ode_timestep = (mTimestepsPde0_01[model_solver_combo]).first;
-                                    found = true;
-                                    if ((mTimestepsPde0_01[model_solver_combo]).second)
-                                    {
-                                        accurate_enough = true;
-                                    }
+                                    accurate_enough = true;
                                 }
                             }
-                            else
-                            {
-                                EXCEPTION("Summat went wrong. pde_timestep = " << pde_timestep << ", which wasn't in my files.");
-                            }
+                        }
+                        else
+                        {
+                            EXCEPTION("Summat went wrong. pde_timestep = " << pde_timestep << ", which wasn't in my files.");
+                        }
 
-                            if (!found)
-                            {
-                                WARNING("No suggested timestep found for " << model << " with '" << CellModelUtilities::GetSolverName(solver)
-                                        << "' for pde timestep " << pde_timestep << ".\nSkipping this.");
-                                continue;
-                            }
-
-                            if (!accurate_enough)
-                            {
-                                WARNING("Timestep " << ode_timestep << " for " << model << " with '" << CellModelUtilities::GetSolverName(solver) << "' for pde timestep " <<
-                                        pde_timestep << " is not accurate enough, took longer than CVODE in calculate timesteps.\nSo skipping this.");
-                                continue;
-                            }
+                        /* Skip this model/solver combination if we couldn't find a required time step, or it wasn't accurate enough. */
+                        if (!found)
+                        {
+                            WARNING("No suggested timestep found for " << model << " with '" << CellModelUtilities::GetSolverName(solver)
+                                    << "' for pde timestep " << pde_timestep << ".\nSkipping this.");
+                            continue;
+                        }
+                        if (!accurate_enough)
+                        {
+                            WARNING("Timestep " << ode_timestep << " for " << model << " with '" << CellModelUtilities::GetSolverName(solver) << "' for pde timestep " <<
+                                    pde_timestep << " is not accurate enough, took longer than CVODE in calculate timesteps.\nSo skipping this.");
+                            continue;
                         }
                         std::cout << "Model: " << model << " is being solved with " << CellModelUtilities::GetSolverName(solver)
                             << lookup_tables_description << " with ODE timestep = " << ode_timestep << "ms." << std::endl;
-                        HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(ode_timestep, pde_timestep, 0.1);
+
+                        if (cvode_solver)
+                        {
+                            // Then we can use the PDE timestep as the maximum ODE timestep.
+                            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(pde_timestep, pde_timestep, 0.1);
+                        }
+                        else
+                        {
+                            HeartConfig::Instance()->SetOdePdeAndPrintingTimeSteps(ode_timestep, pde_timestep, 0.1);
+                        }
 
                         std::stringstream output_subfolder;
                         output_subfolder << "/results_pde_" <<  pde_timestep;
@@ -248,9 +257,41 @@ public:
 
                         HeartEventHandler::Reset();
 
-                        /* Finally, call `Initialise` and `Solve` as usual */
+                        /* Finally, call `Initialise`*/
                         monodomain_problem.Initialise();
 
+                        /*
+                         * The cells should now be set up, we can 'hack in' and alter CVODE tolerances.
+                         * Here we want to change tolerances on the fly, so we do it by getting the CVODE system
+                         * each node of the mesh and then altering the CVODE tolerance settings.
+                         *
+                         * An alternative (and possibly tidier/easier way to do this in general) is to
+                         * set this in the cell factory if you know in advance what tolerance you would
+                         * like to use.
+                         */
+                        if (cvode_solver)
+                        {
+                            /* Not that we have special methods to iterate over nodes of a distributed mesh
+                             * which will work in parallel settings too. */
+                            DistributedVectorFactory* p_factory = mesh.GetDistributedVectorFactory();
+                            Vec monodomain_vec = p_factory->CreateVec();
+                            DistributedVector monodomain_distributed_vec = p_factory->CreateDistributedVector(monodomain_vec);
+
+                            for (DistributedVector::Iterator index=monodomain_distributed_vec.Begin();
+                                 index != monodomain_distributed_vec.End();
+                                 ++index)
+                            {
+                                AbstractCardiacCellInterface* p_cell = monodomain_problem.GetMonodomainTissue()->GetCardiacCell(index.Global);
+                                // We hijacked the timestep in the log file to provide a refinement level.
+                                CellModelUtilities::SetCvodeTolerances(p_cell, (unsigned)(ode_timestep));
+                            }
+                        }
+
+                        /*
+                         * Solve as usual, but do it in a try catch so we can carry on if anything goes wrong.
+                         *
+                         * Also time how long the ODE and total solving time takes.
+                         */
                         double total_elapsed_time;
                         double ode_elapsed_time;
                         try
@@ -316,6 +357,11 @@ public:
             p_file->close();
         }
     }
+
+    /*
+     * The following member variables are just a convenient way of storing information
+     * read in by the LoadTimestepFile() method.
+     */
 
 private:
 
