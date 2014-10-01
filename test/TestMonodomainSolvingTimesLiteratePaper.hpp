@@ -94,8 +94,6 @@ public:
          */
         double h = 0.01;
 
-        std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
-
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
                                                  ("beeler_reuter_model_1977")
@@ -117,20 +115,13 @@ public:
         /* Repository data location */
         FileFinder this_file(__FILE__);
         FileFinder repo_data("data", this_file);
+        FileFinder model_folder("../cellml", this_file);
 
         // Loop over models
         BOOST_FOREACH(std::string model, models_to_use)
         {
-            // Find the FileFinder associated with the model we want.
-            FileFinder model_to_use;
-            for (unsigned i=0; i<all_models.size(); i++)
-            {
-                if (all_models[i].GetLeafNameNoExtension()==model)
-                {
-                    model_to_use = all_models[i];
-                    break;
-                }
-            }
+            /* Find the CellML file for this model. */
+            FileFinder model_to_use(model + ".cellml", model_folder);
 
             /* Iterate over each available solver, using a handy boost method */
             BOOST_FOREACH(Solvers::Value solver, solvers)
@@ -177,8 +168,6 @@ public:
                     BOOST_FOREACH(double pde_timestep, pde_timesteps)
                     {
                         /*
-                         * EMPTYLINE
-                         *
                          * Set the simulation duration, etc, and create an instance of the cell factory.
                          * One thing that should be noted for monodomain problems, the ''intracellular
                          * conductivity'' is used as the monodomain effective conductivity (not a
@@ -267,6 +256,8 @@ public:
                             Timer::Reset();
                             monodomain_problem.Solve();
                             elapsed_time = Timer::GetElapsedTime();
+                            // Note: could get just ODE solving time with:
+                            //HeartEventHandler::GetElapsedTime(HeartEventHandler::SOLVE_ODES);
                         }
                         catch (Exception& e)
                         {

@@ -74,7 +74,7 @@ public:
         EXIT_IF_PARALLEL;
 
         bool reset_cvode = false;
-        if(CommandLineArguments::Instance()->OptionExists("--reset"))
+        if (CommandLineArguments::Instance()->OptionExists("--reset"))
         {
             reset_cvode = true;
         }
@@ -87,7 +87,7 @@ public:
          * -> 1 ms (coarse)
          */
         double pde_timestep;
-        if(CommandLineArguments::Instance()->OptionExists("--timestep"))
+        if (CommandLineArguments::Instance()->OptionExists("--timestep"))
         {
             pde_timestep = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("--timestep");
         }
@@ -102,7 +102,7 @@ public:
          * -> 0.001 cm (much finer than normal)
          */
         double h;
-        if(CommandLineArguments::Instance()->OptionExists("--spacestep"))
+        if (CommandLineArguments::Instance()->OptionExists("--spacestep"))
         {
             h = CommandLineArguments::Instance()->GetDoubleCorrespondingToOption("--spacestep");
         }
@@ -110,8 +110,6 @@ public:
         {
             EXCEPTION("Please enter an argument '--spacestep', probably from [0.001, 0.01].");
         }
-
-        std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
 
         // A list of models that we want to do tissue simulations with.
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
@@ -122,19 +120,15 @@ public:
                                                  ("shannon_wang_puglisi_weber_bers_2004")
                                                  ("iyer_model_2007");
 
+        // Model file locations
+        FileFinder this_file(__FILE__);
+        FileFinder model_folder("../cellml", this_file);
+
         // Loop over models
         BOOST_FOREACH(std::string model, models_to_use)
         {
-            // Find the FileFinder associated with the model we want.
-            FileFinder model_to_use;
-            for (unsigned i=0; i<all_models.size(); i++)
-            {
-                if (all_models[i].GetLeafNameNoExtension()==model)
-                {
-                    model_to_use = all_models[i];
-                    break;
-                }
-            }
+            /* Find the CellML file for this model. */
+            FileFinder model_to_use(model + ".cellml", model_folder);
 
             std::stringstream output_folder_stream;
             output_folder_stream << "Frontiers/MonodomainConvergence/" << model << "_pde_" << pde_timestep << "_h_" << h;
@@ -149,7 +143,7 @@ public:
             DynamicModelCellFactory cell_factory(model_to_use,
                                                  base_model_handler,
                                                  Solvers::CVODE_ANALYTIC_J,
-                                                 false,// Whether to use lookup tables.
+                                                 false, // Whether to use lookup tables.
                                                  true); // true for making reference solution
 
             /* We will auto-generate a mesh this time, and pass it in, rather than

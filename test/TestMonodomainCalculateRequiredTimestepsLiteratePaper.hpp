@@ -100,8 +100,6 @@ public:
          */
         double h = 0.01;
 
-        std::vector<FileFinder> all_models = CellModelUtilities::GetListOfModels();
-
         /* A list of models that we want to do tissue simulations with, and then the solvers to test. */
         std::vector<std::string> models_to_use = boost::assign::list_of("luo_rudy_1991")
                                                  ("beeler_reuter_model_1977")
