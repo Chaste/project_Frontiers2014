@@ -146,6 +146,7 @@ public:
                 std::vector<std::pair<std::string, double> > properties;
 
                 // Calculate some summary statistics of the AP that was produced
+                properties.push_back(std::pair<std::string, double>("Num_ODEs",(double)p_cvode_cell->GetNumberOfStateVariables()));
                 properties.push_back(std::pair<std::string, double>("APD90",props.GetLastActionPotentialDuration(90.0)));
                 properties.push_back(std::pair<std::string, double>("APD50",props.GetLastActionPotentialDuration(50.0)));
                 properties.push_back(std::pair<std::string, double>("APD30",props.GetLastActionPotentialDuration(30.0)));
