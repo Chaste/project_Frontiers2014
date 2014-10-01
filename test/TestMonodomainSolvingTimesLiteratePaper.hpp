@@ -70,9 +70,6 @@ class TestMonodomainSolvingTimesLiteratePaper : public CxxTest::TestSuite
 public:
     void TestMonodomainSolvingTimes() throw (Exception)
     {
-        // We don't want to find this confusing matters!!
-        EXIT_IF_PARALLEL;
-
         /*
          * Load the archived timesteps that are appropriate for each model/solver/pde_timestep combo out of the
          * file test/data/required_timesteps_tissue.txt
@@ -109,8 +106,12 @@ public:
                 (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
         OutputFileHandler overall_results_folder("Frontiers/MonodomainTimings/", true); // Wipe!
-        out_stream p_file = overall_results_folder.OpenOutputFile(ChasteBuildType() + "_timings_tissue.txt");
-        *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+        out_stream p_file;
+        if (PetscTools::AmMaster())
+        {
+            p_file = overall_results_folder.OpenOutputFile(ChasteBuildType() + "_timings_tissue.txt");
+            *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+        }
 
         /* Repository data location */
         FileFinder this_file(__FILE__);
@@ -268,34 +269,37 @@ public:
                         HeartEventHandler::Headings();
                         HeartEventHandler::Report();
 
-                        /*
-                         * Read some of the outputted data back in, and evaluate AP properties at the last node,
-                         * as per the single cell stuff.
-                         */
-                        Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
-                        std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-                        std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
-
-                        try
+                        if (PetscTools::AmMaster())
                         {
-                            std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
+                            /*
+                             * Read some of the outputted data back in, and evaluate AP properties at the last node,
+                             * as per the single cell stuff.
+                             */
+                            Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
+                            std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
+                            std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
-                            std::cout << "Model: " << model << ". Time taken = " << elapsed_time << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
-                                    ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
-                                    ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
-
-                            // Write to file too.
-                            *p_file << model << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_timestep << "\t" << ode_timestep  << "\t"
-                                    << elapsed_time;
-                            for (unsigned i=0; i<errors.size(); i++)
+                            try
                             {
-                                *p_file << "\t" << errors[i];
+                                std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
+
+                                std::cout << "Model: " << model << ". Time taken = " << elapsed_time << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
+                                        ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
+                                        ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
+
+                                // Write to file too.
+                                *p_file << model << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_timestep << "\t" << ode_timestep  << "\t"
+                                        << elapsed_time;
+                                for (unsigned i=0; i<errors.size(); i++)
+                                {
+                                    *p_file << "\t" << errors[i];
+                                }
+                                *p_file << std::endl;
                             }
-                            *p_file << std::endl;
-                        }
-                        catch(Exception &e)
-                        {
-                            WARNING("Model " << model << ": analysis of voltage at last node failed.");
+                            catch(Exception &e)
+                            {
+                                WARNING("Model " << model << ": analysis of voltage at last node failed.");
+                            }
                         }
                     }
 
@@ -305,7 +309,10 @@ public:
             }
         }
 
-        p_file ->close();
+        if (PetscTools::AmMaster())
+        {
+            p_file->close();
+        }
     }
 
 private:

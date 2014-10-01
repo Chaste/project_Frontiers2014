@@ -82,9 +82,6 @@ class TestMonodomainCalculateRequiredTimestepsLiteratePaper : public CxxTest::Te
 public:
     void TestMonodomainCalculateTimesteps() throw (Exception)
     {
-        // We don't want to find this confusing matters!!
-        EXIT_IF_PARALLEL;
-
         const double required_mrms_error = 0.05; // 5%
 
         /*
@@ -116,8 +113,12 @@ public:
                 (Solvers::RUSH_LARSEN)(Solvers::GENERALISED_RUSH_LARSEN_1)(Solvers::GENERALISED_RUSH_LARSEN_2);
 
         OutputFileHandler overall_results_folder("Frontiers/MonodomainCalculateTimesteps/", false); // Don't wipe!
-        out_stream p_file = overall_results_folder.OpenOutputFile("required_steps_tissue.txt");
-        *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+        out_stream p_file;
+        if (PetscTools::AmMaster())
+        {
+            p_file = overall_results_folder.OpenOutputFile("required_steps_tissue.txt");
+            *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
+        }
 
         /* Repository data location */
         FileFinder this_file(__FILE__);
@@ -262,57 +263,67 @@ public:
                         HeartEventHandler::Headings();
                         HeartEventHandler::Report();
 
-                        /*
-                         * Read some of the outputted data back in, and evaluate AP properties at the last node,
-                         * as per the single cell stuff.
-                         */
-                        Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
-                        std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
-                        std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
-
-                        /* Put this trace into a file for easy plotting and comparison with the reference later on. */
+                        /* Analysing the results is done only by the master process, since it is not easily distributed. */
                         OutputFileHandler handler(output_folder + output_subfolder.str(), false);
-                        out_stream p_trace_file = handler.OpenOutputFile("last_node_trace.dat");
-                        for (unsigned i=0; i<times.size(); i++)
+                        if (PetscTools::AmMaster())
                         {
-                            *p_trace_file << times[i] << "\t" << last_node[i] << std::endl;
-                        }
-                        p_trace_file->close();
+                            /*
+                             * Read some of the outputted data back in, and evaluate AP properties at the last node,
+                             * as per the single cell stuff.
+                             */
+                            Hdf5DataReader data_reader = monodomain_problem.GetDataReader();
+                            std::vector<double> times = data_reader.GetUnlimitedDimensionValues();
+                            std::vector<double> last_node = data_reader.GetVariableOverTime("V", mesh.GetNumNodes()-1u);
 
-                        /* Analyse the error associated with this run compared to the reference trace in the repository. */
-                        try
-                        {
-                            std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
-
-                            std::cout << "Model: " << model << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
-                                    ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
-                                    ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
-
-                            within_tolerance = (errors[7] <= required_mrms_error);
-
-                            std::cout << "For timestep " << ode_timestep << " ms MRMS error = " << errors[7] << ". Good enough ? " << within_tolerance << std::endl << std::flush;
-
-                            // Write to file too.
-                            *p_file << model << "\t" << pde_timestep << "\t" << solver << "\t" << ode_timestep;
-                            for (unsigned i=0; i<errors.size(); i++)
+                            /* Put this trace into a file for easy plotting and comparison with the reference later on. */
+                            out_stream p_trace_file = handler.OpenOutputFile("last_node_trace.dat");
+                            for (unsigned i=0; i<times.size(); i++)
                             {
-                                *p_file << "\t" << errors[i];
+                                *p_trace_file << times[i] << "\t" << last_node[i] << std::endl;
                             }
-                            *p_file << "\t" << within_tolerance << "\t" << elapsed_time;
-                            *p_file << std::endl;
+                            p_trace_file->close();
+
+                            /* Analyse the error associated with this run compared to the reference trace in the repository. */
+                            try
+                            {
+                                std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
+
+                                std::cout << "Model: " << model << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
+                                        ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
+                                        ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
+
+                                within_tolerance = (errors[7] <= required_mrms_error);
+
+                                std::cout << "For timestep " << ode_timestep << " ms MRMS error = " << errors[7] << ". Good enough ? " << within_tolerance << std::endl << std::flush;
+
+                                // Write to file too.
+                                *p_file << model << "\t" << pde_timestep << "\t" << solver << "\t" << ode_timestep;
+                                for (unsigned i=0; i<errors.size(); i++)
+                                {
+                                    *p_file << "\t" << errors[i];
+                                }
+                                *p_file << "\t" << within_tolerance << "\t" << elapsed_time;
+                                *p_file << std::endl;
+                            }
+                            catch (const Exception& r_e)
+                            {
+                                std::cout << "Exception computing error for model " << model << " solver " << CellModelUtilities::GetSolverName(solver);
+                                std::cout << r_e.GetMessage() << std::endl;
+                                WARNING(r_e.GetMessage());
+                            }
+                            PetscTools::ReplicateBool(within_tolerance); // Broadcast to other processes
                         }
-                        catch (const Exception& r_e)
+                        else
                         {
-                            std::cout << "Exception computing error for model " << model << " solver " << CellModelUtilities::GetSolverName(solver);
-                            std::cout << r_e.GetMessage() << std::endl;
-                            WARNING(r_e.GetMessage());
+                            // Get whether we're done from the master process
+                            within_tolerance = PetscTools::ReplicateBool(within_tolerance);
                         }
 
                         /* We stop bothering if the simulation took longer than 5 minutes
                          * (as we know even Iyer on PDE 0.01ms was solved in 140 seconds using CVODE)
                          * so we're in a regime where it is less accurate and takes at least twice as long
                          * as CVODE, we don't need to know any more to discount this! */
-                        if (elapsed_time >= 300)
+                        if (!within_tolerance && PetscTools::ReplicateBool(elapsed_time >= 300))
                         {
                             std::stringstream message;
                             message << "Model: " << model << " with solver '" << CellModelUtilities::GetSolverName(solver) << "' and timestep " << ode_timestep << " took longer than 5 minutes to solve, so we're not refining any more.\n";
@@ -330,11 +341,14 @@ public:
             }
         }
 
-        p_file->close();
+        if (PetscTools::AmMaster())
+        {
+            p_file->close();
 
-        /* Copy to repository for storage and use by the timing tests */
-        FileFinder ref_data = overall_results_folder.FindFile("required_steps_tissue.txt");
-        ref_data.CopyTo(repo_data);
+            /* Copy to repository for storage and use by the timing tests */
+            FileFinder ref_data = overall_results_folder.FindFile("required_steps_tissue.txt");
+            ref_data.CopyTo(repo_data);
+        }
     }
 };
 
