@@ -251,14 +251,14 @@ public:
                         /* Finally, call `Initialise` and `Solve` as usual */
                         monodomain_problem.Initialise();
 
-                        double elapsed_time;
+                        double total_elapsed_time;
+                        double ode_elapsed_time;
                         try
                         {
                             Timer::Reset();
                             monodomain_problem.Solve();
-                            elapsed_time = Timer::GetElapsedTime();
-                            // Note: could get just ODE solving time with:
-                            //HeartEventHandler::GetElapsedTime(HeartEventHandler::SOLVE_ODES);
+                            total_elapsed_time = Timer::GetElapsedTime();
+                            ode_elapsed_time = HeartEventHandler::GetElapsedTime(HeartEventHandler::SOLVE_ODES)/1000.0; // convert to seconds
                         }
                         catch (Exception& e)
                         {
@@ -283,13 +283,15 @@ public:
                             {
                                 std::vector<double> errors = CellModelUtilities::GetTissueErrors(times, last_node, model, pde_timestep);
 
-                                std::cout << "Model: " << model << ". Time taken = " << elapsed_time << " Square error = " << errors[0] << ", APD90 error = " << errors[1] <<
-                                        ", APD50 error = " << errors[2] << ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] <<
-                                        ", V_min error = " << errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
+                                std::cout << "Model: " << model << " and PDE step " << pde_timestep << ":\nTime taken = " <<
+                                        ode_elapsed_time << "/" << total_elapsed_time << " (ode/total)\nSquare error = " <<
+                                        errors[0] << ", APD90 error = " << errors[1] << ", APD50 error = " << errors[2] <<
+                                        ", APD30 error = " << errors[3] << ", V_max error = " << errors[4] << ", V_min error = " <<
+                                        errors[5] << ", dVdt_max error = " << errors[6] << ", MRMS error = " << errors[7] << std::endl;
 
                                 // Write to file too.
                                 *p_file << model << "\t" << solver << "\t" << use_lookup_tables << "\t" << pde_timestep << "\t" << ode_timestep  << "\t"
-                                        << elapsed_time;
+                                        << total_elapsed_time << "\t" << ode_elapsed_time;
                                 for (unsigned i=0; i<errors.size(); i++)
                                 {
                                     *p_file << "\t" << errors[i];
