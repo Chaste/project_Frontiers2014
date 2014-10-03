@@ -319,14 +319,16 @@ public:
                             within_tolerance = PetscTools::ReplicateBool(within_tolerance);
                         }
 
-                        /* We stop bothering if the simulation took longer than 5 minutes
+                        /* We stop bothering if the simulation took longer than 15 minutes
                          * (as we know even Iyer on PDE 0.01ms was solved in 140 seconds using CVODE)
                          * so we're in a regime where it is less accurate and takes at least twice as long
                          * as CVODE, we don't need to know any more to discount this! */
-                        if (!within_tolerance && PetscTools::ReplicateBool(elapsed_time >= 300))
+                        const double max_mins_to_run = 15;
+                        if (!within_tolerance && PetscTools::ReplicateBool(elapsed_time >= 60*max_mins_to_run))
                         {
                             std::stringstream message;
-                            message << "Model: " << model << " with solver '" << CellModelUtilities::GetSolverName(solver) << "' and timestep " << ode_timestep << " took longer than 5 minutes to solve, so we're not refining any more.\n";
+                            message << "Model: " << model << " with solver '" << CellModelUtilities::GetSolverName(solver) << "' and timestep " << ode_timestep << 
+                                       " took longer than " << max_mins_to_run << " minutes to solve, so we're not refining any more.\n";
                             std::cout << message.str() << std::flush;
                             WARNING(message.str());
                             break;
