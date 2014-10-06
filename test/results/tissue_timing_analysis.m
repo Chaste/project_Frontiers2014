@@ -1,8 +1,8 @@
 close all 
 clear all
 
-build_types = {'GccOptNative'};
-               %'IntelProductionCvode',...
+build_types = {'GccOptNative',...
+               'IntelProductionCvode'};
                %'IntelProduction',...
                %,'Intel'...
                %,'GccOpt'...
@@ -129,58 +129,62 @@ for b=1:length(build_types)
             end
         end
     end
-end
 
-% Rank the models in terms of how fast they are
-% for Rush Rarsen
-[~, ordering] = sort(all_results(:, 1, 1, 1, 2));
-for i=1:length(ordering)
-    fprintf('%i Model:%s\n',i,model_list{ordering(i)})
-end
 
-for pde_idx = 1:2
-
-    figure(pde_idx)
-    color_idx = 1;
-    colorOrder = get(gca, 'ColorOrder');
-
-    legend_idx = 0;
-    for i=1:length(solver_list)
-        color_idx = color_idx+1;
-        if i<8 
-            linestyle = '-';
-        else
-            linestyle = '--';
-        end    
-        % Plot normal ones
-        order = find(all_results(ordering, i, 1, 2, pde_idx)>0);  
-        if (~isempty(order))
-            semilogy(1:length(order), all_results(ordering(order), i, 1, 1, pde_idx), ...
-                'Color',colorOrder(mod(color_idx,7)+1,:),...
-                'Marker','.','LineStyle',linestyle)
-            hold all
-            legend_idx = legend_idx + 1;
-            solvers_legend{legend_idx} = solvers{solver_list(i)+1};
+    if b==1 % Use the same ordering, regardless of build.
+        % Rank the models in terms of how fast they are
+        % for Rush Rarsen
+        [~, ordering] = sort(all_results(:, 1, b, 1, 2));
+        for i=1:length(ordering)
+            fprintf('%i Model:%s\n',i,model_list{ordering(i)})
         end
-        
-%         % Plot optimised ones
-%         order = find(all_results(ordering, i, 1, 2, pde_idx)>0);
-%         if (~isempty(order))
-%             semilogy(1:length(order), all_results(ordering(order), i, 1, 2, pde_idx), ...
-%                 'Color',colorOrder(mod(color_idx,7)+1,:),...
-%                 'Marker','.','LineStyle','--')
-%             hold all
-%             legend_idx = legend_idx + 1;
-%             solvers_legend{legend_idx} = [solvers{solver_list(i)+1} ' Opt'];
-%         end
     end
-    title(['Solver benchmarking for PDE dt = ' num2str(pde_list(pde_idx))])
-    legend(solvers_legend,'Location','EastOutside')
-    ylabel('Wall time taken for 10 paces (s)')
-    
-    set(gca,'XTick',1:length(model_list))
-    set(gca,'XTickLabel',put_underscores_in_latex(model_list(ordering)))
-    xticklabel_rotate([],90)
+
+    for pde_idx = 1:2
+
+        figure(pde_idx + 2*b)
+        color_idx = 1;
+        colorOrder = get(gca, 'ColorOrder');
+
+        legend_idx = 0;
+        for i=1:length(solver_list)
+            color_idx = color_idx+1;
+            if i<8 
+                linestyle = '-';
+            else
+                linestyle = '--';
+            end    
+            % Plot normal ones
+            order = find(all_results(ordering, i, b, 2, pde_idx)>0);  
+            if (~isempty(order))
+                semilogy(1:length(order), all_results(ordering(order), i, b, 1, pde_idx), ...
+                    'Color',colorOrder(mod(color_idx,7)+1,:),...
+                    'Marker','.','LineStyle',linestyle)
+                hold all
+                legend_idx = legend_idx + 1;
+                solvers_legend{legend_idx} = solvers{solver_list(i)+1};
+            end
+
+    %         % Plot optimised ones
+    %         order = find(all_results(ordering, i, b, 2, pde_idx)>0);
+    %         if (~isempty(order))
+    %             semilogy(1:length(order), all_results(ordering(order), i, b, 2, pde_idx), ...
+    %                 'Color',colorOrder(mod(color_idx,7)+1,:),...
+    %                 'Marker','.','LineStyle','--')
+    %             hold all
+    %             legend_idx = legend_idx + 1;
+    %             solvers_legend{legend_idx} = [solvers{solver_list(i)+1} ' Opt'];
+    %         end
+        end
+        title([build_types{b} ' benchmarking for PDE dt = ' num2str(pde_list(pde_idx))])
+        legend(solvers_legend,'Location','EastOutside')
+        ylabel('Wall time taken for 500ms')
+
+        set(gca,'XTick',1:length(model_list))
+        set(gca,'XTickLabel',put_underscores_in_latex(model_list(ordering)))
+        xticklabel_rotate([],90)
+
+    end
 
 end
 

@@ -1,9 +1,9 @@
 close all 
 clear all
 
-build_types = {'GccOptNative'};
-               % 'IntelProductionCvode',...
-               % 'IntelProduction',...
+build_types = {'GccOptNative',...
+               'IntelProductionCvode',...
+               'IntelProduction'};
                %,'Intel'...
                %,'GccOpt'...
                %,'debug'};
@@ -20,7 +20,8 @@ look_at_fake_pde_step_timings = false;
 
 % Compile all the results into a table.
 all_results = [];
-    
+
+  
 for b=1:length(build_types)
     d = importdata([build_types{b} '_timings.txt']);
 
@@ -33,6 +34,13 @@ for b=1:length(build_types)
 
     if b==1 % This file recently updated to include all the options, this 'if' could go if all updated to the same.
         model_list = unique(model);
+        
+        % Find out how many ODEs each model has from their summary files
+        for i=1:length(model_list)
+           d = importdata(['..' filesep 'data/reference_traces/' model_list{i} '.summary']);
+           model_list_ODEs(i) = d.data(1);
+        end
+        
         solver_list = unique(solver);
         optimised_list = unique(optimised);
     end
@@ -48,9 +56,9 @@ for b=1:length(build_types)
             
                 if (~isempty(index_complete_combination))
                     assert(length(index_complete_combination)==1)
-                    all_results(model_idx, solver_idx,b, optimised_idx) = times(index_complete_combination);
+                    all_results(model_idx, solver_idx, b, optimised_idx) = times(index_complete_combination);
                 else
-                    all_results(model_idx, solver_idx,b, optimised_idx) = -1;
+                    all_results(model_idx, solver_idx, b, optimised_idx) = -1;
                 end
             end
         end
@@ -116,11 +124,16 @@ for b=1:length(build_types)
     end
 end
 
-% Rank the models in terms of how fast they are
-% in our best case - intel with intel cvode, for cvode numeric J
-[~, ordering] = sort(all_results(:, 2, 1, 1));
+% Work out ranking of models in terms of number of ODEs
+[~,ordering] = sort(model_list_ODEs);
+
+% % Rank the models in terms of how fast they are
+% % in our best case - intel with intel cvode, for cvode numeric J
+% [~, ordering] = sort(all_results(:, 2, 1, 1));
+
+ordered_models = model_list(ordering);
 for i=1:length(ordering)
-    fprintf('%i Model:%s\n',i,model_list{ordering(i)})
+    fprintf('%i Model:%s\n',i,ordered_models{i})
 end
 
 analytic_result_rows = find(all_results(ordering, 1, 1, 1)>0);
@@ -130,8 +143,8 @@ for i=1:length(build_types)
     semilogy(all_results(ordering, 2, i, 1), '.-')
     hold all
 end
-xlabel('Model index')
-ylabel('Wall time taken for 10 paces (s)')
+xlabel('Model index, ranked in terms of number of ODEs')
+ylabel('Wall time taken to simulate 1 second')
 title('Compiler benchmarking with CVODE NJ')
 legend(build_types,'Location','NorthWest')
 xlim([1 66])
@@ -185,13 +198,13 @@ end
 title('Solver benchmarking')
 legend(solvers_legend,'Location','EastOutside')
 xlabel('Model indices, ordered by time taken using CVODE NJ')
-ylabel('Wall time taken for 10 paces (s)')
+ylabel('Wall time taken to simulate 1 second')
 xlim([1 67]) % Include Clancy-Rudy again.
 
 figure
 %semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
 xlabel('Model indices ordered by time taken for each solver')
-ylabel('Wall time taken for 10 paces (s)')
+ylabel('Wall time taken to simulate 1 second')
 for i=1:8
     valid_results = find(all_results(:, i, 1, 1)>0);
     [~, ordering] = sort(all_results(valid_results, i, 1, 1));

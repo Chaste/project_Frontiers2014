@@ -130,8 +130,12 @@ for i=1:length(file_listing)
                 else
                     linestyle = '--';
                 end
-                plot(data(:,1), data(:,2), linestyle)                
-                legend_entries{end+1} = ['Solver ' num2str(i) ' dt = ' dt ' MRMS = ' num2str(mrms_error)];
+                plot(data(:,1), data(:,2), linestyle) 
+                if i<=1
+                    legend_entries{end+1} = [solver_mapping{i+1} ' Tol ' num2str(10^(-(2+dt_number))) ' MRMS = ' num2str(mrms_error)];
+                else
+                    legend_entries{end+1} = [solver_mapping{i+1} ' dt = ' dt ' MRMS = ' num2str(mrms_error)];
+                end
             end
         end
         legend(legend_entries)

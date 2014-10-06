@@ -8,6 +8,17 @@ file_listing = dir(['reference_traces' filesep '*.dat']);
 
 required_steps_data = importdata('required_steps.txt');
 
+% Index in this vector (minus 1) is the solver code in the results files.
+solver_mapping = {'CVODE (analytic Jacobian)',...
+                  'CVODE (numerical Jacobian)',...
+                  'Forward Euler',...
+                  'Backward Euler',...
+                  'Runge-Kutta (2nd order)',...
+                  'Runge-Kutta (4th order)',...
+                  'Rush-Larsen',...
+                  'Generalised Rush-Larsen 1',...
+                  'Generalised Rush-Larsen 2'};
+
 for i=1:length(file_listing)
     
     % Skip the files that are to do with tissue sims
@@ -31,9 +42,9 @@ for i=1:length(file_listing)
     % Now see how many different timestep approximations we have for this
     hardcoded_results_folder = '/export/testoutput/Frontiers/CalculateTimesteps/';
     
-    for gbu = 1:3
+    for gbu = 1:2
         % Good, bad, ugly errors
-        subplot(3,1,gbu)
+        subplot(2,1,gbu)
         plot(data(:,1), data(:,2),'-')
         hold all
         xlabel('Time (ms)')
@@ -75,20 +86,15 @@ for i=1:length(file_listing)
                     assert(length(this_row)==1)
                     mrms_error = required_steps_data.data(this_row,11);
                     if (gbu==1)
-                       if mrms_error > 0.01
+                       if mrms_error > 0.05
                            continue
                        end
-                       title('Good')
-                    elseif (gbu==2)
-                       if mrms_error < 0.01 || mrms_error > 0.05
-                           continue
-                       end
-                       title([model_name ' Bad'])
-                    else % gbu==3
-                        if mrms_error < 0.05
+                       title([model_name ' MRMS <= 0.05'])
+                    else 
+                        if mrms_error <= 0.05
                             continue
                         end
-                        title('Ugly')
+                        title('MRMS > 0.05')
                     end
                 end
                                
@@ -101,7 +107,11 @@ for i=1:length(file_listing)
                 end
                 plot(d.data(:,1), d.data(:,2), linestyle)
                 
-                legend_entries{end+1} = ['Solver ' num2str(i) ' dt = ' dt ' MRMS = ' num2str(mrms_error)];
+                if i<=1
+                    legend_entries{end+1} = [solver_mapping{i+1} ' Tol ' num2str(10^(-(2+dt_number))) ' MRMS = ' num2str(mrms_error)];
+                else
+                    legend_entries{end+1} = [solver_mapping{i+1} ' dt = ' dt ' MRMS = ' num2str(mrms_error)];
+                end
             end
         end
         legend(legend_entries)
