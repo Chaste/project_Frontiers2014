@@ -88,14 +88,14 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     CellMLToSharedLibraryConverter converter;
     DynamicCellModelLoaderPtr p_loader = converter.Convert(mSharedLibraryLocation, false);
 
-    // Load up the cell with a default solver
+    // Load up the cell with a default solver, and zero stimulus
     p_cell = p_loader->CreateCell(this->mpSolver, this->mpZeroStimulus);
 
     // Overwrite the solver
     CellModelUtilities::SetCellModelSolver(p_cell, mSolver);
 
     /*
-     * If this is anywhere inside x =< 0.1cm we apply a stimulus, otherwise we don't.
+     * If this is anywhere inside x =< 0.1cm we overwrite the zero stimulus with a real stimulus.
      *
      * N.B. Just applying a stimulus at one node on the edge is a bit numerically fragile
      * as this looks quite different to the next node on different mesh spacings.
