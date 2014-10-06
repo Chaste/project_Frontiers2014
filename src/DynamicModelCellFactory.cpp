@@ -51,7 +51,8 @@ DynamicModelCellFactory::DynamicModelCellFactory(const FileFinder& rModelFile,
                                                  bool highTol)
     : AbstractCardiacCellFactory<1u>(),
       mStrictTolerance(highTol),
-      mpLookupTables(NULL)
+      mpLookupTables(NULL),
+      mSolver(solver)
 {
     // Create a simple stimulus to use in the CreateCardiacCellForTissueNode method.
     // The stimulus is a bit of a compromise, needs to be big enough to fire off all the models, but not
@@ -80,13 +81,18 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     }
 #endif // CHASTE_CAN_CHECKPOINT_DLLS
 
+    //
     // Load model from shared library
-
-    // options won't be used with a last 'false' argument, so we pass in an empty vec.
-    std::vector<std::string> empty_options;
+    //
 
     CellMLToSharedLibraryConverter converter;
     DynamicCellModelLoaderPtr p_loader = converter.Convert(mSharedLibraryLocation, false);
+
+    // Load up the cell with a default solver
+    p_cell = p_loader->CreateCell(this->mpSolver, this->mpZeroStimulus);
+
+    // Overwrite the solver
+    CellModelUtilities::SetCellModelSolver(p_cell, mSolver);
 
     /*
      * If this is anywhere inside x =< 0.1cm we apply a stimulus, otherwise we don't.
@@ -97,11 +103,7 @@ AbstractCardiacCellInterface* DynamicModelCellFactory::CreateCardiacCellForTissu
     if (pNode->rGetLocation()[0] <= 0.1)
     {
         //std::cout << "Generating cell model with a stimulus" << std::endl << std::flush;
-        p_cell = p_loader->CreateCell(this->mpSolver, this->mpSimpleStimulus);
-    }
-    else
-    {
-        p_cell = p_loader->CreateCell(this->mpSolver, this->mpZeroStimulus);
+        p_cell->SetStimulusFunction(this->mpSimpleStimulus);
     }
 
     // Generate lookup tables if present

@@ -136,6 +136,16 @@ public:
                                                                            bool useLookupTables);
 
     /**
+     * Set the solver to use with a particular cell model.
+     * (automatically called by CreateCellModel).
+     *
+     * @param pCell  The cell
+     * @param solver  The solver we would like to use
+     */
+    static void SetCellModelSolver(AbstractCardiacCellInterface* pCell,
+                                   Solvers::Value solver);
+
+    /**
      * Get the pacing cycle length to use when simulating a cell.
      * If the cell has no RegularStimulus attached, we use a default of 1000ms.
      * If the stimulus period is not a multiple of 1ms, we round down to the nearest millisecond,

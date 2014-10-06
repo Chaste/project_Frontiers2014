@@ -145,51 +145,9 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
     // Load the cell model
     boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CreateCellModel(rModelFile, rOutputDir, options);
 
-    // Check that we have the features we're expecting, and specify solver if not built-in
-    switch (solver)
-    {
-        case Solvers::CVODE_ANALYTIC_J:
-        case Solvers::CVODE_NUMERICAL_J:
-        {
-            boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
-            if (solver == Solvers::CVODE_ANALYTIC_J)
-            {
-                if (!p_cvode_cell->GetUseAnalyticJacobian())
-                {
-                    EXCEPTION("No analytic Jacobian available for cell model " << rModelFile.GetLeafNameNoExtension());
-                }
-            }
-            else
-            {
-                p_cvode_cell->ForceUseOfNumericalJacobian();
-            }
-            p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
-            p_cvode_cell->SetMaxSteps(10000000);
-            boost::shared_ptr<RegularStimulus> p_reg_stim = boost::dynamic_pointer_cast<RegularStimulus>(p_cell->GetStimulusFunction());
-            // If the max time step for cvode is not set then it defaults to the sampling timestep,
-            // if this is large then CVODE can 'skip' the stimulus and never notice it, so should generally
-            // be set to the stimulus duration.
-            if (p_reg_stim)
-            {
-                p_cvode_cell->SetMaxTimestep(p_reg_stim->GetDuration());
-            }
-            break;
-        }
-        case Solvers::RUNGE_KUTTA_2:
-        {
-            boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
-            p_cell->SetSolver(p_rk2_solver);
-            break;
-        }
-        case Solvers::RUNGE_KUTTA_4:
-        {
-            boost::shared_ptr<AbstractIvpOdeSolver> p_rk4_solver(new RungeKutta4IvpOdeSolver());
-            p_cell->SetSolver(p_rk4_solver);
-            break;
-        }
-        default:
-            break; // Nothing to do here
-    }
+    // This method needs to work with a direct pointer to a cell, so that methods in DynamicModelCellFactory can use it.
+    CellModelUtilities::SetCellModelSolver(p_cell.get(), solver);
+
     // Check that the lookup tables exist if they should
     if (useLookupTables)
     {
@@ -211,6 +169,57 @@ boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellMo
     return p_cell;
 }
 
+
+void CellModelUtilities::SetCellModelSolver(AbstractCardiacCellInterface* pCell,
+                                            Solvers::Value solver)
+{
+    // Check that we have the features we're expecting, and specify solver if not built-in
+    switch (solver)
+    {
+        case Solvers::CVODE_ANALYTIC_J:
+        case Solvers::CVODE_NUMERICAL_J:
+        {
+            AbstractCvodeCell* p_cvode_cell = dynamic_cast<AbstractCvodeCell*>(pCell);
+            assert(p_cvode_cell != NULL);
+            if (solver == Solvers::CVODE_ANALYTIC_J)
+            {
+                if (!p_cvode_cell->GetUseAnalyticJacobian())
+                {
+                    EXCEPTION("No analytic Jacobian available for cell model " << p_cvode_cell->GetSystemName());
+                }
+            }
+            else
+            {
+                p_cvode_cell->ForceUseOfNumericalJacobian();
+            }
+            p_cvode_cell->SetTolerances(1e-4 /* relative */, 1e-6 /* absolute */);
+            p_cvode_cell->SetMaxSteps(10000000);
+            boost::shared_ptr<RegularStimulus> p_reg_stim = boost::dynamic_pointer_cast<RegularStimulus>(pCell->GetStimulusFunction());
+            // If the max time step for cvode is not set then it defaults to the sampling timestep,
+            // if this is large then CVODE can 'skip' the stimulus and never notice it, so should generally
+            // be set to the stimulus duration.
+            if (p_reg_stim)
+            {
+                p_cvode_cell->SetMaxTimestep(p_reg_stim->GetDuration());
+            }
+            break;
+        }
+        case Solvers::RUNGE_KUTTA_2:
+        {
+            boost::shared_ptr<AbstractIvpOdeSolver> p_rk2_solver(new RungeKutta2IvpOdeSolver());
+            pCell->SetSolver(p_rk2_solver);
+            break;
+        }
+        case Solvers::RUNGE_KUTTA_4:
+        {
+            boost::shared_ptr<AbstractIvpOdeSolver> p_rk4_solver(new RungeKutta4IvpOdeSolver());
+            pCell->SetSolver(p_rk4_solver);
+            break;
+        }
+        default:
+            break; // Nothing to do here
+    }
+}
 
 boost::shared_ptr<AbstractCardiacCellInterface> CellModelUtilities::CreateCellModel(
         const FileFinder& rModelFile,

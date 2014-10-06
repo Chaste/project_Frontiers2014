@@ -66,6 +66,9 @@ private:
     /** The lookup tables used by cells we create. */
     AbstractLookupTableCollection* mpLookupTables;
 
+    /** The solver type we are using */
+    Solvers::Value mSolver;
+
 public:
     /**
      * A constructor which will use CellModelUtilities to dynamically convert a CellML
