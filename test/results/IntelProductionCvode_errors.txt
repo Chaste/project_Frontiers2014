@@ -1,0 +1,40 @@
+Error simulating model clancy_rudy_2002 with solver 'Backward Euler': 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model clancy_rudy_2002 with solver 'Backward Euler' and lookup tables: 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model fink_noble_giles_model_2008 with solver 'CVODE (analytic Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model iyer_model_2007 with solver 'Backward Euler': 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model iyer_model_2007 with solver 'Backward Euler' and lookup tables: 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model pandit_clark_giles_demir_2001_endocardial_cell with solver 'Backward Euler': 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model pandit_clark_giles_demir_2001_endocardial_cell with solver 'Backward Euler' and lookup tables: 
+Chaste error: heart/src/odes/CardiacNewtonSolver.hpp:144: Newton method diverged in CardiacNewtonSolver::Solve()
+Error simulating model fink_noble_giles_model_2008 with solver 'CVODE (numerical Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
+Error simulating model ten_tusscher_model_2004_M with solver 'Generalised Rush-Larsen 1' and lookup tables: 
+Chaste error: heart/build/intel_production_hostconfig,cvode=2-7/dynamic/tmp_38799_1412869947/ten_tusscher_model_2004_M.cpp:1475: membrane_voltage outside lookup table range
+At independent variable (usually time) = 47327.9
+State:
+	membrane_voltage:-3491.49 millivolt
+	rapid_time_dependent_potassium_current_Xr1_gate__Xr1:0.98577 dimensionless
+	rapid_time_dependent_potassium_current_Xr2_gate__Xr2:0.024223 dimensionless
+	slow_time_dependent_potassium_current_Xs_gate__Xs:0.166269 dimensionless
+	membrane_fast_sodium_current_m_gate:0.996328 dimensionless
+	membrane_fast_sodium_current_h_gate:4.26807e-09 dimensionless
+	membrane_fast_sodium_current_j_gate:3.90345e-09 dimensionless
+	membrane_L_type_calcium_current_d_gate:0.665129 dimensionless
+	membrane_L_type_calcium_current_f_gate:0.186116 dimensionless
+	membrane_L_type_calcium_current_fCa_gate:0.214483 dimensionless
+	transient_outward_current_s_gate__s:0.0132329 dimensionless
+	transient_outward_current_r_gate__r:0.041261 dimensionless
+	cytosolic_calcium_concentration:0.0002402 millimolar
+	JSR_calcium_concentration:0.582299 millimolar
+	calcium_dynamics__g:2.9637e-07 dimensionless
+	cytosolic_sodium_concentration:11.1764 millimolar
+	cytosolic_potassium_concentration:138.408 millimolar
+
+Error simulating model winslow_model_1999 with solver 'CVODE (numerical Jacobian)' and lookup tables: 
+Chaste error: ode/src/common/AbstractCvodeSystem.cpp:472: CVODE failed to solve system: CV_RHSFUNC_FAIL
