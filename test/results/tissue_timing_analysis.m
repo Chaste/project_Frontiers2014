@@ -1,8 +1,8 @@
 close all 
 clear all
 
-build_types = {'GccOptNative',...
-               'IntelProductionCvode'};
+build_types = {'IntelProductionCvode'};
+               % 'GccOptNative',...
                %'IntelProduction',...
                %,'Intel'...
                %,'GccOpt'...
@@ -177,7 +177,7 @@ for b=1:length(build_types)
     %         end
         end
         title([build_types{b} ' benchmarking for PDE dt = ' num2str(pde_list(pde_idx))])
-        legend(solvers_legend,'Location','EastOutside')
+        legend(solvers_legend,'Location','NorthWest')
         ylabel('Wall time taken for 500ms')
 
         set(gca,'XTick',1:length(model_list))
