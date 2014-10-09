@@ -2,8 +2,8 @@ close all
 clear all
 
 build_types = {'GccOptNative',...
-               'IntelProductionCvode',...
-               'IntelProduction'};
+               'IntelProductionCvode'};%,...
+               %'IntelProduction'};
                %,'Intel'...
                %,'GccOpt'...
                %,'debug'};
@@ -30,6 +30,11 @@ for b=1:length(build_types)
     solver = d.data(:,1);
     optimised = d.data(:,2);
     times = d.data(:,3);
+    
+    assert(length(model)==length(solver));
+    assert(length(model)==length(optimised));
+    assert(length(model)==length(times));
+    
     clear d
 
     if b==1 % This file recently updated to include all the options, this 'if' could go if all updated to the same.
@@ -37,8 +42,8 @@ for b=1:length(build_types)
         
         % Find out how many ODEs each model has from their summary files
         for i=1:length(model_list)
-           d = importdata(['..' filesep 'data/reference_traces/' model_list{i} '.summary']);
-           model_list_ODEs(i) = d.data(1);
+            d = importdata(['..' filesep 'data/reference_traces/' model_list{i} '.summary']);
+            model_list_ODEs(i) = d.data(1);
         end
         
         solver_list = unique(solver);
@@ -52,7 +57,7 @@ for b=1:length(build_types)
             index_this_combination = intersect(indices_this_model,indices_this_solver);
             for optimised_idx = 1:length(optimised_list)
                 indices_this_optimisation = find(optimised==optimised_list(optimised_idx));
-                index_complete_combination = intersect(index_this_combination,indices_this_optimisation);               
+                index_complete_combination = intersect(index_this_combination, indices_this_optimisation);
             
                 if (~isempty(index_complete_combination))
                     assert(length(index_complete_combination)==1)

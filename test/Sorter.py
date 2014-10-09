@@ -39,6 +39,8 @@ These files have tab-separated lines that start with the model name and then hav
 numeric fields, often in scientific notation.  The standard sort utility doesn't
 recognise scientific notation and hence sorts these incorrectly.
 
+It also removes the lines that start with comments denoted by '#'.
+
 Arguments are file names to sort; output is written to stdout.
 """
 
@@ -61,8 +63,15 @@ def make_key(line):
 
 # Read the files
 lines = []
-for fname in sys.argv[1:]:
-    lines.extend(open(fname).readlines())
+if len(sys.argv)>1:
+    for fname in sys.argv[1:]:
+        lines.extend(open(fname).readlines())
+else:
+    print 'Please enter a filename to sort as an argument, relative to this script.'
+
+
+# Strip out comment lines
+lines[:] = [x for x in lines if not x.startswith('#')]
 
 # Define the sort key information
 line_keys = map(make_key, lines)
