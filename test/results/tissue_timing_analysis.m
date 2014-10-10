@@ -15,12 +15,15 @@ solvers = {'CVODE AJ', 'CVODE NJ', 'F. Euler', ...
         'B. Euler','RK2','RK4','Rush Larsen',...            
         'GRL1','GRL2'};
     
+model_names = {'Beeler Reuter 1977'; 'Grandi 2010'; 'Iyer 2007'; ...
+    'Luo Rudy 1991'; 'Nygren 1998'; 'Shannon 2004'; 'ten Tusscher 2004'};
+
 print_latex_table = true;
 look_at_fake_pde_step_timings = false;
 
 % Compile all the results into a table.
 all_results = [];
-    
+
 for b=1:length(build_types)
     d = importdata([build_types{b} '_timings_tissue.txt']);
 
@@ -36,6 +39,12 @@ for b=1:length(build_types)
         model_list = unique(model);
         solver_list = unique(solver);
         assert(length(solver_list)==length(solvers))
+        
+        % Find out how many ODEs each model has from their summary files
+        for i=1:length(model_list)
+            d = importdata(['..' filesep 'data/reference_traces/' model_list{i} '.summary']);
+            model_list_ODEs(i) = d.data(1);
+        end
         
         optimised_list = unique(optimised);
         assert(length(optimised_list)==2)
@@ -140,9 +149,10 @@ for b=1:length(build_types)
         end
     end
 
+    figure('Units','normalized','Position',[.05 .05 .3 .3])
     for pde_idx = 1:2
 
-        figure(pde_idx + 2*b)
+        subplot(2,1,pde_idx)
         color_idx = 1;
         colorOrder = get(gca, 'ColorOrder');
 
@@ -177,15 +187,18 @@ for b=1:length(build_types)
     %         end
         end
         title([build_types{b} ' benchmarking for PDE dt = ' num2str(pde_list(pde_idx))])
-        legend(solvers_legend,'Location','NorthWest')
+        legend(solvers_legend,'Location','EastOutside')
         ylabel('Wall time taken for 500ms')
+        ylim([1 1e3])
 
         set(gca,'XTick',1:length(model_list))
-        set(gca,'XTickLabel',put_underscores_in_latex(model_list(ordering)))
-        xticklabel_rotate([],90)
-
+        if (pde_idx==2)
+            set(gca,'XTickLabel',model_names(ordering))
+            xticklabel_rotate([],90)
+        else
+            set(gca,'XTickLabel',{''})
+        end
     end
-
 end
 
 

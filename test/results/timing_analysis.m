@@ -1,8 +1,9 @@
 close all 
 clear all
 
-build_types = {'GccOptNative',...
-               'IntelProductionCvode'};%,...
+build_types = {'IntelProductionCvode',...
+               'IntelProduction',...
+               'GccOptNative'};%,...
                %'IntelProduction'};
                %,'Intel'...
                %,'GccOpt'...
@@ -134,7 +135,7 @@ end
 
 % % Rank the models in terms of how fast they are
 % % in our best case - intel with intel cvode, for cvode numeric J
-% [~, ordering] = sort(all_results(:, 2, 1, 1));
+%[~, ordering] = sort(all_results(:, 2, 1, 1));
 
 ordered_models = model_list(ordering);
 for i=1:length(ordering)
@@ -143,18 +144,18 @@ end
 
 analytic_result_rows = find(all_results(ordering, 1, 1, 1)>0);
 
+for s = 1:length(solvers)
 figure
 for i=1:length(build_types)
-    semilogy(all_results(ordering, 2, i, 1), '.-')
+    semilogy(all_results(ordering, s, i, 1), '.-')
     hold all
 end
+%xlabel('Model index, ranked in terms of time taken for CVODE NJ')
 xlabel('Model index, ranked in terms of number of ODEs')
 ylabel('Wall time taken to simulate 1 second')
-title('Compiler benchmarking with CVODE NJ')
+title(['Compiler benchmarking with ' solvers{s}])
 legend(build_types,'Location','NorthWest')
-xlim([1 66])
-% NB - We've removed the last model - clancy rudy, as it is mental and 
-% obscures anything you can say about the build times.
+end
 
 figure
 color_idx = 1;
