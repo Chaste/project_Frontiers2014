@@ -3,11 +3,10 @@ clear all
 
 build_types = {'IntelProductionCvode',...
                'IntelProduction',...
-               'GccOptNative'};%,...
-               %'IntelProduction'};
+               'GccOptNative',...
+               'debug'};%,...
                %,'Intel'...
                %,'GccOpt'...
-               %,'debug'};
            
 % NB indexed as 0, 1, ..., 8 in the results file
 % so we need to add one to those numbers to get the
@@ -131,11 +130,11 @@ for b=1:length(build_types)
 end
 
 % Work out ranking of models in terms of number of ODEs
-[~,ordering] = sort(model_list_ODEs);
+%[~,ordering] = sort(model_list_ODEs);
 
 % % Rank the models in terms of how fast they are
 % % in our best case - intel with intel cvode, for cvode numeric J
-%[~, ordering] = sort(all_results(:, 2, 1, 1));
+[~, ordering] = sort(all_results(:, 2, 1, 1));
 
 ordered_models = model_list(ordering);
 for i=1:length(ordering)
@@ -145,16 +144,17 @@ end
 analytic_result_rows = find(all_results(ordering, 1, 1, 1)>0);
 
 for s = 1:length(solvers)
-figure
-for i=1:length(build_types)
-    semilogy(all_results(ordering, s, i, 1), '.-')
-    hold all
-end
-%xlabel('Model index, ranked in terms of time taken for CVODE NJ')
-xlabel('Model index, ranked in terms of number of ODEs')
-ylabel('Wall time taken to simulate 1 second')
-title(['Compiler benchmarking with ' solvers{s}])
-legend(build_types,'Location','NorthWest')
+    figure
+    for i=1:length(build_types)
+        semilogy(all_results(ordering, s, i, 1), '.-')
+        hold all
+    end
+    xlabel('Model index, ranked in terms of time taken for CVODE NJ')
+    %xlabel('Model index, ranked in terms of number of ODEs')
+    ylabel('Wall time taken to simulate 1 second')
+    ylim([1e-4 1e3])
+    title(['Compiler benchmarking with ' solvers{s}])
+    legend(build_types,'Location','NorthWest')
 end
 
 figure
@@ -205,7 +205,6 @@ title('Solver benchmarking')
 legend(solvers_legend,'Location','EastOutside')
 xlabel('Model indices, ordered by time taken using CVODE NJ')
 ylabel('Wall time taken to simulate 1 second')
-xlim([1 67]) % Include Clancy-Rudy again.
 
 figure
 %semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
@@ -224,8 +223,75 @@ for i=1:8
 end
 title('Solver benchmarking')
 legend(solvers{solver_list+1},'Location','EastOutside')
-xlim([1 67]) % Include Clancy-Rudy again.
 
+% Have a look how much speed up we get with Lookup tables.
+% For this analysis use CVODE AJ,NJ and IntelProductionCvode
+figure
+% The indices in all_results here are model, solver (AJ, NJ), build, lookuptables (off, on)
+proportions_time_NJ = all_results(ordering, 2, 1, 2)./all_results(ordering, 2, 1, 1);
+proportions_time_AJ = all_results(ordering, 1, 1, 2)./all_results(ordering, 1, 1, 1);
+good_idx_NJ = intersect(find(proportions_time_NJ > 0), find(all_results(ordering, 2, 1, 1) > 0));
+good_idx_AJ = intersect(find(proportions_time_AJ > 0), find(all_results(ordering, 1, 1, 1) > 0));
+h = plot([0 length(ordering)+1], [1 1], 'k--');
+dont_show_in_legend(h, true);
+hold on
+% Plot all the points
+h = plot(good_idx_NJ, 1.0./proportions_time_NJ(good_idx_NJ), 'b.','MarkerSize', 10.0);
+
+% Uncomment these to get the 'lines' versions...
+dont_show_in_legend(h, true);
+for i=1:length(good_idx_NJ)-1
+    % If there's no model missing, join the dots
+    if good_idx_NJ(i)+1 == good_idx_NJ(i+1)
+        h = plot([good_idx_NJ(i) good_idx_NJ(i+1)], 1.0./proportions_time_NJ(good_idx_NJ([i i+1])), 'b.-');
+        if (i==1)
+            dont_show_in_legend(h, false);
+        else
+            dont_show_in_legend(h, true);
+        end
+    end
+end
+
+h = plot(good_idx_AJ, 1.0./proportions_time_AJ(good_idx_AJ), 'rx','MarkerSize', 7.0);
+% Uncomment these to get the 'lines' versions...
+dont_show_in_legend(h, true);
+for i=1:length(good_idx_AJ)-1
+    if good_idx_AJ(i)+1 == good_idx_AJ(i+1)
+        h = plot([good_idx_AJ(i) good_idx_AJ(i+1)], 1.0./proportions_time_AJ(good_idx_AJ([i i+1])), 'rx-');
+        if (i==1)
+            dont_show_in_legend(h, false);
+        else
+            dont_show_in_legend(h, true);
+        end
+    end
+end
+xlabel('Model indices, ordered by time taken using CVODE NJ, no lookup tables')
+xlim([0 length(ordering)+1])
+title('Relative speedup using Lookup Tables with CVODE')
+ylabel('Speedup with Lookup Tables (multiple)')
+legend('Numerical Jacobian', 'Analytic Jacobian','Location','SouthWest')
+
+% Some asserts in here, if they fail, some text in paper will need
+% updating!
+
+% Just look to see how many failures there are... for CVODE AJ without lookup
+tmp1 = find(all_results(ordering, 1, 1, 1) < 0);
+assert(length(tmp1) == 7);
+
+% and with lookup tables
+tmp2 = find(all_results(ordering, 1, 1, 2) < 0);
+assert(length(tmp2) == 9);
+% And check that all the ones that fell over (or weren't run) without lookup tables, 
+% still don't work with lookup tables...
+assert(length(intersect(tmp1,tmp2))==length(tmp1));
+
+% Just look to see how many failures there are... for CVODE NJ without lookup
+tmp = find(all_results(ordering, 2, 1, 1) < 0);
+assert(isempty(tmp)) % No failures
+
+% and with lookup tables
+tmp = find(all_results(ordering, 2, 1, 2) < 0);
+assert(length(tmp) == 6);
 
 % analytic_result_rows_opt = find(all_results(ordering, 1, 1, 2)>0);
 % figure
@@ -247,46 +313,3 @@ xlim([1 67]) % Include Clancy-Rudy again.
 % xlim([1 67]) % Include Clancy-Rudy again.
 
 
-% if look_at_fake_pde_step_timings
-%     % Compile all the results into a table.
-%     all_results_pde = [];
-%     
-%     for b=1:length(build_types)
-% 
-%         d = importdata([build_types{b} '_timings_pde.txt']);
-% 
-%         % Get the raw data out
-%         model = d.textdata;
-%         solver = d.data(:,1);
-%         optimised = d.data(:,2);
-%         pde_time_steps = d.data(:,3);
-%         times = d.data(:,4);
-%         clear d
-% 
-%         model_list = unique(model);
-%         solver_list = unique(solver);
-%         pde_list = unique(pde_time_steps);
-% 
-% 
-%         for pde_step_idx = 1:length(pde_list)
-% 
-%             for model_idx = 1:length(model_list)
-%                 indices_this_model = find(strcmp(model,model_list{model_idx}));
-%                 for solver_idx = 1:length(solver_list)
-%                     indices_this_solver = find(solver==solver_list(solver_idx));
-%                     indices_this_pde_step = find(pde_time_steps==pde_list(pde_step_idx));
-%                     index_this_combination = intersect(indices_this_model,indices_this_solver);
-%                     index_this_combination = intersect(index_this_combination,indices_this_pde_step);
-%                     if (~isempty(index_this_combination))
-%                         assert(length(index_this_combination)==1)
-%                         all_results_pde(model_idx, solver_idx, b) = times(index_this_combination);
-%                     else
-%                         all_results_pde(model_idx, solver_idx, b) = -1;
-%                     end
-%                 end
-%             end
-%             fprintf('PDE time step = %3.3f\n',pde_list(pde_step_idx))
-%             all_results_pde   
-%         end    
-%     end
-% end
