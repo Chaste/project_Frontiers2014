@@ -41,6 +41,7 @@ model = d.textdata;
 solver = d.data(:,1);
 optimised = d.data(:,2);
 timesteps = d.data(:,3);
+error_metrics = d.data(:,4:11);
 converged = d.data(:,12);
 
 assert(length(model)==length(solver));
@@ -58,6 +59,10 @@ assert(length(converged_list)==2)
 
 % Only look at converged answers
 converged_indices = find(converged==1);
+
+converged_error_metrics = error_metrics(converged_indices,2:end-1);
+disp('Mean absolute error metrics')
+mean(abs(converged_error_metrics))
 
 fid = fopen('different_steps.txt', 'at');
 

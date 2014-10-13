@@ -235,10 +235,7 @@ xlabel('Model indices, ordered by time taken using CVODE NJ')
 ylabel('Wall time taken to simulate 1 second (s)')
 
 figure
-%semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
-xlabel('Model indices ordered by time taken for each solver')
-ylabel('Wall time taken to simulate 1 second (s)')
-for i=1:8
+for i=1:length(solver_list)
     valid_results = find(all_results(:, i, 1, 1)>0);
     [~, reordering] = sort(all_results(valid_results, i, 1, 1));
     if i<8 
@@ -250,54 +247,55 @@ for i=1:8
     hold all
 end
 title('Solver benchmarking')
+xlabel('Model indices ordered by time taken for each solver')
+ylabel('Wall time taken to simulate 1 second (s)')
 legend(solvers{solver_list+1},'Location','EastOutside')
 
 % Have a look how much speed up we get with Lookup tables.
 % For this analysis use CVODE AJ,NJ and IntelProductionCvode
 figure
-% The indices in all_results here are model, solver (AJ, NJ), build, lookuptables (off, on)
-proportions_time_NJ = all_results(ordering, 2, 1, 2)./all_results(ordering, 2, 1, 1);
-proportions_time_AJ = all_results(ordering, 1, 1, 2)./all_results(ordering, 1, 1, 1);
-good_idx_NJ = intersect(find(proportions_time_NJ > 0), find(all_results(ordering, 2, 1, 1) > 0));
-good_idx_AJ = intersect(find(proportions_time_AJ > 0), find(all_results(ordering, 1, 1, 1) > 0));
-h = plot([0 length(ordering)+1], [1 1], 'k--');
-dont_show_in_legend(h, true);
-hold on
-% Plot all the points
-h = plot(good_idx_NJ, 1.0./proportions_time_NJ(good_idx_NJ), 'b.','MarkerSize', 10.0);
 
-% Uncomment these to get the 'lines' versions...
-dont_show_in_legend(h, true);
-for i=1:length(good_idx_NJ)-1
-    % If there's no model missing, join the dots
-    if good_idx_NJ(i)+1 == good_idx_NJ(i+1)
-        h = plot([good_idx_NJ(i) good_idx_NJ(i+1)], 1.0./proportions_time_NJ(good_idx_NJ([i i+1])), 'b.-');
-        if (i==1)
-            dont_show_in_legend(h, false);
-        else
-            dont_show_in_legend(h, true);
-        end
+for s=1:length(solver_list)
+    % The indices in all_results here are model, solver, build, lookuptables (off, on)
+    proportions_time = all_results(ordering, s, 1, 2)./all_results(ordering, s, 1, 1);
+    good_idx = intersect(find(proportions_time > 0), find(all_results(ordering, s, 1, 1) > 0));
+    h = plot([0 length(ordering)+1], [1 1], 'k--');
+    dont_show_in_legend(h, true);
+    hold on
+    
+    color_this_plot = colorOrder(mod(s-1,size(colorOrder,1)-1)+1,:);
+    
+    % Plot all the points
+    h = plot(good_idx, 1.0./proportions_time(good_idx), '.', 'MarkerFaceColor',...
+        color_this_plot, 'MarkerEdgeColor', color_this_plot, 'MarkerSize', 10.0);
+    
+    fprintf('Solver %i: median speedup w. lookup tables = %g\n',s-1,median(1.0./proportions_time(good_idx)))
+    
+    if s<=6 
+        linestyle = '.-';
+    else
+        linestyle = '.--';
     end
-end
 
-h = plot(good_idx_AJ, 1.0./proportions_time_AJ(good_idx_AJ), 'rx','MarkerSize', 7.0);
-% Uncomment these to get the 'lines' versions...
-dont_show_in_legend(h, true);
-for i=1:length(good_idx_AJ)-1
-    if good_idx_AJ(i)+1 == good_idx_AJ(i+1)
-        h = plot([good_idx_AJ(i) good_idx_AJ(i+1)], 1.0./proportions_time_AJ(good_idx_AJ([i i+1])), 'rx-');
-        if (i==1)
-            dont_show_in_legend(h, false);
-        else
-            dont_show_in_legend(h, true);
+    % Uncomment these to get the 'lines' versions...
+    dont_show_in_legend(h, true);
+    for i=1:length(good_idx)-1
+        % If there's no model missing, join the dots
+        if good_idx(i)+1 == good_idx(i+1)
+            h = plot([good_idx(i) good_idx(i+1)], 1.0./proportions_time(good_idx([i i+1])), linestyle, 'Color', color_this_plot);
+            if (i==1)
+                dont_show_in_legend(h, false);
+            else
+                dont_show_in_legend(h, true);
+            end
         end
     end
 end
 xlabel('Model indices, ordered by time taken using CVODE NJ, no lookup tables')
 xlim([0 length(ordering)+1])
-title('Relative speedup using Lookup Tables with CVODE')
-ylabel('Speedup with Lookup Tables (multiple)')
-legend('Numerical Jacobian', 'Analytic Jacobian','Location','SouthWest')
+title('Relative speed using Lookup Tables')
+ylabel('Speed with Lookup Tables relative to without (x)')
+legend(solvers,'Location','SouthWest')
 
 % Some asserts in here, if they fail, some text in paper will need
 % updating!
