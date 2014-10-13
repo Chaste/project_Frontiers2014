@@ -147,16 +147,42 @@ analytic_result_rows = find(all_results(ordering, 1, 1, 1)>0);
 
 for s = 1:length(solvers)
     figure
-    for i=1:length(build_types)
-        semilogy(all_results(ordering, s, i, 1), '.-')
+    colorOrder = get(gca, 'ColorOrder');
+    subplot(1,2,1)
+    for b=1:length(build_types)
+        semilogy(all_results(ordering, s, b, 1), '.-','Color',colorOrder(b,:))
         hold all
     end
-    xlabel('Model index, ranked in terms of time taken for CVODE NJ')
+    xlabel('Model index')
     %xlabel('Model index, ranked in terms of number of ODEs')
-    ylabel('Wall time taken to simulate 1 second')
+    ylabel('Wall time taken to simulate 1 second (s)')
     ylim([1e-4 1e3])
-    title(['Compiler benchmarking with ' solvers{s}])
+    title(solvers{s})
     legend(build_types,'Location','NorthWest')
+    
+    % Have a look how much faster the different compilers are
+    subplot(1,2,2)
+    for b=1:length(build_types)-1
+        %plot(all_results(ordering, 2, b, 1),'.-')
+        good_indices = find(all_results(ordering, s, 6, 1) > 0); 
+        plot(good_indices, all_results(ordering(good_indices), s, 6, 1)./all_results(ordering(good_indices), s, b, 1),'.','MarkerFaceColor',colorOrder(b,:),'MarkerEdgeColor',colorOrder(b,:))
+        hold all
+        for i=1:length(good_indices)-1
+            if good_indices(i)+1 == good_indices(i+1)
+                h = plot([good_indices(i) good_indices(i+1)], all_results(ordering(good_indices([i i+1])), s, 6, 1)./all_results(ordering(good_indices([i i+1])), s, b, 1), '-','Color',colorOrder(b,:));
+                if (i==1)
+                    dont_show_in_legend(h, false);
+                else
+                    dont_show_in_legend(h, true);
+                end
+            end
+        end    
+    end
+    title(solvers{s})
+    xlabel('Model index')
+    xlim([0 length(ordering)+1])
+    ylabel('Compiler Speedup relative to gcc debug (x)')
+    %legend(build_types(1:5),'Location','EastOutside')
 end
 
 figure
@@ -206,21 +232,21 @@ end
 title('Solver benchmarking')
 legend(solvers_legend,'Location','EastOutside')
 xlabel('Model indices, ordered by time taken using CVODE NJ')
-ylabel('Wall time taken to simulate 1 second')
+ylabel('Wall time taken to simulate 1 second (s)')
 
 figure
 %semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
 xlabel('Model indices ordered by time taken for each solver')
-ylabel('Wall time taken to simulate 1 second')
+ylabel('Wall time taken to simulate 1 second (s)')
 for i=1:8
     valid_results = find(all_results(:, i, 1, 1)>0);
-    [~, ordering] = sort(all_results(valid_results, i, 1, 1));
+    [~, reordering] = sort(all_results(valid_results, i, 1, 1));
     if i<8 
         linestyle = '-';
     else
         linestyle = '--';
     end
-    semilogy(all_results(valid_results(ordering), i, 1,1), ['.' linestyle])
+    semilogy(all_results(valid_results(reordering), i, 1,1), ['.' linestyle])
     hold all
 end
 title('Solver benchmarking')
@@ -313,5 +339,6 @@ assert(length(tmp) == 6);
 % title('Solver benchmarking')
 % legend(solvers{solver_list+1},'Location','EastOutside')
 % xlim([1 67]) % Include Clancy-Rudy again.
+
 
 
