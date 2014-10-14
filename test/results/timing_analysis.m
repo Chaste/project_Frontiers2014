@@ -143,6 +143,10 @@ for i=1:length(ordering)
     fprintf('%i Model:%s\n',i,ordered_models{i})
 end
 
+%%
+% Produce a series of plots of each solver with different compilers.
+% together with speedup relative to debug
+%
 analytic_result_rows = find(all_results(ordering, 1, 1, 1)>0);
 
 for s = 1:length(solvers)
@@ -185,23 +189,50 @@ for s = 1:length(solvers)
     %legend(build_types(1:5),'Location','EastOutside')
 end
 
+%% Plot each solver on the same plot (with and without lookup tables).
+
 figure
+build_this_fig = 1;
+subplot(1,2,1)
 color_idx = 1;
 legend_idx = 0;
 colorOrder = get(gca, 'ColorOrder');
 
-% semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 1), '.-')
-% legend_idx = legend_idx +1;
-% solvers_legend{legend_idx} = solvers{1};
-% hold all
-% colorOrder = get(gca, 'ColorOrder');
-% semilogy(analytic_result_rows,all_results(ordering(analytic_result_rows), 1, 1, 2), ...
-%     'Color', colorOrder(color_idx,:), 'Marker','.','LineStyle','--')
-% legend_idx = legend_idx +1;
-% solvers_legend{legend_idx} = [solvers{1} ' Opt'];
-% xlabel('Model indices, ordered by time taken using CVODE NJ')
-% ylabel('Wall time taken for 10 paces (s)')
+legend_idx = 0;
+for i=1:2
+%for i=1:length(solver_list)
+    color_idx = color_idx+1;
+    if i<8 
+        linestyle = '-';
+    else
+        linestyle = '--';
+    end    
+    order = find(all_results(ordering, i, build_this_fig, 1)>0);  
+    if (~isempty(order))
+        semilogy(all_results(ordering, i, build_this_fig, 1), ...
+            'Color',colorOrder(mod(color_idx,7)+1,:),...
+            'Marker','.','LineStyle','-')
+        hold all
+        legend_idx = legend_idx + 1;
+        solvers_legend{legend_idx} = solvers{solver_list(i)+1};
+    end
+end
+legend(solvers_legend,'Location','NorthWest')
+xlabel('Model indices')
+ylabel('Wall time taken to simulate 1 second (s)')
+subplot(1,2,2)
 
+good_indices = find(all_results(ordering, 1, build_this_fig, 1)>0);
+plot(good_indices, all_results(ordering(good_indices), 2, build_this_fig, 1)./all_results(ordering(good_indices), 1, build_this_fig, 1),'.-')
+hold on
+plot([0 length(ordering)+1],[1 1], 'k--')
+xlabel('Model indices')
+ylabel('Speed with analytic Jacobian relative to numerical')
+
+figure
+color_idx = 1;
+legend_idx = 0;
+colorOrder = get(gca, 'ColorOrder');
 legend_idx = 0;
 for i=1:length(solver_list)
     color_idx = color_idx+1;
@@ -212,7 +243,7 @@ for i=1:length(solver_list)
     end    
     order = find(all_results(ordering, i, 1, 1)>0);  
     if (~isempty(order))
-        semilogy(1:length(order), all_results(ordering(order), i, 1, 1), ...
+        semilogy(all_results(ordering, i, 1, 1), ...
             'Color',colorOrder(mod(color_idx,7)+1,:),...
             'Marker','.','LineStyle','-')
         hold all
@@ -234,24 +265,27 @@ legend(solvers_legend,'Location','EastOutside')
 xlabel('Model indices, ordered by time taken using CVODE NJ')
 ylabel('Wall time taken to simulate 1 second (s)')
 
-figure
-for i=1:length(solver_list)
-    valid_results = find(all_results(:, i, 1, 1)>0);
-    [~, reordering] = sort(all_results(valid_results, i, 1, 1));
-    if i<8 
-        linestyle = '-';
-    else
-        linestyle = '--';
-    end
-    semilogy(all_results(valid_results(reordering), i, 1,1), ['.' linestyle])
-    hold all
-end
-title('Solver benchmarking')
-xlabel('Model indices ordered by time taken for each solver')
-ylabel('Wall time taken to simulate 1 second (s)')
-legend(solvers{solver_list+1},'Location','EastOutside')
+% %% Plot of the main solvers with individual rankings on each solver (no lookup).
+% figure
+% for i=1:2
+% %for i=1:length(solver_list)
+%     valid_results = find(all_results(:, i, 1, 1)>0);
+%     [~, reordering] = sort(all_results(valid_results, i, 1, 1));
+%     if i<8 
+%         linestyle = '-';
+%     else
+%         linestyle = '--';
+%     end
+%     semilogy(all_results(valid_results(reordering), i, 1,1), ['.' linestyle])
+%     hold all
+% end
+% title('Solver benchmarking')
+% xlabel('Model indices ordered by time taken for each solver')
+% ylabel('Wall time taken to simulate 1 second (s)')
+% legend(solvers{solver_list+1},'Location','EastOutside')
 
-% Have a look how much speed up we get with Lookup tables.
+
+%% Have a look how much speed up we get with Lookup tables.
 % For this analysis use CVODE AJ,NJ and IntelProductionCvode
 figure
 
@@ -271,7 +305,7 @@ for s=1:length(solver_list)
     
     fprintf('Solver %i: median speedup w. lookup tables = %g\n',s-1,median(1.0./proportions_time(good_idx)))
     
-    if s<=6 
+    if s<=6
         linestyle = '.-';
     else
         linestyle = '.--';
@@ -297,7 +331,7 @@ title('Relative speed using Lookup Tables')
 ylabel('Speed with Lookup Tables relative to without (x)')
 legend(solvers,'Location','SouthWest')
 
-% Some asserts in here, if they fail, some text in paper will need
+%% Some asserts in here, if they fail, some text in paper will need
 % updating!
 
 % Just look to see how many failures there are... for CVODE AJ without lookup
@@ -319,24 +353,25 @@ assert(isempty(tmp)) % No failures
 tmp = find(all_results(ordering, 2, 1, 2) < 0);
 assert(length(tmp) == 6);
 
-% analytic_result_rows_opt = find(all_results(ordering, 1, 1, 2)>0);
-% figure
-% semilogy(analytic_result_rows_opt,all_results(ordering(analytic_result_rows_opt), 1, 1, 2), '.-')
-% xlabel('Model indices ordered by time taken for each Opt solver')
-% ylabel('Wall time taken for 10 paces (s)')
-% hold all
-% for i=2:8
-%     [~, ordering] = sort(all_results(:, i, 1, 2));
-%     if i<8 
-%         linestyle = '-';
-%     else
-%         linestyle = '--';
-%     end
-%     semilogy(all_results(ordering, i, 1, 2), ['.' linestyle])
-% end
-% title('Solver benchmarking')
-% legend(solvers{solver_list+1},'Location','EastOutside')
-% xlim([1 67]) % Include Clancy-Rudy again.
+%% Box plot of the times taken by each solver.
+figure
+tmp = all_results(:,:,1,1);
+vec = [];
+groups = [];
+for s=1:length(solver_list)
+    indices = find(tmp(:,s)>0);
+    vec = [vec; tmp(indices,s)];
+    groups = [groups; s.*ones(length(indices),1)];
+end
+boxplot(log10(vec),groups)
+xlabel('Solver')
+set(gca,'XTick',1:length(solvers))
+set(gca,'XTickLabel',solvers)
+
+ylim([-4 3])
+set(gca, 'YTick',[-4:1:3])
+set(gca, 'YTickLabel',{'1e-4','1e-3','1e-2','1e-1','1','10','100','1000'})
+ylabel('Wall time for 1 second simulation (s)')
 
 
 
