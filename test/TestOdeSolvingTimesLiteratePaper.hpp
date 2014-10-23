@@ -156,7 +156,7 @@ public:
                      */
                     double suggested_timestep = 0.0; // Signifies 'not set'
                     double time_to_simulate = 10; // seconds, a default
-                    KeyType key(model_name, solver, use_lookup_tables);
+                    KeyType key(model_name, solver, false);
                     TimestepMapType::iterator dt_iter = mTimesteps.find(key);
                     if (dt_iter != mTimesteps.end())
                     {
@@ -199,12 +199,12 @@ public:
                         /*
                          * Run a single pace to check accuracy.
                          * This will also set up lookup tables if they are requested, and prevent the
-                         * one-off setup cost being timed
+                         * one-off setup cost being timed.
                          */
                         OdeSolution solution = p_cell->Compute(0.0, period, 0.1);
                         solution.WriteToFile(handler.GetRelativePath(), model_name, "ms", 1, false, 16, false);
 
-                        /* Just double check the accuracy is what we expect before a timing run */
+                        /* Just double check the accuracy is what we expect before a timing run. */
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
                         std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " MRMS error = " << errors[7] << std::endl;
                         if (errors[7] > required_mrms_error)
@@ -228,7 +228,16 @@ public:
                         // Free memory for lookup tables, if used
                         if (use_lookup_tables)
                         {
-                            p_cell->GetLookupTableCollection()->FreeMemory();
+                            AbstractLookupTableCollection* p_tables = p_cell->GetLookupTableCollection();
+                            std::cout << "Model " << model_name << " solver '" << solver_name << "' has tables";
+                            unsigned total = 0u;
+                            BOOST_FOREACH(std::string key_var, p_tables->GetKeyingVariableNames())
+                            {
+                                std::cout << "; " << key_var << ": " << p_tables->GetNumberOfTables(key_var);
+                                total += p_tables->GetNumberOfTables(key_var);
+                            }
+                            std::cout << "; total " << total << " with " << p_tables->GetKeyingVariableNames().size() << " keys." << std::endl;
+                            p_tables->FreeMemory();
                         }
                     }
                     catch (const Exception& r_e)
