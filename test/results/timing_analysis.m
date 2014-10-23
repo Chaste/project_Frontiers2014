@@ -205,13 +205,13 @@ for i=1:2
     if i<8 
         linestyle = '-';
     else
-        linestyle = '--';
+        linestyle = ':';
     end    
     order = find(all_results(ordering, i, build_this_fig, 1)>0);  
     if (~isempty(order))
         semilogy(all_results(ordering, i, build_this_fig, 1), ...
             'Color',colorOrder(mod(color_idx,7)+1,:),...
-            'Marker','.','LineStyle','-')
+            'Marker','.','LineStyle',linestyle)
         hold all
         legend_idx = legend_idx + 1;
         solvers_legend{legend_idx} = solvers{solver_list(i)+1};
@@ -239,7 +239,7 @@ for i=1:length(solver_list)
     if i<8 
         linestyle = '-';
     else
-        linestyle = '--';
+        linestyle = ':';
     end    
     order = find(all_results(ordering, i, 1, 1)>0);  
     if (~isempty(order))
@@ -254,7 +254,7 @@ for i=1:length(solver_list)
     if (~isempty(order))
         semilogy(1:length(order), all_results(ordering(order), i, 1, 2), ...
             'Color',colorOrder(mod(color_idx,7)+1,:),...
-            'Marker','.','LineStyle','--')
+            'Marker','.','LineStyle',':')
         hold all
         legend_idx = legend_idx + 1;
         solvers_legend{legend_idx} = [solvers{solver_list(i)+1} ' Opt'];
@@ -274,7 +274,7 @@ ylabel('Wall time taken to simulate 1 second (s)')
 %     if i<8 
 %         linestyle = '-';
 %     else
-%         linestyle = '--';
+%         linestyle = ':';
 %     end
 %     semilogy(all_results(valid_results(reordering), i, 1,1), ['.' linestyle])
 %     hold all
@@ -308,7 +308,7 @@ for s=1:length(solver_list)
     if s<=6
         linestyle = '.-';
     else
-        linestyle = '.--';
+        linestyle = '.:';
     end
 
     % Uncomment these to get the 'lines' versions...
