@@ -17,7 +17,7 @@ solver_mapping = {'CVODE (analytic Jacobian)',...
     'Generalised Rush-Larsen 1',...
     'Generalised Rush-Larsen 2'};
 
-print_for_optimised(d, false)
+print_for_optimised(d, solver_mapping, false)
 
 % You can run this to get a printout of this table too,
 % But you will also get a report of the differences in a file called
@@ -30,7 +30,9 @@ print_for_optimised(d, false)
 
 end
 
-function print_for_optimised(d, optimised_or_not)
+function print_for_optimised(d, solver_mapping, optimised_or_not)
+
+error_metric_names = {'Square','APD30','APD50','APD90','Vmax','Vmin','dVdtMax','MRMS'};
 
 % Load up the difficulty ordering from the timing_analysis.m script.
 % Makes a variable called 'ordering'.
@@ -60,9 +62,14 @@ assert(length(converged_list)==2)
 % Only look at converged answers
 converged_indices = find(converged==1);
 
-converged_error_metrics = error_metrics(converged_indices,2:end-1);
+converged_error_metrics = error_metrics(converged_indices,1:end);
 disp('Mean absolute error metrics')
 mean(abs(converged_error_metrics))
+[vals, indices] = max(abs(converged_error_metrics));
+for i=1:length(vals)
+    fprintf('Max error metric %s is %4.3g in %s with solver %i\n',error_metric_names{i}, vals(i), model{converged_indices(indices(i))}, solver(converged_indices(indices(i))))
+end
+pause
 
 fid = fopen('different_steps.txt', 'at');
 
