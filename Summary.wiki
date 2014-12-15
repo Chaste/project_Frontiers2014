@@ -8,7 +8,7 @@ edit that file, don't edit this page on trac!
 
 Welcome to the Chaste wiki.
 
-This section contains pages generated automatically from the source code accompanying "Cellular cardiac electrophysiology modelling with Chaste and CellML", our paper in Frontiers in Physiology.
+This section contains pages generated automatically from the source code accompanying "[http://dx.doi.org/10.3389/fphys.2014.00511 Cellular cardiac electrophysiology modelling with Chaste and CellML]", our paper in [http://journal.frontiersin.org/ResearchTopic/2502 Frontiers in Physiology].
 
 Before running these examples you will need to [wiki:InstallGuides/InstallGuide install Chaste's dependencies] and the [http://www.cs.ox.ac.uk/chaste/download.html source code for version 3.3].
 The easiest way to do this is using an Ubuntu machine (or an Ubuntu virtual machine) as discussed on InstallGuides/UbuntuPackage.
@@ -29,8 +29,8 @@ You may if you wish run just the final step to benchmark the solvers on your sys
 
 == Tissue electrophysiology benchmarks ==
 
-The steps required to reproduce the study are:
- 1. Study the convergence of reference monodomain tissue simulation solutions ([wiki:./MonodomainConvergence Monodomain Convergence])
+The [wiki:./MonodomainConvergence preliminary study examining convergence properties in space and time for the different models] was run separately.
+We then hardcoded suitable space and time steps for the PDE in the following steps, which can be followed to reproduce the study:
  1. Calculate the required ODE solver timesteps to meet target PDE accuracy ([wiki:./MonodomainCalculateRequiredTimesteps Monodomain Calculate Required Timesteps])
  1. Benchmark monodomain tissue simulation solving times with different numerical methods ([wiki:./MonodomainSolvingTimes Monodomain Solving Times])
 
@@ -38,7 +38,7 @@ Again, you may if you wish run just the final step to benchmark the solvers on y
 
 == Sample commands to install and run everything ==
 
-If you wish to install Chaste and this project direct from our repository, you may do so from the command line as follows:
+If you wish to install the latest versions Chaste and this project direct from our repository, you may do so from the command line as follows:
 {{{
 #!sh
 svn checkout https://chaste.cs.ox.ac.uk/svn/chaste/trunk Chaste
@@ -46,7 +46,7 @@ cd Chaste/projects
 svn checkout https://chaste.cs.ox.ac.uk/svn/chaste/projects/Frontiers2014
 }}}
 
-To run all the steps listed above, exploiting multiple cores on your machine, use:
+To run all the steps listed above, exploiting multiple cores on your machine where appropriate, use:
 {{{
 #!sh
 cd path/to/Chaste
@@ -56,7 +56,11 @@ scons chaste_libs=1 brief=1 build=GccOptNative_8 -j8 projects/Frontiers2014/test
 scons chaste_libs=1 brief=1 build=GccOptNative_8 -j8 projects/Frontiers2014/test/TestOdeSolvingTimesLiteratePaper.hpp
 
 # Note the change in build= option: these simulations cannot run in parallel
-scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainConvergenceLiteratePaper.hpp
 scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainCalculateRequiredTimestepsLiteratePaper.hpp
 scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainSolvingTimesLiteratePaper.hpp
+
+# To run the preliminary study on PDE convergence, use
+scons chaste_libs=1 brief=1 build=GccOptNative -j8 projects/Frontiers2014/test/TestMonodomainConvergenceLiteratePaper.hpp run_time_flags="--timestep 0.001 --spacestep 0.001 --reset"
+# Other values for timestep & spacestep can be given, as desired.
+# The --reset flag says to reset CVODE fully at each PDE time step.
 }}}

@@ -41,10 +41,11 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * On this wiki page we describe in detail the code that is used to run this example from the paper.
  *
- * For each cell model, we load the required timestep for the required target accuracy,
- * as calculated by PaperTutorials/Frontiers2014/CalculateRequiredTimesteps
+ * For each cell model, we load the required timestep for the target accuracy,
+ * as calculated by CalculateRequiredTimesteps.
  *
- * We then time solving all models under most solvers, for 10 paces.
+ * We then time solving all models under most solvers, using a simulation duration that should give about
+ * 5 seconds of real time based on the calculations in CalculateRequiredTimesteps.
  *
  * == Code overview ==
  *
@@ -75,6 +76,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
 
+/* How many repeat simulations to perform for timing robustness.
+ * We treat the quickest run as being the most reliable.
+ */
 static unsigned NUM_RUNS = 3u;
 
 class TestOdeSolvingTimes : public CxxTest::TestSuite
@@ -82,25 +86,28 @@ class TestOdeSolvingTimes : public CxxTest::TestSuite
     /* These are some type aliases to save typing. */
     typedef boost::tuple<std::string, Solvers::Value, bool> KeyType; // Keys in the map types below
     typedef std::map<KeyType, double> TimestepMapType; // Type of the map giving suggested timesteps
-    typedef std::map<KeyType, bool> TimestepOkMapType; // Type of the map indicating convergence solutions
+    typedef std::map<KeyType, bool> TimestepOkMapType; // Type of the map indicating converged solutions
 
 public:
     /* This is a small visual check that we have the expected CellML models available. */
-	void TestListingModels() throw (Exception)
-	{
-		std::vector<FileFinder> models(CellModelUtilities::GetListOfModels());
-		std::cout << "Available models:" << std::endl;
-		BOOST_FOREACH(FileFinder& r_model, models)
-		{
-		    std::cout << "  " << r_model.GetLeafNameNoExtension() << std::endl;
-		}
-		TS_ASSERT_LESS_THAN(20u, models.size());
-	}
+    void TestListingModels() throw (Exception)
+    {
+        if (PetscTools::AmMaster())
+        {
+            std::vector<FileFinder> models(CellModelUtilities::GetListOfModels());
+            std::cout << "Available models:" << std::endl;
+            BOOST_FOREACH(FileFinder& r_model, models)
+            {
+                std::cout << "  " << r_model.GetLeafNameNoExtension() << std::endl;
+            }
+            TS_ASSERT_LESS_THAN(20u, models.size());
+        }
+    }
 
-	/* This is the main test that actually does the benchmarking. */
-	void TestSolvingTimes() throw (Exception)
-	{
-	    /* First load the suggested time steps to use. */
+    /* This is the main test that actually does the benchmarking. */
+    void TestSolvingTimes() throw (Exception)
+    {
+        /* First load the suggested time steps to use. */
         LoadTimestepFile();
 
         const double required_mrms_error = 0.05; // 5%
@@ -117,14 +124,14 @@ public:
         OutputFileHandler test_base_handler("Frontiers/SingleCellTimings/", false);
         BOOST_FOREACH(FileFinder& r_model, models)
         {
-            OutputFileHandler model_handler("Frontiers/SingleCellTimings/" + r_model.GetLeafNameNoExtension(), false);
+            OutputFileHandler model_handler(test_base_handler.FindFile(r_model.GetLeafNameNoExtension()), false);
         }
 
         /* Each process writes its timings to a separate file as we go along, in case of catastrophe. */
         out_stream p_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_timings_", PetscTools::GetMyRank(), ".txt");
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
-        /* Each process writes its catastrophies too. */
+        /* Each process writes its catastrophes too. */
         out_stream p_errors_file = test_base_handler.OpenOutputFile(ChasteBuildType() + "_errors_", PetscTools::GetMyRank(), ".txt");
         *p_errors_file << std::setiosflags(std::ios::scientific) << std::setprecision(8);
 
@@ -151,11 +158,12 @@ public:
                 {
                     std::string using_tables = (use_lookup_tables ? " and lookup tables" : "");
 
-                    /* Get timestep to use if available.
-                     * Note that the CreateCellModel method below sets suitable tolerances for CVODE.
+                    /* Get timestep to use if available; if no timestep was recorded then we assume we won't be able to
+                     * simulate this combination.
+                     * Note that the `CreateCellModel` method below sets suitable tolerances for CVODE.
                      */
                     double suggested_timestep = 0.0; // Signifies 'not set'
-                    double time_to_simulate = 10; // seconds, a default
+                    double time_to_simulate = 0; // seconds, will be overridden below
                     KeyType key(model_name, solver, false);
                     TimestepMapType::iterator dt_iter = mTimesteps.find(key);
                     if (dt_iter != mTimesteps.end())
@@ -167,27 +175,27 @@ public:
                     }
                     else
                     {
-                        std::cout << "No timestep result found for " << model_name << " with solver '" << solver_name << "'" << using_tables
-                                  << ", skipping it." << std::endl;
+                        std::cout << "No timestep result found for " << model_name << " with solver '" << solver_name << "'"
+                                  << using_tables << ", skipping it." << std::endl;
                         continue;
                     }
 
+                    /* We catch any errors in the rest of the loop and write them to the catastrophes file. */
                     try
                     {
                         /* Generate the cell model from CellML. */
                         std::stringstream folder_name;
-                        folder_name << "Frontiers/SingleCellTimings/" << model_name << "/" << solver;
+                        folder_name << model_name << "/" << solver;
                         if (use_lookup_tables)
                         {
                             folder_name << "_Opt";
                         }
-                        OutputFileHandler handler(folder_name.str());
+                        OutputFileHandler handler(test_base_handler.FindFile(folder_name.str()));
                         boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, solver, use_lookup_tables);
-                        double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                         if (cvode_solver)
                         {
-                            // We hijacked the timestep in the log file to provide a refinement level.
+                            // We hijacked the timestep in the log file to record a refinement level.
                             unsigned refinement_idx = (unsigned)(suggested_timestep);
                             CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
                         }
@@ -195,16 +203,17 @@ public:
                         {
                             p_cell->SetTimestep(suggested_timestep);
                         }
+                        double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                         /*
                          * Run a single pace to check accuracy.
-                         * This will also set up lookup tables if they are requested, and prevent the
-                         * one-off setup cost being timed.
+                         * This will also set up lookup tables if they are requested,
+                         * and thus prevent the one-off setup cost being timed.
                          */
                         OdeSolution solution = p_cell->Compute(0.0, period, 0.1);
                         solution.WriteToFile(handler.GetRelativePath(), model_name, "ms", 1, false, 16, false);
 
-                        /* Just double check the accuracy is what we expect before a timing run. */
+                        /* Double check the accuracy is what we expect before a timing run. */
                         std::vector<double> errors = CellModelUtilities::GetErrors(solution, model_name);
                         std::cout << "Model " << model_name << " solver '" << solver_name << "'" << using_tables << " MRMS error = " << errors[7] << std::endl;
                         if (errors[7] > required_mrms_error)
@@ -225,9 +234,9 @@ public:
                         }
                         *p_file << std::endl;
 
-                        // Free memory for lookup tables, if used
                         if (use_lookup_tables)
                         {
+                            // Report on lookup table usage, for information
                             AbstractLookupTableCollection* p_tables = p_cell->GetLookupTableCollection();
                             std::cout << "Model " << model_name << " solver '" << solver_name << "' has tables";
                             unsigned total = 0u;
@@ -237,6 +246,7 @@ public:
                                 total += p_tables->GetNumberOfTables(key_var);
                             }
                             std::cout << "; total " << total << " with " << p_tables->GetKeyingVariableNames().size() << " keys." << std::endl;
+                            // Free memory for lookup tables (see comment in ./CalculateRequiredTimesteps for rationale).
                             p_tables->FreeMemory();
                         }
                     }
@@ -252,7 +262,7 @@ public:
             }
         }
 
-        /* Close each process' results file. */
+        /* Close each process' results files. */
         *p_file << "# Complete" << std::endl;
         p_file->close();
         p_errors_file->close();
@@ -277,44 +287,45 @@ public:
                     TS_ASSERT(process_file.is_open());
                     TS_ASSERT(process_file.good());
                     *p_combined_file << process_file.rdbuf();
+                    TS_ASSERT(p_combined_file->good());
                 }
                 p_combined_file->close();
             }
         }
-	}
+    }
 
 private:
-	/*
-	 * Utility methods used by the tests above go here.
-	 */
+    /*
+     * Utility methods used by the tests above go here.
+     */
 
-	/**
-	 * Find out how long it takes to simulate the given model.
-	 * The cell will be reset to initial conditions prior to simulation.
-	 * We assume the cell has a regular square wave stimulus defined.
-	 *
-	 * Note that we don't check the results are sensible, or do a pre-simulation to avoid
-	 * counting lookup tables setup.
-	 *
-	 * We convert the result so that it tells us how many wall clock seconds are required
-	 * for a simulation of one second of electrophysiology.
-	 *
-	 * @param pCell  the cell model to simulate, with solver attached
-	 * @param timeToSimulate  the amount of time to simulate in seconds
-	 * @return  number of wall clock seconds to simulate one second's worth of this model activity.
-	 */
-	double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
-	                      double timeToSimulate)
-	{
-	    // Drop any fractional part of the simulation time (converted to ms) so it is divided by the timestep
-	    double millisecs_to_simulate = floor(timeToSimulate * 1000.0);
+    /**
+     * Find out how long it takes to simulate the given model.
+     * The cell will be reset to initial conditions prior to simulation.
+     * We assume the cell has a regular square wave stimulus defined.
+     *
+     * Note that we don't check the results are sensible, or do a pre-simulation to avoid
+     * counting lookup tables setup.
+     *
+     * We convert the result so that it tells us how many wall clock seconds are required
+     * for a simulation of one second of electrophysiology.
+     *
+     * @param pCell  the cell model to simulate, with solver attached
+     * @param timeToSimulate  the amount of time to simulate in seconds
+     * @return  number of wall clock seconds to simulate one second's worth of this model activity.
+     */
+    double TimeSimulation(boost::shared_ptr<AbstractCardiacCellInterface> pCell,
+                          double timeToSimulate)
+    {
+        // Drop any fractional part of the simulation time (converted to ms) so it is divisible by the timestep
+        double millisecs_to_simulate = floor(timeToSimulate * 1000.0);
 
-	    //std::cout << "Simulating " << millisecs_to_simulate << "ms of activity." << std::endl;
+        //std::cout << "Simulating " << millisecs_to_simulate << "ms of activity." << std::endl;
 
-	    // Run NUM_RUNS simulations and record the quickest
-	    double minimum = DBL_MAX;
-	    for (unsigned i=0; i<NUM_RUNS; i++)
-	    {
+        // Run NUM_RUNS simulations and record the quickest
+        double minimum = DBL_MAX;
+        for (unsigned i=0; i<NUM_RUNS; i++)
+        {
             boost::dynamic_pointer_cast<AbstractUntemplatedParameterisedSystem>(pCell)->ResetToInitialConditions();
             Timer::Reset();
             pCell->SolveAndUpdateState(0.0, millisecs_to_simulate);
@@ -323,16 +334,16 @@ private:
             {
                 minimum = elapsed_time;
             }
-	    }
+        }
 
-	    /* Convert the elapsed time into a time per simulated second. */
-	    return 1000*minimum/millisecs_to_simulate;
-	}
+        /* Convert the elapsed time into a time per simulated second. */
+        return 1000*minimum/millisecs_to_simulate;
+    }
 
 
     /**
      * A map between the model/solver/use of lookup tables, and the timestep which gave a 'refined enough' result.
-     * See TestCalculateRequiredTimesteps.hpp
+     * See TestCalculateRequiredTimestepsLiteratePaper.hpp
      */
     TimestepMapType mTimesteps;
 
@@ -343,14 +354,14 @@ private:
     TimestepMapType mSimulationTime;
 
     /**
-     * A map between the model/solver/use of look uptables, and whether the timestep in #mTimesteps
+     * A map between the model/solver/use of lookup tables, and whether the timestep in #mTimesteps
      * gave a 'refined enough' result.
-     * See TestCalculateRequiredTimesteps.hpp
+     * See TestCalculateRequiredTimestepsLiteratePaper.hpp
      */
     TimestepOkMapType mTimestepIsSatisfactory;
 
     /**
-     * A helper method that populates mTimesteps from the stored data file in
+     * A helper method that populates #mTimesteps etc. from the stored data file in
      * Frontiers2014/test/data/required_steps.txt
      */
     void LoadTimestepFile()
@@ -358,9 +369,9 @@ private:
         FileFinder this_file(__FILE__);
         FileFinder summary_file("data/required_steps.txt", this_file);
 
-        std::ifstream indata; // indata is like cin
+        std::ifstream indata;
         indata.open(summary_file.GetAbsolutePath().c_str()); // opens the file
-        if(!indata.good())
+        if (!indata.good())
         { // file couldn't be opened
             EXCEPTION("Couldn't open data file: " + summary_file.GetAbsolutePath());
         }

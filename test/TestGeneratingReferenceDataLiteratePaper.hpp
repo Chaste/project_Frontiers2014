@@ -41,13 +41,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * On this wiki page we describe in detail the code that is used to run this example from the paper.
  *
- * For each cell model, runs a single action potential at high fidelity (CVODE with tight tolerance and small max timestep)
+ * For each cell model, this runs a single action potential at high fidelity (CVODE with tight tolerance and small max timestep)
  * as a 'gold standard' result for later comparison.
  *
- * Also, runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
- * to set time steps for other solvers in PaperTutorials/Frontiers2014/CalculateRequiredTimesteps.
+ * Also, it runs a single action potential with looser tolerances as a "typical simulation" to give an accuracy benchmark used
+ * to set time steps for other solvers in CalculateRequiredTimesteps.
  *
- * At the end of this test this information is copied into test/data/error_summary.txt
+ * At the end of this test this information is copied into the file `test/data/error_summary.txt` within the project.
  *
  * == Code overview ==
  *
@@ -77,17 +77,25 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This header is needed to allow us to run in parallel
 #include "PetscSetupAndFinalize.hpp"
 
+/* Next, we have the class that contains the code to run.
+ * As with most papers using Chaste, this is written as a test suite within our test framework.
+ * The `TestGenerateTraces` method does the work.
+ */
 class TestGeneratingReferenceData : public CxxTest::TestSuite
 {
 public:
     void TestGenerateTraces() throw (Exception)
     {
+        /* Set up some references to various files and folders. */
         FileFinder this_file(__FILE__);
+        // Where to copy reference traces within this project
         FileFinder repo_data("data/reference_traces", this_file);
-        FileFinder repo_data_summary("data", this_file);
+        // Base folder for simulations to write output to
         OutputFileHandler test_base_handler("Frontiers/ReferenceTraces/", false);
-        std::map<std::string, std::vector<double> > error_results;
 
+        /* `CellModelUtilities` is a class of utility functions specifically for this project.
+         * This one gets a list of all the CellML models included.
+         */
         std::vector<FileFinder> models = CellModelUtilities::GetListOfModels();
 
         /* Iterate over the available models, handling each one on a separate process if running in parallel. */
@@ -103,7 +111,7 @@ public:
             /* Generate the cell model from CellML. */
             FileFinder& r_model = models[i];
             std::string model_name = r_model.GetLeafNameNoExtension();
-            OutputFileHandler handler("Frontiers/ReferenceTraces/" + model_name);
+            OutputFileHandler handler(test_base_handler.FindFile(model_name));
             boost::shared_ptr<AbstractCardiacCellInterface> p_cell = CellModelUtilities::CreateCellModel(r_model, handler, Solvers::CVODE_NUMERICAL_J, false);
             boost::shared_ptr<AbstractCvodeCell> p_cvode_cell = boost::dynamic_pointer_cast<AbstractCvodeCell>(p_cell);
 
@@ -113,16 +121,16 @@ public:
                 p_cvode_cell->ForceUseOfNumericalJacobian(false);
             }
 
-            double period = CellModelUtilities::GetDefaultPeriod(p_cell);
-
             /* Set up solver parameters. */
             p_cvode_cell->SetTolerances(1e-7 /* relative */, 1e-9 /* absolute */);
 
-            /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms). */
+            /* Create a reference solution with high tolerances, and fine output (sampling every 0.1ms).
+             * Note that the sampling interval is also the maximum time step CVODE is allowed to use.
+             */
+            double period = CellModelUtilities::GetDefaultPeriod(p_cell);
             OdeSolution solution;
             try
             {
-                /* Note that the sampling interval of 0.1ms is also the maximum time step CVODE is allowed to use */
                 solution = p_cvode_cell->Compute(0.0, period, 0.1);
             }
             catch (const Exception &e)
@@ -145,16 +153,16 @@ public:
                 CellProperties props(voltages, solution.rGetTimes());
                 std::vector<std::pair<std::string, double> > properties;
 
-                // Calculate some summary statistics of the AP that was produced
-                properties.push_back(std::pair<std::string, double>("Num_ODEs",(double)p_cvode_cell->GetNumberOfStateVariables()));
-                properties.push_back(std::pair<std::string, double>("APD90",props.GetLastActionPotentialDuration(90.0)));
-                properties.push_back(std::pair<std::string, double>("APD50",props.GetLastActionPotentialDuration(50.0)));
-                properties.push_back(std::pair<std::string, double>("APD30",props.GetLastActionPotentialDuration(30.0)));
-                properties.push_back(std::pair<std::string, double>("V_max",props.GetLastPeakPotential()));
-                properties.push_back(std::pair<std::string, double>("V_min",props.GetLastRestingPotential()));
-                properties.push_back(std::pair<std::string, double>("dVdt_max",props.GetLastMaxUpstrokeVelocity()));
+                /* Calculate some summary statistics of the AP that was produced. */
+                properties.push_back(std::pair<std::string, double>("Num_ODEs", (double)p_cvode_cell->GetNumberOfStateVariables()));
+                properties.push_back(std::pair<std::string, double>("APD90", props.GetLastActionPotentialDuration(90.0)));
+                properties.push_back(std::pair<std::string, double>("APD50", props.GetLastActionPotentialDuration(50.0)));
+                properties.push_back(std::pair<std::string, double>("APD30", props.GetLastActionPotentialDuration(30.0)));
+                properties.push_back(std::pair<std::string, double>("V_max", props.GetLastPeakPotential()));
+                properties.push_back(std::pair<std::string, double>("V_min", props.GetLastRestingPotential()));
+                properties.push_back(std::pair<std::string, double>("dVdt_max", props.GetLastMaxUpstrokeVelocity()));
 
-                // Save these to a dedicated file for this model, and output to reference data folder in the repository.
+                /* Save these to a dedicated file for this model, and copy to reference data folder in the repository. */
                 out_stream p_summary_file = handler.OpenOutputFile(model_name + ".summary");
                 for (unsigned i=0; i<properties.size(); i++)
                 {

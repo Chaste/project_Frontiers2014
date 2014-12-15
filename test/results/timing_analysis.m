@@ -307,6 +307,9 @@ for s=1:length(solver_list)
     
     if s<=6
         linestyle = '.-';
+        if s == 2
+            linestyle = 'x-';
+        end
     else
         linestyle = '.:';
     end

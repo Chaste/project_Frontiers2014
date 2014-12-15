@@ -43,7 +43,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This test simulates each model with each (single-cell) numerical method,
  * reducing the time step used until the error metric is within 5% of that achieved
- * with CVODE using slack tolerances in PaperTutorials/Frontiers2014/GeneratingReferenceData
+ * with CVODE using slack tolerances in GeneratingReferenceData.
  *
  * This is intended to define a time step required for each method to
  * get a numerical solution of comparable accuracy, for fair timing comparisons.
@@ -98,14 +98,12 @@ public:
         OutputFileHandler test_base_handler("Frontiers/CalculateTimesteps/", false);
         BOOST_FOREACH(FileFinder& r_model, models)
         {
-            OutputFileHandler model_handler("Frontiers/CalculateTimesteps/" + r_model.GetLeafNameNoExtension(), false);
+            OutputFileHandler model_handler(test_base_handler.FindFile(r_model.GetLeafNameNoExtension()), false);
         }
 
         /* Each process writes its results to a separate file. */
-        FileFinder this_file(__FILE__);
-        FileFinder data_folder("data", this_file);
         out_stream p_file = test_base_handler.OpenOutputFile("required_steps_", PetscTools::GetMyRank(), ".txt");
-        /* Ensure time steps are written at high precision */
+        // Ensure time steps are written at high precision
         *p_file << std::setiosflags(std::ios::scientific) << std::setprecision(16);
 
         /* Iterate over model/solver combinations, distributed over processes. */
@@ -140,12 +138,12 @@ public:
 
                     /* Generate the cell model from CellML. */
                     std::stringstream folder_name;
-                    folder_name << "Frontiers/CalculateTimesteps/" << model_name << "/" << solver;
+                    folder_name << model_name << "/" << solver;
                     if (use_lookup_tables)
                     {
                         folder_name << "_Opt";
                     }
-                    OutputFileHandler handler(folder_name.str());
+                    OutputFileHandler handler(test_base_handler.FindFile(folder_name.str()));
                     boost::shared_ptr<AbstractCardiacCellInterface> p_cell;
                     try
                     {
@@ -153,11 +151,10 @@ public:
                     }
                     catch (Exception &e)
                     {
-                        // This probably fires off if there is no Analytic Jacobian available.
+                        // This probably happens if there is no Analytic Jacobian available.
                         // Move on to the next model/solver combination.
                         continue;
                     }
-                    double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                     /* Set up solver parameters. */
                     double sampling_time = 0.1;
@@ -165,6 +162,7 @@ public:
                     unsigned refinement_idx = 1u;
                     bool within_tolerance = false;
                     std::vector<double> initial_conditions = p_cell->GetStdVecStateVariables();
+                    double period = CellModelUtilities::GetDefaultPeriod(p_cell);
 
                     /* For the one step models: keep solving with smaller timesteps until we meet the desired accuracy.
                      * For CVODE, use the timestep divisor to index a vector of tolerance pairs. */
@@ -181,8 +179,8 @@ public:
                             }
                             CellModelUtilities::SetCvodeTolerances(p_cell.get(), refinement_idx);
                             timestep = (double)(refinement_idx); // We just hijack this variable for the log filenames.
-                            refinement_description_stream << " CVODE tolerances of " << pow(10,-1.0-refinement_idx) <<
-                                    ", " << pow(10,-3.0-refinement_idx);
+                            refinement_description_stream << " CVODE tolerances of " << pow(10.0,-1.0-refinement_idx) <<
+                                    ", " << pow(10.0,-3.0-refinement_idx);
                         }
                         else
                         {
@@ -194,20 +192,24 @@ public:
                         std::cout << "Computing error for model " << model_name << " solver '" << CellModelUtilities::GetSolverName(solver) << "'"
                                   << using_tables << " with" << refinement_description << std::endl;
 
-                        timestep_divisor *= 2; // Ready for next iteration
-                        refinement_idx++; // Ready for next iteration
+                        /* Prepare the loop variables for the next iteration here, since a subsequent block contains a
+                         * `continue` statement, which would skip the adjustment if it happened later.
+                         */
+                        timestep_divisor *= 2;
+                        refinement_idx++;
 
-                        /* Make sure the model is in exactly the same state at the beginning of every run */
+                        /* Make sure the model is in exactly the same state at the beginning of every run. */
                         p_cell->SetStateVariables(initial_conditions);
 
                         OdeSolution solution;
                         double time_taken;
-                        /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes */
+                        /* We enclose the solve in a try-catch, as large timesteps can lead to solver crashes. */
                         try
                         {
                             Timer::Reset();
                             solution = p_cell->Compute(0.0, period, sampling_time);
                             time_taken = Timer::GetElapsedTime();
+                            // Check that the solution doesn't contain any non-numerical values, indicative of solver failure.
                             std::vector<double> voltages = solution.GetAnyVariable("membrane_voltage");
                             std::vector<double>& r_times = solution.rGetTimes();
                             for (unsigned i=0; i<voltages.size(); i++)
@@ -224,7 +226,7 @@ public:
                             continue;
                         }
 
-                        /* Calculate the error associated with this simulated trace (compare to reference) */
+                        /* Calculate the error associated with this simulated trace (compared to the reference trace). */
                         std::stringstream filename;
                         filename << model_name << "_deltaT_" << timestep;
                         solution.WriteToFile(handler.GetRelativePath(), filename.str(), "ms", 1, false, 16, false);
@@ -235,7 +237,7 @@ public:
                             std::cout << "MRMS error = " << errors[7] << " (required = " << required_mrms_error << ")." << std::endl;
                             within_tolerance = (errors[7] <= required_mrms_error);
 
-                            /* Write result to file, tab separated */
+                            // Write result to file, tab separated
                             *p_file << model_name << "\t" << solver << "\t" << use_lookup_tables << "\t" << timestep;
                             for (unsigned i=0; i<errors.size(); i++)
                             {
@@ -253,7 +255,14 @@ public:
                     while (!within_tolerance && timestep_divisor <= 2048);
                     /* The above means we allow at most 12 refinements of the time step (2^12^ = 2048). */
 
-                    // Free memory for lookup tables, if used
+                    /* Free memory for lookup tables, if used.
+                     * To avoid excessive memory use in tissue simulations, the lookup tables for a particular cell model are
+                     * stored in a separate singleton class, which can thus be shared by all cells being simulated in a
+                     * particular process.  Since here we are instead simulating many different models in turn, this is not so
+                     * ideal, as we end up with a lookup table collection for each one persisting until the program exits.  This
+                     * could lead to memory exhaustion if a fine table granularity is used, so we tell Chaste to delete the
+                     * tables when we know we've finished with them.
+                     */
                     if (use_lookup_tables)
                     {
                         p_cell->GetLookupTableCollection()->FreeMemory();
@@ -269,7 +278,7 @@ public:
         PetscTools::IsolateProcesses(false);
         PetscTools::Barrier("TestCalculateTimesteps");
 
-        /* Master process writes the concatenated file. */
+        /* Master process writes the concatenated file, and copies it into the project's data folder. */
         if (PetscTools::AmMaster())
         {
             out_stream p_combined_file = test_base_handler.OpenOutputFile("required_steps.txt", std::ios::out | std::ios::trunc | std::ios::binary);
@@ -283,7 +292,9 @@ public:
                 *p_combined_file << process_file.rdbuf();
             }
             p_combined_file->close();
-            /* Copy to repository for storage and use by other tests */
+            /* Copy to repository for storage and use by other tests. */
+            FileFinder this_file(__FILE__);
+            FileFinder data_folder("data", this_file);
             FileFinder summary_file = test_base_handler.FindFile("required_steps.txt");
             summary_file.CopyTo(data_folder);
         }
